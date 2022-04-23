@@ -1,0 +1,43 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\part{Special applications}
+	
+\chapter{Analytic geometry}
+
+\section{Representation and transformation of angles}
+
+\subsection{Bring angle into range}
+
+\lzz \hyt{RadRange0to2}{\tcr{\emph{RadRange0to2(angle)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{RadRange0to2} \\
+\hyt{RadRange1to1}{\tcr{\emph{RadRange1to1(angle)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{RadRange1to1} \\
+\hyt{DegRange0to2}{\tcr{\emph{DegRange0to2(angle)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{DegRange0to2} \\
+\hyt{DegRange1to1}{\tcr{\emph{DegRange1to1(angle)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{DegRange1to1}
+
+\lz These functions bring an angle given in radiant into either the range $ [0,2 \pi) $ or $ (-\pi,\pi] $, and an angle given in degrees into either the range $ [0,360) $ or $ (-180,180] $.
+
+\subsection{Degrees $ \leftrightarrows $ radians}
+
+\hyt{Deg2Rad}{\tcr{\emph{Deg2Rad(degrees, $ \langle ,n \langle ,f \rangle \rangle $)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{Deg2Rad} \\
+\lz \hyt{Rad2Deg}{\tcr{\emph{Rad2Deg(radians, $ \langle ,n \rangle $)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{Rad2Deg}
+
+\lz These functions transform an angle  \index{angles!representation and transformation}from degrees (decimal) to radians and vice versa. 
+
+\lz \emph{Deg2Rad} transforms an angle given in decimal degrees to radians. The result is a term consisting of pi and a factor. \emph{float(Deg2Rad(degrees))} returns a float. If a second argument n>0 is present, the factor of pi is rounded to n digits after the dot. If any third argument is present, Deg2Rad will return a float rounded to n digits after the dot.
+
+\lz \emph{Rad2Deg} transforms an angle given in radians to decimal degrees. If a second argument $ n \geq 0 $ is present, in case of n=0 the result is rounded to integer, and in case of n>0 the float result is rounded to n digits after the dot. Note that a float result with maximum precision can be obtained by \emph{float(Rad2Deg(radians, $ \langle ,n \rangle $))}.
+
+\subsection{Degrees decimal $ \leftrightarrows $ min/sec}
+
+\hyt{Dec2Min}{\tcr{\emph{Dec2Min(degrees $ \langle ,n \rangle $)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{Dec2Min} \\
+\hyt{Min2Dec}{\tcr{\emph{Min2Dec([deg,min,sec] $ \langle , n \rangle $)}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{Min2Dec} \\
+\hyt{ConcMinSec}{\tcr{\emph{ConcMinSec([deg,min,sec])}}} \hfill \tcr{[function of \emph{rs\_angles}]}\index{ConcMinSec}
+
+\lz \emph{Dec2Min} converts an angle given in decimal degrees into a list of 3 elements containing degrees, minutes and seconds. The first two elements are integers. If a second argument $ n \geq 0 $ is present, seconds are rounded to n digits after the dot. 
+
+\lz \emph{Min2Dec} converts an angle given as a list of 3 elements containing degrees, minutes and seconds into decimal degrees. If a second argument $ n \geq 0 $ is present, the value returned is rounded to n digits after the dot. 
+
+\lz \emph{ConcMinSec} converts an angle given as a list of 3 elements containing degrees, minutes, and seconds into a string with the elements followed by °, ' and '' respectively.
+
+\end{document}

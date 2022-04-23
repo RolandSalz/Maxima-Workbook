@@ -1,0 +1,382 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Sums, products and series}
+
+\section{Sums and products}
+
+\subsection{Sums}
+
+\subsubsection{Introduction}
+
+A consecutive sum, with the index running over a range of consecutive integers, can be created with function \emph{sum}. I can be displayed in sigma notation, simplified and evaluated. Sums can also be differentiated or integrated, and they can be subject to limits.
+
+\lz A selective sum, with the index only taking selected indices from a list, is created with function \emph{lsum}.
+
+
+\subsubsection{Sum: consecutive indices} \mbox{}
+
+\lzz \hyt{sum}{\tcr{\emph{sum (expr, $ i, i_0, i_1 $)}}} \hfill \tcr{[function]}\index{sum}
+
+\lz Builds a "continuous" summation of \emph{expr} (evaluated) as the summation index i (not evaluated) runs from $i_0$ to $i_1$ (both evaluated). Both a noun form and a sum that by simplification and evaluation cannot be resolved are displayed in sigma notation. By setting $ i_1 $ to \emph{inf} for infinity we obtain a series, see section \ref{SP1}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   'sum(1/k!,k,0,4);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \sum_{k=1}^{4} \frac{1}{k!} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   sum(1/k!,k,0,4);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{65}{24} \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   sum(1/k!,k,1,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \sum_{k=1}^{n} \frac{1}{k!} \]
+
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   sum (a[i], i, 1, 5);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o4)}} a_1+a_2+a_3+a_4+a_5 \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   sum (a(i), i, 1, 5);
+<@\tcr{(\%o5)}@ 		   a(5) + a(4) + a(3) + a(2) + a(1)
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+
+\paragraph{Simplification}
+
+\subparagraph{Simpsum} \mbox{}
+
+\lz Some basic rules are applied automatically to simplify sums. More rules are activated by setting the flag \emph{simpsum} to \emph{true}.
+
+\lzz \hyt{simpsum}{\tcr{\emph{simpsum}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{simpsum}
+
+\lz When \emph{simpsum} is set, the result of a sum is simplified. This simplification may sometimes be able to produce a closed form. See section \ref{SP1} for the application to series.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   sum (2^k + k^2, k, 0, n);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \sum_{k=0}^{n}{\left(2^{k}+k^2\right)} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   sum (2^k + k^2, k, 0, n), simpsum;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} 2^{n+1}+{{2\,n^3+3\,n^2+n}\over{6}}-1 \]
+\color{black} \reqn
+\end{small} \vspace{-5mm} 
+
+\subparagraph{Simplify\_sum} \mbox{}
+
+\lz Package \emph{simplify\_sum} contains function \emph{simplify\_sum} which is more powerful in finding closed forms than setting flag \emph{simpsum}.
+
+\lzz \hyt{simplify\_sum}{\tcr{\emph{simplify\_sum (expr)}}} \hfill \tcr{[function of \emph{simplify\_sum}]}\index{simplify\_sum}
+
+\lz Tries to simplify all sums appearing in \emph{expr} to a closed form.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   load(simplify_sum);
+\end{lstlisting}
+\vspace{-3mm} \begin{lstlisting}[basicstyle=\footnotesize]
+<@\tcr{( \%o1)}@    C:/maxima-5.40.0/../share/maxima/5.40.0/share/solve_rec/simplify_sum.mac
+\end{lstlisting}
+\vspace{-3mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   sum(2^k+k^2,k,0,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \sum_{k=0}^{n}{\left. {{2}^{k}}+{{k}^{2}}\right.} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   simplify_sum(%);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} 2^{n+1}+{{2\,n^3+3\,n^2+n}\over{6}}-1 \]
+\color{black} \reqn
+\end{small} \vspace{-5mm}
+
+\subsubsection{Lsum: selected indices}
+
+\lz \hyt{lsum}{\tcr{\emph{lsum (expr, i, L)}}} \hfill \tcr{[function]}\index{sum}
+
+\lz Represents the sum of \emph{expr} for each index contained in the list L. A noun form is returned, if the L does not evaluate to a list. All arguments except for i are evaluated.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   'lsum (x^i, i, [1, 2, 7]);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \sum_{i\operatorname{in}[1,2,7]}{\left. {{x}^{i}}\right.} \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   lsum (x^i, i, [1, 2, 7]);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} {{x}^{7}}+{{x}^{2}}+x \]
+\color{black} \reqn
+\end{small} \vspace{-6mm}
+
+\subsubsection{Nusum}
+
+\lz \hyt{nusum}{\tcr{\emph{nusum (expr, $ i , i_0, i_1 $)}}} \hfill \tcr{[function]}\index{nusum}
+
+\lz This is a \emph{new} sum function, more powerful than \hyl{sum}{\emph{sum}}, capable of simplification and of finding more closed forms, of series as well.
+
+\lz The noun form of \emph{nusum} is not displayed in sigma notation. However, sigma notation is used for the return value, when \emph{nusum} cannot simplify \emph{expr}. 
+
+\lz Let's construct an example, where \emph{sum} throws the towel. (For the last computation, which redoes the summation, see \hyl{unsum}{\emph{unsum}}).
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   sum (i^4*4^i/binomial(2*i,i), i, 0, n), simpsum;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \sum_{i=0}^{n}{\left. \frac{{{i}^{4}}\, {{4}^{i}}}{\begin{pmatrix}2 i\\
+		i\end{pmatrix}}\right.} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   nusum (i^4*4^i/binomial(2*i,i), i, 0, n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{2 \left( n+1\right) \, \left( 63 {{n}^{4}}+112 {{n}^{3}}+18 {{n}^{2}}-22 n+3\right) \, {{4}^{n}}}{693 \begin{pmatrix}2 n\\
+	n\end{pmatrix}}-\frac{2}{231} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   unsum(%,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{{{n}^{4}}\, {{4}^{n}}}{\begin{pmatrix}2 n\\
+	n\end{pmatrix}} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\subsubsection{Differentiating and integrating sums}
+
+Sums can be differentiated and integrated.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   s:sum((x-x0)^k,k,1,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \sum_{k=1}^{n} (x-x_0)^k \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   'diff(s,x) = diff(s,x);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{d}{dx} \sum_{k=1}^{n} (x-x_0)^k = \sum_{k=1}^{n} k \, (x-x_0)^{k-1} \]
+\vspace{-4mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   'integrate(s,x) = integrate(s,x);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \int \sum_{k=1}^{n} (x-x_0)^k \; dx = \sum_{k=1}^{n} \frac{(x-x_0)^{k+1}}{k+1} \]
+\color{black} \reqn
+\end{small} \vspace{-3mm}
+
+\subsubsection{Limits of sums}
+
+\lzz Sums can be subject to limits.
+
+\subsubsection{Unsum: undoing a sum}
+
+\lz \hyt{unsum}{\tcr{\emph{unsum (expr, n)}}} \hfill \tcr{[function]}\index{unsum}
+
+\lz This function is kind of magic. It undoes a definite (i.e. finite) summation done with \hyl{sum}{\emph{sum}} or \hyl{nusum}{\emph{nusum}} and having a symbol as the (finite) upper bound. The undo is done by taking the closed form and returning the expression under the sigma sign. The argument \emph{expr} must be the closed form of a definite summation and n the symbol designating its (finite) upper bound. The lower bound of the original sum does not matter, it can be an integer or a symbol. (This implies, that unsum cannot find it out, either.) See \emph{nusum} for a more sophisticated example, if you still don't believe it.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   nusum(i^2,i,0,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{n\, \left( n+1\right) \, \left( 2 n+1\right) }{6} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   unsum(%,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} {{n}^{2}} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   nusum(i^2,i,m,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{\left( n-m+1\right) \, \left( 2 {{n}^{2}}+2 m n+n+2 {{m}^{2}}-m\right) }{6} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   unsum(%,n);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} {{n}^{2}} \]
+\color{black} \reqn
+\end{small} \vspace{-7mm}
+
+\subsection{Products}
+
+\section{Series}
+
+\subsection{Introduction}
+
+Maxima contains functions \emph{powerseries} and \emph{taylor} for finding the series of differentiable functions. It also has tools such as \emph{nusum} capable of finding the closed form of some series. Operations such as addition and multiplication work as usual on series. This section presents the global variables which control the expansion.
+
+\lz Series, including power series and truncated taylor expansions, can be differentiated and integrated.
+
+\subsection{Sum or nusum with infinite upper bound}\label{SP1}
+
+In Maxima a series is constructed using functions \hyl{sum}{\emph{sum}} or \hyl{nusum}{\emph{nusum}} with the upper bound set to \emph{inf} for infinity. In case of \emph{sum}, all simplification procedures described for finite sums can be used for series as well. Function \emph{nusum} is more powerful concerning simplification, and it achieves closed forms more often than \emph{sum}. We give \emph{sum} a try with a simple geometric series.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   'sum(x^i,i,0,inf);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \en \sum_{i=0}^{\infty }{\left. {{x}^{i}}\right.} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   simpsum:true$  sum(x^i,i,0,inf);
+	<@\tcr{Is |x|-1 positive, negative or zero?}@ pos;
+	<@\tcr{sum: sum is divergent.  --- an error.}@	
+<@\tcr{(\%i3)}@   sum(x^i,i,0,inf);
+	<@\tcr{Is |x|-1 positive, negative or zero?}@ neg;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{1}{1-x} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+Function \emph{nusum} has a different strategy of informing the user about the conditions for convergence and divergence of the series.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   nusum(x^i,i,0,inf)$
+<@\tcr{(\%i2)}@   ChangeSign(ChangeSign(%,2),2,2);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{{{x}^{\infty +1}}}{x-1}+\frac{1}{1-x} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\subsection{Power series}
+
+\lz \hyt{powerseries}{\tcr{\emph{powerseries (expr, x, a)}}} \hfill \tcr{[function]}\index{powerseries}
+
+\lz Returns the general form of the power series expansion for \emph{expr} in the variable x about the point a (which may be \emph{inf}). Each time Maxima returns a power series expansion, it creates a new summation index, starting with $ i1, i2, \dots $ 
+
+\lz If \emph{powerseries} is unable to expand \emph{expr}, \emph{taylor} may be used to give the first several terms of the series.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   powerseries(sin(x),x,0);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \sum_{\mathit{i1}=0}^{\infty }{\left. \frac{{{\left( -1\right) }^{\mathit{i1}}}\, {{x}^{2 \, \mathit{i1}+1}}}{\left( 2 \, \mathit{i1}+1\right) !}\right.} \]
+\color{black} \reqn
+\end{small} \vspace{-2mm} 
+
+\lz When \emph{verbose} is \emph{true}, \emph{powerseries} prints progress messages before returning the result.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   verbose:true$  powerseries(log(sin(x)/x),x,0);
+trigreduce: failed to expand.
+\end{lstlisting}
+\vspace{-2mm} \[ \log{\left( \frac{\sin{(x)}}{x}\right) }\]
+\vspace{-4mm} \begin{lstlisting}
+trigreduce: try again after applying rule:
+\end{lstlisting}
+\[ \log{\left( \frac{\sin{(x)}}{x}\right) }=\int {\left. \frac{\frac{d}{d x} \frac{\sin{(x)}}{x}}{\frac{\sin{(x)}}{x}}dx\right.} \]
+\vspace{-4mm} \begin{lstlisting}
+powerseries: first simplification returned 
+\end{lstlisting}
+\[ -\int_{0}^{x}{\left. \frac{\csc{\left( \mathit{g494}\right) }\, \sin{\left( \mathit{g494}\right) }-\mathit{g494}\, \cos{\left( \mathit{g494}\right) }\, \csc{\left( \mathit{g494}\right) }}{\mathit{g494}}d\mathit{g494}\right.} \]
+\vspace{-4mm} \begin{lstlisting}
+powerseries: first simplification returned  
+\end{lstlisting}
+\[ -\frac{\mathit{g494}\, \cot{\left( \mathit{g494}\right) }-1}{\mathit{g494}} \]
+\vspace{-4mm} \begin{lstlisting}
+powerseries: attempt rational function expansion of  
+\end{lstlisting}
+\[ \frac{1}{\mathit{g494}}\]
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \sum_{\mathit{i2}=1}^{\infty }{\left. \frac{{{\left( -1\right) }^{\mathit{i2}}}\, {{2}^{2 \, \mathit{i2}-1}}\, \operatorname{bern}\left( 2 \, \mathit{i2}\right) \, {{x}^{2 \, \mathit{i2}}}}{\mathit{i2}\, \left( 2 \, \mathit{i2}\right) !}\right.} \]
+\color{black} \reqn
+\end{small} \vspace{-2mm}
+
+\lz The advanced running index of the g-variable generated by Maxima indicates that during computation the preceding ones have already been used internally.
+
+\subsection{Taylor and Laurent series expansion}
+
+\lz \hyt{taylor}{\tcr{\emph{taylor (expr, $  x, a, p \; \glangle, \; 'asymp \; \grangle $) \gbar}}} \hfill \tcr{[function]}\index{taylor}
+
+\lz \tcr{\emph{taylor (expr, $ [x_1, \dots,x_n], \gpal a \gbar [a_1,\dots,a_n] \gpar, \gpal p \gbar [p_1,\dots,p_n] \gpar $) \gbar}}
+
+\tcr{\emph{taylor (expr, $ [[x_1, \dots,x_n], \gpal a \gbar [a_1,\dots,a_n] \gpar, p \; \glangle, \; 'asymp\grangle] $) \gbar}}
+
+\tcr{\emph{taylor (expr, $ [[x_1, \dots,x_n], a, \gpal p \gbar [p_1,\dots,p_n] \gpar \; \glangle, \; 'asymp \grangle] $) \gbar}}
+
+\lz \tcr{\emph{taylor (expr, $ [x_1, a_1, p_1], \dots, [x_n, a_n, p_n] $) \gbar}}
+
+\tcr{\emph{taylor (expr, $ x_1, a_1, p_1, \dots, x_n, a_n, p_n $)}}
+
+\lz This is the general form of function \emph{taylor}. We will explain the single-variable and the multi-variable forms separately and then the \emph{'asymp} option.
+
+\subsubsection{Single-variable form}
+
+\lz \hyt{taylor}{\tcr{\emph{taylor (expr, x, a, p)}}} \hfill \tcr{[function]}\index{taylor}
+
+\lz This basic form of \emph{taylor} expands the expression \emph{expr} in a truncated Taylor or Laurent series in the variable x around the point a, containing terms through $ (x - a)^p $. Maxima precedes the output of a Taylor expansion by a tag /T/ directly after the output tag. (In wxMaxima this is not done, if \emph{taylor} appears on the right side of an assignment.) This indicates that Maxima uses a special internal representation for this type of data. (The CRE form is yet another special internal data format, tagged with /R/ in Maxima output.)
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   taylor(sqrt(x+1),x,0,3);
+\end{lstlisting}
+\vspace{-6mm} \[ \tag*{\tcr{\ttfamily (\%o3) /T/}} 1+\frac{x}{2}-\frac{{{x}^{2}}}{8}+\frac{{{x}^{3}}}{16}+\mbox{...} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm} 
+
+\lz We can evaluate both the original function and Taylor expansions of various orders at a point near a with function \hyl{at}{\emph{at}} to see how the approximation proceeds.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   t1:taylor(sqrt(x+1),x,0,1);
+	t2:taylor(sqrt(x+1),x,0,2); 
+	t3:taylor(sqrt(x+1),x,0,3); 
+	t5:taylor(sqrt(x+1),x,0,5);
+	at([t1,t2,t3,t5,sqrt(x+1)],x=0.3);
+\end{lstlisting}
+\vspace{-4mm} \[ \tag*{\tcr{\ttfamily (\%o1) /T/}} 1+\frac{x}{2}+\mbox{...} \]
+\vspace{-6mm} \[ \tag*{\tcr{\ttfamily (\%o2) /T/}} 1+\frac{x}{2}-\frac{{{x}^{2}}}{8}+\mbox{...} \]
+\vspace{-6mm} \[ \tag*{\tcr{\ttfamily (\%o3) /T/}} 1+\frac{x}{2}-\frac{{{x}^{2}}}{8}+\frac{{{x}^{3}}}{16}+\mbox{...} \]
+\vspace{-6mm} \[ \tag*{\tcr{\ttfamily (\%o4) /T/}} 1+\frac{x}{2}-\frac{{{x}^{2}}}{8}+\frac{{{x}^{3}}}{16}-\frac{5 {{x}^{4}}}{128}+\frac{7 {{x}^{5}}}{256}+\mbox{...} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%o5)}@    [1.15, 1.13875, 1.1404375, 1.1401875390625, 1.140175425099138]
+\end{lstlisting}
+\color{black} \reqn
+\end{small} \vspace{-2mm} 
+
+\subsubsection{Multi-variable form}
+
+\lz \tcr{\emph{taylor (expr, $ [x_1, \dots,x_n], \gpal a \gbar [a_1,\dots,a_n] \gpar, \gpal p \gbar [p_1,\dots,p_n] \gpar $)}}
+
+\lz This basic multi-variable form of \emph{taylor} expands \emph{expr} in the variables $ x_1, \dots,x_n $ about the point ($ a_1,\dots,a_n $), up to combined powers of p or up to combined powers of $ \max (p_i) $ for $ i=1,\dots,n $. (Note that here p is not equal to the number of terms as it is in the single-variable form.) If $ a $ is identical for all $ i $, it can be given as a single simple variable instead of a list. Thus, $ a $ means the point $ \underbrace{(a, \dots, a)}_{n \; times} $.
+
+\lzz \tcr{\emph{taylor (expr, $ [x_1, a_1, p_1], \dots, [x_n, a_n, p_n] $)}}
+
+\lz (The square brackets can be omitted.) This form is not only syntactically different from the preceding one, but it also gives a different result, because \emph{expr} is expanded up to the power $ p_i $ for variable $ x_i, \; i=1,\dots,n $. Furthermore, terms are not factored according to combined powers as in the preceding form, but according to powers of the first, second, third, $ \dots $ variable.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   taylor(sin(x+y),[x,y],0,5);
+	expand(%);
+\end{lstlisting}
+\vspace{-4mm} \[ \tag*{\tcr{\ttfamily (\%o1) /T/}} y+x-\frac{{{x}^{3}}+3 y\, {{x}^{2}}+3 {{y}^{2}} x+{{y}^{3}}}{6}+\mbox{...} \]
+\vspace{-5mm} \[ \tag*{\tcr{\ttfamily (\%o2)}} -\frac{{{y}^{3}}}{6}-\frac{x\, {{y}^{2}}}{2}-\frac{{{x}^{2}} y}{2}+y-\frac{{{x}^{3}}}{6}+x \]
+\vspace{-2mm} \begin{lstlisting}
+<@\tcr{(\%o3)}@   taylor(sin(x+y),[x,0,2],[y,0,3]);
+	expand(%);
+\end{lstlisting}
+\vspace{-4mm} \[ \tag*{\tcr{\ttfamily (\%o3) /T/}} y-\frac{{{y}^{3}}}{6}+\mbox{...}+\left( 1-\frac{{{y}^{2}}}{2}+\mbox{...}\right)  x+\left( -\frac{y}{2}+\frac{{{y}^{3}}}{12}+\mbox{...}\right) \, {{x}^{2}}+\mbox{...} \]
+\vspace{-5mm} \[ \tag*{\tcr{\ttfamily (\%o4) }} \frac{{{x}^{2}}\, {{y}^{3}}}{12}-\frac{{{y}^{3}}}{6}-\frac{x\, {{y}^{2}}}{2}-\frac{{{x}^{2}} y}{2}+y+x \]
+\color{black} \reqn
+\end{small} \vspace{-5mm} 
+
+\subsubsection{Option 'asymp}
+
+The option \emph{'asymp} can be applied to both the single- and the multi-variable form of \emph{taylor}. It returns an expansion of \emph{expr} in negative powers of $ x - a $. The highest order term is $ (x - a)^{-n} $.
+
+\subsubsection{Option variables}
+
+\lz \tcr{\emph{taylordepth}} \qquad \tcr{default value: 3} \hfill \tcr{[option variable]}\index{taylordepth}
+
+\lz If in \emph{taylor (expr, x, a, p)} the expression \emph{expr} is of the form f(x)/g(x) and g(x) has no terms up to degree p, \emph{taylor} attempts to expand g(x) up to degree $ 2 \, p $. If there are still no non-zero terms, \emph{taylor} doubles the degree of the expansion of g(x) so long as the degree of the expansion is less than or equal to $ 2^{taylordepth} p $.
+
+\end{document}

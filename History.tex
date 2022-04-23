@@ -1,0 +1,109 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\part{Historical Evolution, Documentation}
+
+\chapter{Historical evolution}
+
+\section{Overview}
+
+The computer algebra system Maxima was developed, originally under the name Macsyma, from 1968 until 1982 at Massachusetts Institute of Technology (MIT) as part of project MAC. Together with Reduce it belongs to the first comprehensive CAS systems and was based on the most modern computational algorithms of the time. Macsyma was written in MacLisp, a pre-Common Lisp which had also been developed by MIT.
+
+\lz In 1982 the project was split. An exclusive commercial license was given to a company named Symbolics, Inc., created by Macsyma users and former MIT developers, while at the same time the United States Department of Energy (DOE) obtained a license for the source code of Macsyma to be made available (for a considerable fee) to academic and government institutions. This version is known as DOE Macsyma. When Symbolics got into financial problems, enhancement and support for the commercial Macsyma license was separated to a company named Macsyma, Inc., which continued development until 1999. Financial failure of
+this company has left the enhanced source code unavailable ever since. 
+
+\lz From 1982 until his death in 2001, William Schelter, professor of mathematics at the University of Texas, maintained a copy of DOE Macsyma. He ported Macsyma from MacLisp to Common Lisp. In 1999 he requested and received permission from the Department of Energy to publish the source code on the Internet under a GNU public license. In 2000 he initiated the open source software project at Sourceforge, where it has remained until today. In order to avoid legal conflicts with the still existing Macsyma trademark, the open source project was named Maxima. Since then, Maxima has been continuously improved.
+
+\section{MAC, MACLisp and MACSyMa: The project at MIT}
+
+\subsection{Initialization and basic design concepts}
+
+While \citem{MosesMPH}{}William A. Martin (1938-1981) had studied at MIT since 1960 and worked on his doctoral thesis under the computer science pioneer Marvin Minsky (1927–2016) since 1962, Joel Moses (born 1941) entered MIT in 1963 and also took up a doctorate under Marvin Minsky. After both having pursued various other projects in the area of artificial intelligence and symbolic computation, and after having completed their respective theses in 1967 (Joel Moses' thesis is entitled \emph{Symbolic integration}), while staying at MIT they joined their efforts and initialized, together with Carl Engelman, the development of a computer algebra system called \emph{Macsyma}, standing for \emph{project MAC's SYmbolic MAnipulator}. It was meant to be a combination of all their previous projects, an interactive system for solving symbolic mathematical problems designed for engineers, scientists and mathematicians, with the capability of two-dimensional display of formulas on the screen, an interpreter for step-by-step processing, and using the latest and most sophisticated algorithms in symbolic computation available at the time. 
+
+\lz Since both liked Lisp for its short and elegant notation and the universal and flexible list structure, and since they had used it in most of their previous projects, Lisp was going to be the language in which Macsyma was to be written.
+
+\lz Another conceptual decision based on previous experiences was to use multiple internal representations for mathematical expressions. Apart from the general representation there would be a rational function representation for manipulating ratios of polynomials in multiple variables, and another representation for power and Taylor series. These different representations can still be found in today's Maxima.
+
+\lz Bill Martin led the project. But Carl Engelman and his staff already left in 1969.
+
+\lz In \citem{MartFate}{}1971 the project was presented at a Symposium on Symbolic and Algebraic Manipulation by William Martin and Richard Fateman (born 1946), who had joined the project right from the beginning. He was a graduate student in the Division of Engineering and Applied Physics of Harvard, (1966-71) but found an opportunity to pursue research down the road in Cambridge, at MIT.
+He received his Ph.D. from Harvard, but de facto he had contributed to the Macsyma project. His thesis from 1971 \citem{FatemThe}{}on \emph{Algebraic Simplification} describes various components of Macsyma which he had implemented, in particular the simplifier and the pattern matcher. From 1971-1974 he taught at MIT (in Mathematics), before he left for University of California at Berkeley, in Computer Science. The Macsyma project now comprised a considerable number of doctoral students and post-doc staff members. But soon after this presentation William Martin left the project, too, which was then led by Joel Moses.
+
+\subsection{Major contributors}
+
+Major contributors to the Macsyma software were:
+
+\lz William \citem{wikMacsy}{}A. Martin  (front end, expression display, polynomial arithmetic) and Joel Moses (simplifier, indefinite integration: heuristic/Risch). Some code came from earlier work, notably Knut Korsvold's simplifier. Later major contributors to the core mathematics engine were:[citation needed] Yannis Avgoustis (special functions), David Barton (solving algebraic systems of equations), Richard Bogen (special functions), Bill Dubuque (indefinite integration, limits, power series, number theory, special functions, functional equations, pattern matching, sign queries, Gröbner, TriangSys), Richard Fateman (rational functions, pattern matching, arbitrary precision floating-point), Michael Genesereth (comparison, knowledge database), Jeff Golden (simplifier, language, system), R. W. Gosper (definite summation, special functions, simplification, number theory), Carl Hoffman (general simplifier, macros, non-commutative simplifier, ports to Multics and LispM, system, visual equation editor), Charles Karney (plotting), John Kulp, Ed Lafferty (ODE solution, special functions), Stavros Macrakis (real/imaginary parts, compiler, system), Richard Pavelle (indicial tensor calculus, general relativity package, ordinary and partial differential equations), David A. Spear (Gröbner), Barry Trager (algebraic integration, factoring, Gröbner), Paul Wang (polynomial factorization and GCD, complex numbers, limits, definite integration, Fortran and LaTeX code generation), David Y. Y. Yun (polynomial GCDs), Gail Zacharias (Gröbner) and Rich Zippel (power series, polynomial factorization, number theory, combinatorics).
+
+\subsection{The users' community}
+
+\lz A nationwide Macsyma users community, to which belonged, among others, DOE, NASA and the US Navy, but also companies like Eastman Kodak, had evolved in parallel to the ongoing development of the system at MIT, and they jointly used computers and system resources provided by ARPA and ARPANET. Significant funds for the project came from this user group, too. The Macsyma software had grown so large that always the newest version of a PDP-10 computer from DEC was needed to host it. Eventually, when DEC took a decision to change to the VAX architecture, the whole Macsyma project had to be turned over to follow it.
+
+\section{Users' conferences and first competition}
+
+\lz In 1977 Richard Fateman, meanwhile professor of Computer Science in Berkeley, organized the first one of what would become altogether three Macsyma Users' Conferences.
+
+\subsection{The beginning of Mathematica}
+
+Stephen \citem{ColeSMP}{}Wolfram, a physicist and former Macsyma user from Cal Tech, designed and presented his own commercial computer algebra system, called SMP, in 1981. This eventually led to the development of Mathematica.
+
+\lz In \citem{ytFatemM}{}May, 1993 Prof. Fateman gave a guest lecture at Stanford's CS50 introductory course in computer science held by Nancy Blachman. It contains a review of the Mathematica system and its underlying language as of 1993 including some illustrations of pitfalls in the design of such systems and Mathematica in particular, as well as comments on the use of Mathematica for introductory programming and system building. This lecture is now on YouTube.
+
+\subsection{Announcement of Maple}
+
+At \citem{CharMap}{}the 3. Macsyma Users' Conference, which took place 1984 in Schenectady, N.Y., home of General Electric Research Labs, another new and commercial CAS project, called Maple, was presented. Although strongly influence by Macsyma, it aimed at increasing the speed of computation and at the same time at reducing system memory size, so that it could operate on smaller and cheaper hardware and eventually on personal computers.
+
+\section{Commercial licensing of Macsyma}
+
+\subsection{End of the development at MIT}
+
+In 1981 the idea came up among Macsyma developers at MIT to form a company which should take over development of Macsyma and market the product commercially. This was possible due to the Bayh-Dole Act having recently passed the Congress. It allowed universities under certain conditions to sell licenses for their developments funded by the government to companies. The intention was to run the CAS on VAX-like machines and possibly smaller computers. Joel Moses, who had led the project since 1971, became increasingly engaged in an administrative career at MIT (he was provost from 1995-1998), leaving him little time to continue heading the Macsyma project. In 1982 the development of Macsyma at MIT had come to an end.
+
+\subsection{Symbolics, Inc. and Macsyma, Inc.}
+
+Symbolics, Inc., a company that had been founded by former MIT developers to produce LISP-based hardware, the so-called lisp machines, received an exclusive license for the Macsyma software in 1982. While the product started well on VAX-machines, the development of Macsyma for use on personal computers fell way behind the competitive commercial systems Maple and Mathematica.
+
+\lz Lisp-machines did not become the commercial success that had been expected, so Symbolics did not have the financial resources to continue the development of Macsyma. In 1992 Symbolics sold the license to a company called Macsyma, Inc. which continued to develop Macsyma until 1999. The last version of Macsyma is still for sale on the INTERNET (as of 2017) for Microsoft's Windows XP operating system. Later versions of Windows, however, are not supported. Macsyma for Linux is not available at all any more.
+
+\lz Nevertheless, mainly due to the work of a number of former MIT developers, like Jeff and Ellen Golden or Bill Gosper, \citem{GosperHP}{}who had switched to work for Symbolics, the computational capabilities of Macsyma were significantly enhanced during this period of commercial development from 1982-1999. These enhancements are not included in present Maxima, which is based on another branch of Macsyma development, split off in 1982 under the name of DOE Macsyma. If these enhancements from the Symbolics era were ever made available to Maxima in the future and could be integrated into the present system, maybe at least in parts, this could certainly result in a major improvement for the open source project.
+
+\section{Academic and US government licensing}
+
+\subsection{Berkeley Macsyma and DOE Macsyma}
+
+Richard Fateman had gone to Berkeley already in 1974. He continued to work on computers at MIT via ARPANET, predecessor of the Internet. He was interested in making Macsyma run on computers with larger virtual memory than the existing PDP-10, and when the VAX-11/780 was available he fought for Berkeley to get one. This achieved, his idea was to write a Lisp compiler compatible with MacLisp and which would run on Berkley UNIX. \emph{Franz Lisp} was created, the name having been invented spontaneously for its resemblance with \emph{Franz Liszt}; it was still a pre-Common Lisp. With these resources rapidly developed, Fateman had in mind to share usage of Macsyma with other universities around. But MIT resisted these efforts.
+
+\lz UC Berkeley finally reached an agreement with MIT to be allowed to distribute copies of Macsyma running on VAX UNIX. But this agreement could be recalled by MIT when a commercial license was to be sold by them, which eventually was done to Symbolics. About 50 copies of Macsyma were running on VAX systems at the time. But Fateman wanted to go on and ported Franz Lisp to Motorola 68000, so that Macsyma could run on prototypes of workstations by Sun Microsystems.
+
+\lz Around 1981, when the discussion about commercial licensing of Macsyma became more and more intense at MIT, Richard Fateman and a number of other Macsyma users asked the United States Department of Energy (DOE), one of the main and therefore influential sponsors of the Macsyma project, for help to make MIT allow the software to become available for free to everyone. What he had in mind was a kind of Berkeley BSD license, which does not, like a GNU general public license, prevent commercial exploitation of the software. On the contrary, such a license, which can be considered really \emph{free}, would not only allow everyone to use and enhance the software, but also to market their product. This license, for instance, allowed Berkeley students to launch startups with software developed at their school.
+
+\lz Finally, in 1982, at the same time when the commercial license was sold to Symbolics, DOE obtained a copy of the source code from MIT to be kept in their library. It was not made available to the public, its use remained restricted to academic and US government institutions. For a considerable fee these institutions could obtain the source code for there own development and use, but without the right to release it to others. This version of Macsyma is known as \emph{DOE Macsyma}. 
+
+\lz The version of the Macsyma source code given to DOE had been recently ported from MacLisp to NIL, \emph{New Implementation of Lisp}, another MIT development. Unfortunately, this porting was not really complete, MIT never finalized it, and the DOE version was substantially broken. All academic and government users fought with these defects. Some revisions were exchanged or even passed back to DOE, but basically everyone was left alone with having to find and fix the bugs.
+
+\subsection{William Schelter at the University of Texas}
+
+From 1982 until his sudden death in 2001 during a journey in Russia, William Schelter, professor of mathematics at the University of Texas in Austin, maintained one of these copies of DOE Macsyma. He ported Macsyma from MacLisp to Common Lisp, the Lisp standard which had been established in the meantime. Schelter, who was a very prolific programmer and a fine person, added major enhancements to DOE Macsyma.
+
+\section{GNU public licensing}
+
+In 1999, in the same year when development of commercial Macsyma terminated, DOE was about to close the NESC (National Energy Software Center), the library which distributed the DOE Macsyma source code. Before it was closed, William Schelter asked if he could distribute DOE Macsyma under GPL. No one else seemed to care for this software anymore and neither did DOE. Schelter received permission from the Department of Energy to publish the source code of DOE Macsyma under a GNU public license. In 2000 he initiated the open source software project at Sourceforge, where it has remained until today. In order to avoid legal conflicts with the still existing Macsyma trademark, the open source project was named \emph{Maxima}.
+
+\lz Since 1982, the source code of DOE Macsyma had remained completely separated from the commercial version of Macsyma. So the code of Maxima does not include any of the enhancements, revisions or bug fixings made by Symbolics and Macsyma Inc. between 1982 and 1999.
+
+\subsection{Maxima, the open source project since 2001}
+
+Judging from the number of downloads, Maxima today has about 150.000 users worldwide. New releases come about twice a year. Installers are provided for Linux and Windows (32 and 64 bit versions), but Maxima can also be built by anyone directly from the source code, on Linux, Windows or Macintosh. 
+
+\lz An enthusiastic group of volunteers, called the \emph{Maxima team} and led by Dr. Robert Dodier from Portland, Oregon, today maintains Maxima. Among the Lisp developers are Dr. Raymond Toy, Barton Willis (Prof. of Mathematics, University of Nebraska, Kearney), Kris Katterjohn, David Billinghurst and Volker van Nek. Gunter Königsmann (Erlangen, Germany) maintains the most popular user interface, wxMaxima, developed by Andrej Vodopivec (Slovenia). Wolfgang Dautermann (Graz, Austria) created a cross compiling mechanism for the Windows installers. Yasuaki Honda (Japan) developed the iMaxima interface running under Emacs. Mario Rodriguez (Spain) integrated and maintains the plotting software, Dr. Viktor T. Toth (Canada) is in charge of new releases and maintains the tensor packages. Jaime Villate (Prof. of Physics, University of Porto, Portugal), contributed to the graphical interface Xmaxima and designed the Maxima homepage. Many more could be mentioned who contribute to Maxima in one way or the other, for instance by writing and providing external software packages. For example, Dr. Dimiter Prodanov (Belgium) recently developed a package for Clifford algebras, Serge de Marre, also from Belgium, a package for solving Diophantine equations. Edwin (Ted) Woollett (Prof. of Physics, California State University, Long Beach) has spent years writing a highly sophisticated and free Maxima tutorial for applications in Physics, called \emph{Maxima by example}. Richard J. Fateman (Prof. of Computer Science, University of California at Berkeley) and Dr. Stavros Macrakis (Cambridge, Ma.), who already were chief designers and major contributors to the Macsyma software at MIT, are both still with the Maxima project today, giving valuable advice to both developers and users on Maxima's principal communication channel, the mailing list at Sourceforge.
+
+\section{Further reading}
+
+\emph{A review of Macsyma} \citem{FatemanRM}{}is a long article by Richard Fateman in \emph{IEEE Transactions on Knowledge and Data Engineering} from 1989, available as free PDF. Fateman writes in the abstract:
+
+\lz "We review the successes and failures of the Macsyma algebraic manipulation system from the point of view of one of the original contributors. We provide a retrospective examination of some of the controversial ideas that worked, and some that did not. We consider input/output, language semantics, data types, pattern matching, knowledge-adjunction, mathematical semantics, the user community, and software engineering. We also comment on the porting of this system to a variety of computing systems, and possible future directions for algebraic manipulation system-building."
+
+\lz What better inspiration for the following chapters can we wish for?
+
+\end{document}

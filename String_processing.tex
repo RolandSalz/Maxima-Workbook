@@ -1,0 +1,93 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Strings and string processing}
+
+\section{Data type string}\label{S1}
+
+\lz \hyt{"}{\tcr{\emph{"string"}}} \hfill \tcr{[matchfix operator]}\index{'', double qoute marks}
+
+\lz A \emph{string} is a character sequence which is not evaluated as an expression. There is a specific data type \emph{string} in Maxima. A string is entered by enclosing it in double quote marks ". Maxima will display a string without double quote marks, unless the option variable \hyl{stringdisp}{\emph{stringdisp}} has been set to \emph{true}. There is no data type for a character in Maxima; a single character is represented as a one-character
+string.
+
+\lz Strings may contain any characters, including embedded tab, newline, and carriage return characters. The sequence $\backslash$" is recognized as a literal double quote, and $\backslash \backslash$ as a literal backslash. When backslash appears at the end of a line, the backslash and the line termination (either newline or carriage return and newline) are ignored, so that the string continues with the next line. No other special combinations of backslash with another character are recognized; when backslash appears before any character other than ", \, or a line termination, the backslash is ignored. There is no way to represent a special character (such as tab, newline, or carriage return) except by embedding the literal character in the string.
+
+\section{Transformation between expression and string}
+
+An expression and a string may look alike,\footnote{In particular, when \hyl{stringdisp}{\emph{stringdisp}} is \emph{false}, as by default, and strings are not enclosed in double quotation marks.} but they have to be distinguished. While an expression can be evaluated by Maxima and used for computation, a string cannot. When the user types in an input expression, basically it is nothing but a string at first. On parsing it, Maxima will transform it into an expression that can be evaluated. On the other hand, a Maxima program may build up a string by concatenation to form an expression which is to be parsed and evaluated. In this case, however, it will remain a string until we explicitly transform it into an expression. We can also transform expressions into strings, for instance in order to use them as the elements for building up a new string by concatenation,  to be transformed to a new expression.
+
+\subsection{Expression $ \rightarrow $ string}
+
+\lz \hyt{string}{\tcr{\emph{string (expr)}}} \hfill \tcr{[function]}\index{string}
+
+\lz Converts the expression \emph{expr} to Maxima’s linear notation just as if it had been typed in. The return value is a string.
+
+\lz Functions \hyl{concat}{\emph{concat}} and \emph{sconcat} also convert their arguments which are expressions into strings (or symbols).
+
+\subsection{String $ \rightarrow $ expression}
+
+\lz \hyt{parse\_string}{\tcr{\emph{parse\_string (str)}}} \hfill \tcr{[function of \emph{stringproc}]}\index{parse\_string}
+
+\lz Parses the string \emph{str} as a Maxima expression, but does not evaluate it. The string str may or may not have a terminator (dollar sign \$ or semicolon ;). Only the first expression is parsed, if there is more than one.
+
+\lzz \hyt{eval\_string}{\tcr{\emph{eval\_string (expr)}}} \hfill \tcr{[function of \emph{stringproc}]}\index{eval\_string}
+
+\lz Parses the string \emph{str} as a Maxima expression and then evaluates it. The string str may or may not have a terminator (dollar sign \$ or semicolon ;). Only the first expression is parsed and evaluated, if there is more than one.
+
+\section{Display of strings}
+
+\lz \hyt{stringdisp}{\tcr{\emph{string (expr)}}} \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{stringdisp}
+
+\lz When \emph{stringdisp} is \emph{true}, strings are displayed enclosed in double quote marks. Otherwise, quote marks are not displayed. See \hyl{concat}{\emph{concat}} for an example. \emph{stringdisp} is always \emph{true} when displaying a function definition.
+
+\section{Manipulating strings}
+
+\lz \hyt{concat}{\tcr{\emph{concat ($ arg_1,\dots,arg_n $)}}} \hfill \tcr{[function]}\index{concat}
+
+\hyt{sconcat}{\tcr{\emph{sconcat ($ arg_1,\dots,arg_n $)}}} \hfill \tcr{[function]}\index{sconcat}
+
+\lz \emph{concat} concatenates its arguments, which can be expressions, symbols or strings. Arguments are evaluated and must evaluate to atoms.\footnote{Function \hyl{string}{\emph{string}} can be used to transform an argument evaluating to a non-atomic expression into a string.} The return value is a symbol if the first argument is a symbol, and a string otherwise. The single quote ' preceeding an argument prevents its evaluation.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:5$
+<@\tcr{(\%i1)}@   str:concat(1+1,a,string(b+c),"we(");
+<@\tcr{(\%o2)}@			     25c+bwe(
+<@\tcr{(\%i3)}@   stringdisp:true$
+<@\tcr{(\%i4)}@   str;
+<@\tcr{(\%o4)}@			    "25c+bwe("
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lz \emph{sconcat} does the same as \emph{concat} with the only differences, that arguments need not evaluate to atoms and that the return value is always a string. 
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   i:3$
+<@\tcr{(\%i2)}@   sconcat("x[",i,"]:",expand((x+y)^2));
+<@\tcr{(\%o2)}@			 x[3]:y^2+2*x*y+x^2 
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lz A symbol concatenated by \emph{concat} can be assigned a value and used in computation. The :: (double-colon) assignment operator can be used to evaluate not only the right hand side, but also the left hand side of the assignment.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   concat(c,6)::7+1$
+<@\tcr{(\%i2)}@   c6;
+<@\tcr{(\%o2)}@			        8
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\section{Package \emph{stringproc}}
+
+The package \emph{stringproc} contains a large number of sophisticated functions for string processing. It is loaded automatically by Maxima on using one of its functions.
+
+\end{document}

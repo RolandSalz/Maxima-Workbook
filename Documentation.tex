@@ -1,0 +1,141 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Documentation}
+
+\section{Introduction}
+
+It is our feeling that Maxima's documentation can be improved. Both as a user and even more as a developer one would like to have much more information at hand than what the official Maxima manual, the other internal documentation that comes with the Maxima installation, and the comments in Maxima's program code provide. 
+
+\lz Especially in the beginning, the user will often not understand the information in the manual easily. It contains a concise description of the Maxima language, here abbreviated MaximaL, but primarily as a reference directed to the very experienced user. It takes years to really understand and efficiently use a CAS. The beginner will need further explanation of all the implications of the condensed information from the official manual, more examples and a better understanding of the overall structure of the complex Maxima language (it comprises of thousands (!) of different functions and option variables).
+
+\lz Numerous external tutorials, some of them generally covering Maxima's mathematical capabilities, others restricted to applications of Maxima in the most important fields, such as Physics, Engineering or Economics, have been written and are of immense help for the beginner. Some of them are so comprehensive that they come close to a reference manual. Our intention is not to write a tutorial, but a manual, directed to a broader audience than the existing one, ranging from the still unexperienced user to the Lisp developer.
+
+\lz A considerable number of user interfaces have been developed, and the user will be quite lost about judging which one will best fit his needs.
+
+\lz Users and developers wanting to build Maxima themselves will find little documentation of the build process, especially if they want to work under Windows.
+
+\lz Even for an experienced Lisp developer the structure of Maxima's huge amount of program code will not be easy to understand. There is almost no documentation besides the program code, and this code itself is poorly documented, having been revised by many hands over many years. There are inconsistencies, forgotten sections, relics of ancient Lisp dialects and lots of bugs. The complicated process of Maxima's dynamic scoping and the information flow within the running system are hard to keep track of. Very few of Maxima's few Lisp developers really overlook it completely.
+
+\lz This obvious lack of documentation motivated us to start the Maxima Workbook project. But before diving into it, let us  get an overview about exactly what sources and what extend of information we have available already. As a first reference, the user should consult the bibliography contained in \href{http://maxima.sourceforge.net/documentation.html}{Maxima's official documentation page}.
+
+\section{Official documentation}
+
+\subsection{Manuals}
+
+\subsubsection{English current version}
+
+The \citem{MaxiManE}{}official Maxima manual in English is updated with each new Maxima release. It is included in HTML format, as PDF and as the online help in each Maxima installer or tarball. It can also be built when building Maxima from source code. Our Maxima Workbook is primarily based on this documentation.
+
+\subsubsection{German version from 2011}
+
+A \citem{MaxiManD}{}German version of the manual exists. It is also distributed with the Maxima installers and tarballs. Note, however, that it reflects the status of release 5.29, it is currently not being updated. Compared to the English version, it contains numerous introductins, additional comments and examples and a much more complete index. It was translated/written by Dieter Kaiser in 2011. Many of his amendments and improvements have been incorporated in the Maxima Workbook. The author wishes to express his thanks to Dieter Kaiser for his pioneer work in improving the Maxima documentation.
+
+\section{External documentation}
+
+\subsection{Manuals}
+
+\subsubsection{Paulo Ney de Souza: The Maxima Book, 2004}
+
+Paulo \citem{SouzaMaxB}{}Ney de Souza has written, together with Richard Fateman, Joel Moses and Cliff Yapp, one of the most comprehensive Maxima manuals. Unfortunately, the project has not been finalized and is no longer updated, the last version dating from 2004. In particular, the Maxima Book contains detailed information about different user interfaces, including installation instructions.
+
+\subsection{Tutorials}
+
+The tutorials presented first are those not focused on a specific field of application. The order is according to their date of publication.
+
+\subsubsection{Michel Talon: Rules and Patterns in Maxima, 2019}
+
+This \citem{TalonRP}{}tutorial of some 20 pages facilitates access to understanding how to use Maxima's pattern matching facilities, which remains difficult from reading the section from Maxima's manual alone. It is particularly useful for someone who furthermore wants to understand how the pattern matcher works internally. Hints to example applications from mathematics and physics are given at the end. Altogether, a very substantial work written by someone deeply interested in Maxima.
+
+\subsubsection{Jorge Alberto Calvo: Scientific Programming, 2018}
+
+\emph{Scientific} \citem{CalvoSP}{}\emph{Programming. Numeric, Symbolic, and Graphical Computing with Maxima} uses Maxima to illustrate some methods of numeric and symbolic computation for application in mathematically oriented sciences, and at the same time the general use of computer programming.
+
+\subsubsection{Zachary Hannan: wxMaxima for Calculus I + II, 2015}
+
+This \citem{HanMC1}{} \citem{HanMC2}{}tutorial by Zachary Hannan from Solano Community College, Vallejo, Ca., although having wxMaxima in its title, really covers the CAS Maxima, viewed through the wxMaxima user interface. Two volumes of about 160 pages each cover basic methods of using Maxima to solve problems from Calculus. Volumes on other fields of application are to follow.
+
+\subsubsection{Wilhelm Haager: Computeralgebra mit Maxima: Grundlagen der Anwendung und Programmierung, 2014}
+
+Wilhelm \citem{HaagCAM}{}Haager's major work on the CAS Maxima was published 2014 in German at Hanser Verlag. This tutorial has over 300 pages and comes close to a comprehensive manual of the Maxima language. For example, rule-based programming is coverd in a separate chapter, data transfer to other programs and the implications of Lisp are treated. A very valuable publications that one would like to see available in English, too.
+
+\subsubsection{Wilhelm Haager: Grafiken mit Maxima, 2011}
+
+A \citem{HaagGM}{}tutorial in German on graphics with Maxima of about 35 pages, in the typical, well-edited Haager style.
+
+\subsubsection{Roland Stewen: Maxima in Beispielen, 2013}
+
+Roland \citem{StewenMT}{}Stewen from Rahel Varnhagen Kolleg in Hagen, Germany, has written a Maxima tutorial in German of some 400 pages primarily addressed to highschool students. It is available online in html format and can be downloaded as PDF. The document is clearly written, well structured, contains a detailed table of content, an index, a bibligraphy, and can be highly recommended for the intended purpose.
+
+\subsection{Mathematics}
+
+\subsubsection{G. Jay Kerns: Multivariable Calculus with Maxima, 2009}
+
+Originating \citem{KernsMVC}{}from material the author compiled for a university course in Calculus, this document of some 50 pages grew up to become a real introduction to Maxima. A concise and very illustrative work for the undergraduate level.
+
+\subsection{Physics}
+
+\subsubsection{Edwin L. (Ted) Woollett: "Maxima by Example", 2018, and "Computational Physics with Maxima or R"}
+
+This \citem{WoolMbE}{}tutorial by Edwin L. (Ted) Woollett, Prof. Emeritus of Physics and Astronomy at California State University (CSULB), is free online-material and certainly one of the best and most inspiring tutorials around, and Ted's work is still continuing! Here we find valuable advice and many examples from the viewpoint of a computational physicist, and some impressive, highly sophisticated worked-out applications.
+
+\subsubsection{Timberlake and Mixon: Classical Mechanics with Maxima, 2016}
+
+In \citem{TimbCMM}{}their series \emph{Undergraduate Lecture Notes in Physics}, Springer in 2016 published \emph{Classical Mechanics with Maxima}, written by Todd Keene Timberlake, Prof. of Physics and Astronomy, and J. Wilson Mixon, Jr., Prof. Emeritus of Economics, both at Berry College, Mount Berry, Georgia. This elegantly written, professionally styled and therefore well readable book contains on some 260 pages applications of Maxima to problems from classical mechanics at the undergraduate level. After opening the view to a wide range of problems for symbolical computation from the field of Newtonian mechanics, the book focuses on the programming facilities inherent in the Maxima language and on the methodology and techniques of how to transform sophisticated algorithms for the symbolical or numerical solution of problems from mathematical physics into Maxima. Graphical representations of the data obtained are always in the center of interest, too, and throughout the book vividly illustrate the results from computations.
+
+\subsubsection{Viktor Toth: Tensor Manipulation in GPL Maxima}
+
+Written \citem{TothTenM}{}by Viktor T. Toth, theoretical physicist, member of the Maxima team, and responsible for maintaining the tensor packages, this highly recommended paper published in arxiv gives a comprehensive description of the present abilities of Maxima's tensor packages for applications in physics, in particular general relativity.
+
+\subsection{Engineering}
+
+\subsubsection{Andreas Baumgart: Toolbox Technische Mechanik, 2018}
+
+Andreas \citem{BaumgTM}{}Baumgart from Hochschule für Angewandte Wissenschaften, Hamburg, has created an extensive and very well designed internet site for illustrating how problems in engineering mechanics can be solved with Maxima and Matlab. The site is in German.
+
+\subsubsection{Wilhelm Haager: Control Engineering with Maxima, 2017}
+
+This \citem{HaagCEM}{}well-illustrated tutorial of some 35 pages has been written by Wilhelm Haager from HTL St. Pölten, Austria. It shows applications of Maxima in the field of Electrical Engineering.
+
+\subsubsection{Tom Fredman: Computer Mathematics for the Engineer, 2014}
+A \citem{FredmCME}{}free tutorial of 135 pages covering both Maxima and Octave has been written by Tom Fredman of Abo Akademi University, Finnland for applications in Engineering. Its bibliography contains a number of other sources for Maxima applied to engineering.
+
+\subsubsection{Gilberto Urroz: Maxima: Science and Engineering Applications, 2012}
+
+The \citem{UrrozMSE}{}extensive tutorial by Gilberto Urroz used to be available online for free, but now comes as a self-published paperback for a very moderate price, considering its size of 438 pages. It contains a large number of applications in engineering.
+
+\subsection{Economics}
+
+\subsubsection{Hammock and Mixon: Microeconomic Theory and Computation, 2013}
+
+J. Wilson \citem{HammMTC}{}Mixon, Jr., Professor Emeritus of Economics at Berry College, Mount Berry, Georgia, published \emph{Microeconomic Theory and Computation. Applying the Maxima Open-Source Computer Algebra System} together with Michael R. Hammock in 2013 with Springer. This extensive work of about 385 pages shows how Maxima can be applied to solve a wide variety of symbolical and numerical problems that arise in the field of economics and finance, from exploring empirical relationships between variables up to modeling and analyzing microeconomic systems. This is the most comprehensive book written so far which demonstrates the usefulness of Maxima in Economic Sciences. 
+
+\subsubsection{Leydold and Petry: Introduction to Maxima for Economics, 2011}
+
+A \citem{LeydoldME}{}detailed Maxima tutorial of some 120 pages with applications to Economics has been written by Josef Leydold and Martin Petry from Institute for Statistics and Mathematics, WU Wien. It is based on version 5.25 and was last published in 2011. It is available online as PDF.
+
+\section{Articles and Papers}
+
+A very comprehensive bibliography can be found in \cite{SouzaMaxB}.
+
+\subsection{Publications by Richard Fateman}
+
+Richard J. Fateman, Prof. Emeritus of University of California at Berkeley, Department of Computer Science, who has accompanied this CAS for 50 years, has published a large number of articles and other papers on Macsyma/Maxima. Subjects range from specific technical and algorithmic problems to reflections about the history of Macsyma's development and its place in the evolution of CAS in general. Most references can be found on his Berkeley homepage
+
+\lz \centering \href{http://people.eecs.berkeley.edu/~fateman/}{http://people.eecs.berkeley.edu/~fateman/}. 
+
+\lz A considerable number of very interesting papers is available for free download at
+
+\lz \centering \href{https://people.eecs.berkeley.edu/~fateman/papers/}{https://people.eecs.berkeley.edu/~fateman/papers/}. \flushleft
+
+\section{Comparison with other CAS}
+
+\subsection{Tom Fredman: Computer Mathematics for the Engineer, 2014}
+A \citem{FredmCME}{}free tutorial of 135 pages covering both Maxima and Octave has been published in 2014 by Tom Fredman of Abo Akademi University, Finnland. 
+
+\section{Internal and program documentation}
+
+\section{Mailing list archives}
+
+\end{document}

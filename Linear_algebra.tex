@@ -1,0 +1,865 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Linear Algebra}
+
+\section{Introduction}
+
+\subsection{Operation in total or element by element}
+
+A clear conceptional distinction should be made between operations which apply to a structure (vector, matrix, etc.) as a whole, and operations which apply to all the elements of a structure individually, i.e. element by element, joining the results to a structure of the original kind to be returned. Examples of operations in total are scalar product or matrix inversion, while examples of operations element by element are scalar multiplication of a vector or matrix, or integration of a vector or matrix, if their elements are functions.
+
+\section{Dot operator: general non-commutative product}\label{LA5}
+
+\lz \hyt{.}{\tcr{\emph{a . b}}} \hfill \tcr{[infix operator]}\index{.}
+
+\lz Maxima's \emph{dot operator} \index{dot operator}"." represents the general \emph{non-commutative product}, \index{product!non-commutative}here also called \emph{dot product}. \index{dot product}It can be used e.g. for the matrix product, section \ref{LA4}, the scalar product, section \ref{LA3}, or the tensor product of vectors, section\ref{LA2}. But the dot operator is applicable as a non-commutative product to any other kind of object, too.
+
+\lz In order to clearly distinguish the dot operator from the decimal point of a floating point number, it is advisable to always leave a blank before and after the dot. 
+
+\subsection{Exponentiation}
+
+\lz \hyt{\textasciicircum\textasciicircum}{\tcr{\emph{a\textasciicircum\textasciicircum 2}}} \hfill \tcr{[infix operator]}\index{\textasciicircum\textasciicircum}
+
+\lz The \textasciicircum\textasciicircum \ operator is the exponentiation of the non-commutative product ".", just as \textasciicircum \  is the exponentiation of the \emph{commutative product} \index{product!commutative}"*". In 2D display mode, the exponent is enclosed in angle brackets.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a.a;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} a^{<2>} \]
+\vspace{-10mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   b*b;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} b^2 \]
+\color{black}
+\end{small} \leqn
+\vspace{-4mm} 
+
+\subsection{Option variables for the dot operator}
+
+The dot operator is controlled by a large number of flags. They influence the rules which govern its simplification.
+
+\lzz \hyt{dot0nscsimp}{\tcr{\emph{dot0nscsimp}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{dot0nscsimp}
+
+\lz When \emph{dot0nscsimp} is \emph{true}, a non-commutative product of zero and a nonscalar term is simplified to a commutative product.
+
+\lzz \hyt{dot0simp}{\tcr{\emph{dot0simp}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{dot0simp}
+
+\lz When \emph{dot0simp} is \emph{true}, a non-commutative product of zero and a scalar term is simplified to a commutative product.
+
+\lzz \hyt{dot1simp}{\tcr{\emph{dot1simp}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{dot1simp}
+
+\lz When \emph{dot1simp} is \emph{true}, a non-commutative product of one and another term is simplified to a commutative product.
+
+\lzz \hyt{dotassoc}{\tcr{\emph{dotassoc}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{dotassoc}
+
+\lz When dotassoc is \emph{true}, an expression \emph{(A.B).C} simplifies to \emph{A.(B.C)}.
+
+\lzz \hyt{dotconstrules}{\tcr{\emph{dotconstrules}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{dotconstrules}
+
+\lz When dotconstrules is \emph{true}, a non-commutative product of a constant and another term is simplified to a commutative product. Turning on this flag effectively turns on \emph{dot0simp}, \emph{dot0nscsimp}, and \emph{dot1simp} as well.
+
+\lzz \hyt{dotdistrib}{\tcr{\emph{dotdistrib}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{dotdistrib}
+
+\lz When \emph{dotdistrib} is \emph{true}, an expression \emph{A.(B+C)} simplifies to \emph{A.B + A.C}.
+
+\lzz \hyt{dotexptsimp}{\tcr{\emph{dotexptsimp}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{dotexptsimp}
+
+\lz When \emph{dotexptsimp} is \emph{true}, an expression \emph{A.A} simplifies to $ A^{<2>} $, which is \emph{A\textasciicircum \textasciicircum 2}.
+
+\lzz \hyt{dotident}{\tcr{\emph{dotident}}} \qquad \tcr{default: \emph{1}} \hfill \tcr{[option variable]}\index{dotident}
+
+\lz \emph{dotident} is the value returned by $ X^{<0>} $, which is X\textasciicircum\textasciicircum 0.
+
+
+\lzz \hyt{dotscrules}{\tcr{\emph{dotscrules}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{dotscrules}
+
+\lz When \emph{dotscrules} is \emph{true}, an expression \emph{A.SC} or \emph{SC.A} simplifies to \emph{SC*A}, and \emph{A.(SC*B)} simplifies to \emph{SC*(A.B)}.
+
+\section{Vector}
+
+\subsection{Representations and their internal data structure}\label{LA6}
+
+Maxima does not have a specific data structure for vectors. A vector can be represented as a list or as a matrix of either one column or one row. The following shows the internal data structure of these representations. Note that a matrix internally is a special list of MaximaL lists, each of them representing one row, see section \ref{LA9}.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   u:[x,y,z];
+<@\tcr{(\%o1)}@			    [x, y, z]
+<@\tcr{(\%i2)}@   :lisp $U
+	((MLIST SIMP) x y z)
+<@\tcr{(\%i3)}@   v:covect(u);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \left( \begin{array} {c} x \\ y \\ z \end{array} \right) \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   :lisp $V
+	(($MATRIX SIMP) ((MLIST SIMP) x) ((MLIST SIMP) y) ((MLIST SIMP) z))
+<@\tcr{(\%i5)}@   w:transpose(u);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \left( \begin{array} {ccc} x & y & z \end{array} \right) \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   :lisp $W
+	(($MATRIX SIMP) ((MLIST SIMP) x y z))
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\subsection{Option variables for vectors}\label{LA8}
+
+There are only a few specific option variables for vectors. Most option variables relate to either matrices or lists. See section \ref{LA7} for option variables applicable to matrices, and section \ref{DS1} for those on lists. Thus, behavior of vector operations may depend on the vector representations, see section \ref{LA6}. Row and column vectors are matrices.
+
+\lzz \hyt{vect\_cross}{\tcr{\emph{vect\_cross}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{vect\_cross}
+
+\lz When \emph{vect\_cross} is \emph{true}, the vector product defined as the operator \textasciitilde in share package \emph{vect} may be differentiated as in diff(x\textasciitilde y,t). Note that loading \emph{vect} will set \emph{vect\_cross} to \emph{true}.
+
+\subsection{Construct, transform and transpose a vector}\label{LA1}
+
+A list can be constructed by entering the elements inside of square brackets, separated by commas. 
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   v:[x,y,z];
+<@\tcr{(\%o1)}@			    [x, y, z]
+\end{lstlisting}
+
+\lz Special functions for creating lists (e.g. \emph{makelist} and \emph{create\_list}) are described in section \ref{DS1}.
+
+\lzz \hyt{CVect}{\tcr{\emph{CVect ($ x_1, x_2, \dots, x_n $)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{CVect} \\
+\hyt{vect}{\tcr{\emph{vect ($ x_1, x_2, \dots, x_n $)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{vect} \\
+\hyt{RVect}{\tcr{\emph{RVect ($ x_1, x_2, \dots, x_n $)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{RVect}
+
+\lz CVect and vect (synonym, kept for backward compatibility) construct a column vector which is a matrix of one column and n rows, containing the arguments. RVect constructs a row vector which is a matrix of one row and n columns, containing the arguments.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   CVect(x,y,z);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \left( \begin{array} {c} x \\ y \\ z \end{array} \right) \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   RVect(x,y,z);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \left( \begin{array} {ccc} x & y & z \end{array} \right) \]
+\color{black}
+\end{small}
+
+\lz \hyt{MakeList}{\tcr{\emph{MakeList (x,n)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{MakeList}
+
+\hyt{MakeCVect}{\tcr{\emph{MakeCVect (x,n)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{MakeCVect}
+
+\hyt{MakeRVect}{\tcr{\emph{MakeRVect (x,n)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{MakeRVect}
+
+\lz These functions create a vector in the respective representation with the components being the elements $ 1,\dots,n $ of an \emph{undeclared array} named x. The first argument of this function must not be bound and must not have any properties. Note that MakeList is not identical with system function makelist, but it makes use of it.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   x:MakeList(x,3);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} [x_1, x_2, x_3] \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   y:MakeCVect(y,3);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \begin{pmatrix} y_1 \\ y_2 \\ y_3 \end{pmatrix} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   z:MakeRVect(z,3);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \begin{pmatrix} z_1 & z_2 & z_3 \end{pmatrix} \]
+\color{black}
+\end{small}
+
+\vspace{-4mm} System function \hyl{genmatrix}{\emph{genmatrix}} can be used to construct a column or row vector from an \emph{undeclared array}, too, but with symbolic elements having two indices instead of one, as for matrices.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   x:genmatrix(x,3,1);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \left( \begin{array} {c} x_{1,1} \\ x_{2,1} \\ x_{3,1} \end{array} \right) \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   x:genmatrix(x,1,3);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \left( \begin{array} {ccc} x_{1,1} & x_{1,2} & x_{1,3} \end{array} \right) \]
+\color{black}
+\end{small}
+
+The following functions achieve transformation between different representations.
+
+\lzz \hyt{columnvector}{\tcr{\emph{columnvector (L)}}} \hfill \tcr{[function of \emph{eigen}]}\index{columnvector} \\
+\hyt{covect}{\tcr{\emph{covect (L)}}} \hfill \tcr{[function of \emph{eigen}]}\index{covect}
+
+\lz \emph{columnvector} takes a list L and returns a column vector which is a matrix of one column and \emph{length (L)} rows, containing the elements of the list L. \emph{covect} is a synonym for \emph{columnvector}.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   covect([x,y,z]);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \left( \begin{array} {c} x \\ y \\ z \end{array} \right) \]
+\color{black}
+\end{small}
+
+\lz \hyt{transpose}{\tcr{\emph{transpose (v)}}} \hfill \tcr{[function]}\index{transpose}
+
+\lz Transposes a list or a row vector into a column vector, and a column vector into a row vector. For the more general transposition of a matrix, see \hyl{transpose}{\emph{transpose (M)}}.
+
+\lzz \hyt{Transpose}{\tcr{\emph{Transpose (v)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{Transpose}
+
+\lz Transposes a list or a row vector into a column vector, and a column vector into a list.
+
+\lzz \hyt{VtoList}{\tcr{\emph{VtoList (v)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{VtoList}
+
+\lz Transforms a vector of any kind into a list. If v is already a list, it will be returned.
+
+\lzz \hyt{VtoCVect}{\tcr{\emph{VtoCVect (v)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{VtoCVect}
+
+\lz Transforms a vector of any kind into a column vector. If v is already a column vector, it will be returned. Note that \emph{ transpose(VtoList(v)) } will also transform a vector of any kind into a column vector.
+
+\lzz \hyt{VtoRVect}{\tcr{\emph{VtoRVect (v)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{VtoRVect}
+
+\lz Transforms a vector of any kind into a row vector. If v is already a row vector, it will be returned. Note that \emph{ transpose(transpose(VtoList(v))) } will also transform a vector of any kind into a row vector.
+
+\subsection{Dimension of a vector}
+
+System function \emph{length(v)} can be used to determine the dimension of a column vector or list. We should not talk about the \emph{length} of a vector here, because this term is used for the \hyperlink{vector norm}{\emph{norm}} of a vector.
+
+\lzz \hyt{VDim}{\tcr{\emph{VDim(v)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{VDim}
+
+\lz Returns the dimension of a vector, independently of its representation.
+
+\subsection{Indexing: refering to the elements of a vector}
+
+While elements of a list are addressed simply by providing the number of the element in square brackets, elements of a column vector or a row vector (as being matrices) are addressed by two arguments in square brackets, separated by a comma, where the first argument specifies the row and the second one the column.
+
+\subsection{Arithmetic operations and other MaximaL functions applicable to vectors}
+
+\lz \hyt{listarith}{\tcr{\emph{listarith}}} \hfill \tcr{[option variable]}\index{listarith}
+
+\lz Scalar multiplication of a vector and arithmetic operations between vectors work element by element, if the flag \emph{listarith} is \emph{true}, which is the default. They are only possible between vectors of the same type, with the exception that lists and column vectors can be combined. In this case, the result will be a column vector. 
+
+\lzz \hyt{distribute\_over}{\tcr{\emph{distribute\_over}}} \hfill \tcr{[option variable]}\index{distribute\_over}
+
+\lz Many other computational or simplifying/manipulating MaximaL functions can be applied to vectors, which means that they operate element by element. The flags \hyl{doallmxops}{\emph{doallmxops}} and \emph{distribute\_over} must be \emph{true} (default). Examples are diff, factor, expand.
+
+\subsection{Scalar product}\label{LA3}
+
+\subsubsection{Dot operator}
+
+The \emph{scalar product}, \emph{dot product}, or \emph{inner product} \index{product!dot, inner, scalar}$ v \cdot w $ of two real valued vectors v and w, which, in case of a list representation of the vectors, is equal to \emph{sum (v[i]*w[i], i, 1, length(v))} can be built with the \emph{dot operator} for the non-commutative matrix product, see sect. \ref{LA4}. The arguments need to have the same dimension, but can be of any representation, except for the combination $ c.r $, where c is a column vector and r is a row vector or a list. This combination, instead, will return the \emph{tensor product} of two vectors, see sect. \ref{LA2}. Hence, this operator is non-commutative with respect to the combination of vector representations. For a commutative way (with respect to the combination of vector representations) of computing the scalar product see the operator \hyl{SP}{\emph{SP}}. The non-commutative scalar product of complex valued vectors can be computed with \emph{SP}, too, of with functions \emph{inprod} or \emph{Inprod}.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   powerdisp:true$
+<@\tcr{(\%i2)}@   v:MakeCvect(v,3)$  w:MakeCvect(w,3)$
+<@\tcr{(\%i3)}@   v . w;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o3)}} v_1w_1 + v_2w_2 + v_3w_3 \]
+\color{black}
+\end{small}
+
+\vspace{-4mm} The dot operator is controlled by a number of flags which are described in section \ref{LA5}.
+
+\subsubsection{innerproduct, inprod, Inprod}
+
+\lzz \hyt{innerproduct}{\tcr{\emph{innerproduct (v,w)}}} \hfill \tcr{[function of \emph{eigen}]}\index{innerproduct} \\
+\hyt{inprod}{\tcr{\emph{inprod (v,w)}}} \hfill \tcr{[function of \emph{eigen}]}\index{inprod}
+
+\lz Returns the inner product (also called the scalar product or dot product) of two vectors v and w, which can be lists of equal length, both column or both row vectors of equal dimension. The return value is
+\begin{equation*}
+	conjugate(v) \; . \; w,
+\end{equation*}
+where "." is the dot operator. This function can be applied to complex and real valued vectors.
+
+\lzz \hyt{Inprod}{\tcr{\emph{Inprod (v,w)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{Inprod}
+
+\lz Returns, under the same conditions as inprod,
+\begin{equation*}
+	v \; . \; conjugate(w),
+\end{equation*}
+which is equal to $ -inprod(v,w) $.
+
+\subsubsection{SP}
+
+\lzz \hyt{SP}{\tcr{\emph{v SP w}}} \hfill \tcr{[infix operator of \emph{rs\_vector}]}\index{SP}
+
+\lz The infix operator \emph{SP} computes the scalar product of two complex or real valued vectors of equal dimension, independently of their representations. It is a commutative version (with respect to the combination of vector representations) of the \emph{dot operator} for real valued vectors and of \emph{Inprod} for complex valued vectors. Internally, both vectors are transformed to column vectors first, then the dot operator or Inprod is employed. By this procedure all flags which control the dot operator stay valid. 
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   v:MakeCvect(v,3)$  w:MakeRvect(w,3)$
+<@\tcr{(\%i2)}@   c SP r;
+\end{lstlisting}
+\vspace{-5.5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} v_1w_1 + v_2w_2 + v_3w_3 \]
+\color{black}
+\end{small}
+
+\vspace{-6mm} \subsection{Tensor product}\label{LA2}
+
+The non-commutative \emph{tensor product} $ v \otimes w $ can be computed with the \emph{dot operator}, see section \ref{LA3}, if the first argument is a column vector of dimension m and the second argument is either a row vector or a list of dimension n. The arguments need not have the same dimension. The result will be an $ m \times n $ matrix. For a description of the flags that control the dot operator, see section \ref{LA5}. For a way to compute the tensor product independently of the vector representations see the operator \hyl{TP}{TP}.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   v:MakeCvect(v,3)$  w:MakeRvect(w,3)$
+<@\tcr{(\%i2)}@   v . w;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \left( \begin{array} {ccc} v_1w_1 & v_2w_2 & v_1w_3 \\ v_2w_1 & v_2w_2 & v_2w_3 \\ v_3w_1 & v_3w_2 & v_3w_3 \end{array} \right) \]
+\color{black}
+\end{small}
+
+\vspace{-4mm} \lzz \hyt{TP}{\tcr{\emph{v TP w}}} \hfill \tcr{[infix operator of \emph{rs\_vector}]}\index{TP}
+
+\lz The infix operator \emph{TP} computes the tensor product of two vectors of any representation. The arguments need not have the same dimension. TP returns an $ m \times n $ matrix. Internally, the first argument is transformed to a column vectors, the second one to a row vector, then the dot operator is employed. By this procedure all flags which control the dot operator stay valid.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   v:MakeCvect(v,3)$  w:MakeCvect(w,3)$
+<@\tcr{(\%i2)}@   v TP w;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \left( \begin{array} {ccc} v_1w_1 & v_2w_2 & v_1w_3 \\ v_2w_1 & v_2w_2 & v_2w_3 \\ v_3w_1 & v_3w_2 & v_3w_3 \end{array} \right) \]
+\color{black}
+\end{small}
+
+\vspace{-4mm} \subsection{Norm and normalization}
+
+\lz \hyt{VNorm}{\tcr{\emph{VNorm($ v \glangle ,ip \grangle $)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{VNorm}
+
+\lz Computes the \emph{separation sqrt(abs(v.v))} of a vector v supplied as the first argument. The separation is a generalization of the norm, applicable even for an inner product which is not positive definite. If no second argument is present, for the inner product function SP is used, which computes the norm independently of the representation of v. If the second argument is present, it denotes the function to be used instead. \emph{ip} has to be a prefix function of two arguments. If an infix function is to be used instead, it must be enclosed in double quotes, e.g. "." for the dot operator.
+
+\begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   v:MakeCvect(v,3)$
+<@\tcr{(\%i2)}@   VNorm(v,".");
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \sqrt{v_1^2+v_2^2+v_3^2} \]
+\color{black}
+\end{small}
+
+\hyt{Normalize}{\tcr{\emph{Normalize (v $ \glangle $,ip $ \grangle $)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{Normalize} \\
+\hyt{NormalizeColumns}{\tcr{\emph{NormalizeColumns}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{NormalizeColumns}
+
+\lz Function \emph{Normalize} Normalizes a column vector, row vector, list or matrix (column-wise, 
+if the global flag \emph{NormalizeColumns} is \emph{true}, row-wise otherwise) by dividing each vector by its separation (e.g. norm) using function \emph{VNorm}. If a function different from \emph{SP} shall be used by VNorm for the inner product, it has to be supplied as the second argument to \emph{Normalize}. If it is an infix operator, it has to be enclosed in double quotes. The return value will be of the same type as obj and have a separation equal to 1 (matrix: column-wise resp. row-wise). 
+
+\begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   X:matrix([2,1,1],[0,3,0],[-1,0,4]);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \begin{pmatrix} 2 & 1 & 1 \\
+0 & 3 & 0 \\
+-1 & 0 & 4 \end{pmatrix} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   Normalize(X);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \begin{pmatrix}\frac{2}{\sqrt{5}} & \frac{1}{\sqrt{2}\, \sqrt{5}} & \frac{1}{\sqrt{17}}\\
+0 & \frac{3}{\sqrt{2}\, \sqrt{5}} & 0\\
+-\frac{1}{\sqrt{5}} & 0 & \frac{4}{\sqrt{17}}\end{pmatrix} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   Normalize(X), NormalizeColumns:false;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \begin{pmatrix}\frac{\sqrt{2}}{\sqrt{3}} & \frac{1}{\sqrt{2}\, \sqrt{3}} & \frac{1}{\sqrt{2}\, \sqrt{3}}\\
+0 & 1 & 0\\
+-\frac{1}{\sqrt{17}} & 0 & \frac{4}{\sqrt{17}}\end{pmatrix} \]
+\color{black}
+\end{small}
+
+\hyt{unitvector}{\tcr{\emph{unitvector (v)}}} \hfill \tcr{[function of \emph{eigen}]}\index{unitvector} \\
+\hyt{uvect}{\tcr{\emph{uvect (v)}}} \hfill \tcr{[function of \emph{eigen}]}\index{uvect}
+
+\lz Returns the normalized vector $ v / norm(v) $, probably using eigen's function \emph{innerproduct} for the inner product. This means that it can be used for the standard Euclidean or complex (positive definite) scalar product only.
+
+\subsection{Vector equations}
+
+\subsubsection{Extract component equations from a vector equation}
+
+\lz \hyt{ExtractCEquations}{\tcr{\emph{ExtractCequations (arg)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{ExtractCEquations}
+
+\lz Extracts the component equations from a vector equation \emph{arg}. The vectors on the right and on the left side of the equation may be of any, but must be of identical representation, with the exception that a combination of list and column vector is possible, too. After the simplfications done at evaluation time of \emph{arg}, this vector equation has to be condensed to only one vector on each side. Use all kinds of simplification functions first, so that this is guaranteed. ExtractCEquations returns a list of VDim(arg) component equations which e.g. can be forwarded to function \emph{solve}.
+
+\begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   u:MakeCvect(u,3)$  v:MakeCvect(v,3)$
+<@\tcr{(\%i2)}@   w:makelist(w[i],i,1,3)$
+<@\tcr{(\%i3)}@   ExtractCEquations(u+v=w);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} [{v_1}+{u_1}={w_1},{v_2}+{u_2}={w_2},{v_3}+{u_3}={w_3}] \]
+\color{black}
+\end{small}
+
+\vspace{-6mm} \subsection{Vector product}
+
+Standard Maxima has no operator to compute the vector or cross product between two 3-dimensional vectors.
+
+\lzz \hyt{VP}{\tcr{\emph{v VP w}}} \hfill \tcr{[infix operator of \emph{rs\_vector}]}\index{VP}
+
+\lz The infix operator \emph{VP} computes the vector product of two vectors of any representation, but dimension three, returning a column vector.
+
+\begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   v:MakeCvect(v,3)$  w:MakeCvect(w,3)$
+<@\tcr{(\%i3)}@   v VP w;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \left( \begin{array} {c} v_2 w_3 - w_2 v_3 \\ v_1 w_3 - w_1 v_3 \\ v_1 w_2 - w_1 v_2 \end{array} \right) \]
+\color{black}
+\end{small}
+
+\vspace{-6mm} \subsection{Mixed product and double vector product}
+
+These products, of course, can be computed by combining the operations of scalar and vector product. The mixed product is
+
+\begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   v:MakeCvect(v,3)$  w:MakeCvect(w,3)$  u:MakeCvect(u,3)$
+<@\tcr{(\%i4)}@   expand(u SP (v VP w));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} u_1v_2w_3-v_1u_2w_3-u_1w_2v_3+w_1u_2v_3+v_1w_2u_3-w_1v_2u_3 \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   expand((u VP v) SP w));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o5)}} u_1v_2w_3-v_1u_2w_3-u_1w_2v_3+w_1u_2v_3+v_1w_2u_3-w_1v_2u_3 \]
+\color{black}
+\end{small}
+
+\vspace{-4mm} And for the double vector product we get
+
+\begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i7)}@   expand(u VP (v VP w));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o7)}} \begin{pmatrix} v_{1}\,u_{3}\,w_{3}-w_{1}\,u_{3}\,v_{3}+v_{1}\,u_{2}\,w_{2	}-w_{1}\,u_{2}\,v_{2} \\ v_{2}\,u_{3}\,w_{3}-w_{2}\,u_{3}\,v_{3}-u_{		1}\,v_{1}\,w_{2}+u_{1}\,w_{1}\,v_{2} \\ -u_{2}\,v_{2}\,w_{3}-u_{1}\,v_{1}\,w_{3}+u_{2}\,w_{2}\,v_{3}+u_{1}\,w_{1}\,v_{3} 
+\end{pmatrix} \]
+\color{black}
+\end{small}\vspace{-4mm}
+
+\subsection{Basis}\label{LA10}
+
+In order to avoid problems arising from the way Maxima implements indexed data objects, i.e. by using undeclared arrays, it is advisable instead to define a basis by using a matrix and to implement any operation on the basis as a whole as an operation on this matrix. Although a matrix in Maxima is structured by rows, it is preferable to consider the individual vectors as columns, as it is usually done in mathematics, e.g. for a basis transformation matrix. In this case a vector cannot be addressed by simply indexing the matrix, its representation being a list. But this representation of a vector is seldomly used and does not balance the drawback of mentally having to transpose a row-wise representation of the basis. It is easy to transform the matrix into a list of column vectors. In the following example, the individual column vectors can be addressed either as $ ei, \, i=1,2,3 $, or as $ e[i] $. In the last line, the metric tensor (Gram's matrix, positive definite representation matrix) of the Euclidean scalar product ist generated from this particular basis.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   E:matrix([1,0,0],[0,1,0],[0,0,1]);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix} \]
+\vspace{-6mm}\begin{lstlisting}
+<@\tcr{(\%i2)}@   e:makelist(concat(e,i)::col(E,i),i,1,3);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} [\begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix}, \begin{pmatrix} 0 \\ 1 \\ 0 \end{pmatrix}, \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix}] \]
+\vspace{-6mm}\begin{lstlisting}
+<@\tcr{(\%i3)}@   e1;
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix} \]
+\vspace{-6mm}\begin{lstlisting}
+<@\tcr{(\%i4)}@   e[1];
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix} \]
+\vspace{-5mm}\begin{lstlisting}
+<@\tcr{(\%i5)}@   genmatrix(lambda([x,y],e[x] . e[y]),3,3);
+\end{lstlisting}
+\vspace{-3mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix} \]
+\color{black}
+\end{small}
+
+\vspace{-4mm}\section{Matrix}
+
+\subsection{Internal data structure}\label{LA9}
+
+A matrix internally is a list of MaximaL lists, each of them representing one row. Nevertheless, a matrix has its own special data type in Maxima. Thereby Maxima can distinguish between a matrix and any other 2-dim. list structure.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   M:matrix([1,2,3],[4,5,6],[7,8,9]);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \begin{pmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{pmatrix} \]
+\vspace{-6mm}\begin{lstlisting}
+<@\tcr{(\%i2)}@   :lisp |$m|
+	(($MATRIX SIMP) ((MLIST SIMP) 1 2 3) ((MLIST SIMP) 4 5 6) ((MLIST SIMP) 7 8 9))
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\subsubsection{matrixp}
+
+\lz \hyt{matrixp}{\tcr{\emph{matrixp (expr)}}} \hfill \tcr{[function]}\index{matrixp}
+
+\lz Returns \emph{true} if \emph{expr} is a matrix, otherwise \emph{false}.
+
+\lz \begin{small} \color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   matrixp(M);
+<@\tcr{(\%o3)}@			      true
+\end{lstlisting}
+\color{black} \end{small}
+
+\subsection{Indexing: Refering to the elements of a matrix}
+
+Square brackets are used for indexing matrices, that is to refer to its elements. Indices start with 1. The first argument ist the row, the second the column. See the \hyl{ex1}{example} below.
+
+\lz \begin{small} \color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   M[2,1];
+<@\tcr{(\%o4)}@				4
+\end{lstlisting}
+\color{black} \end{small}
+
+\subsection{Option variables for matrices}\label{LA7}
+
+A number of option variables enable, disable and control different kinds of matrix operations. See section \ref{DS1} for option variables on lists, and section \ref{LA8} for those on vectors.
+
+\lzz \hyt{doallmxops}{\tcr{\emph{doallmxops}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{doallmxops}
+
+\lz When \emph{doallmxops} is \emph{true}, all operations relating to matrices are carried out. When it is \emph{false}, the settings of the individual dot switches govern which operations are performed.
+
+\lzz \hyt{domxmxops}{\tcr{\emph{domxmxops}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{domxmxops}
+
+\lz When \emph{domxmxops} is \emph{true}, all matrix-matrix or matrix-list operations are carried out, but not scalar-matrix operations; if this switch is false, such operations are not carried out.
+
+\lzz \hyt{domxnctimes}{\tcr{\emph{domxnctimes}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{domxnctimes}
+
+\lz When \emph{domxnctimes} is \emph{true}, non-commutative products of matrices are carried out.
+
+\lzz \hyt{doscmxops}{\tcr{\emph{doscmxops}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{doscmxops}
+
+\lz When \emph{doscmxops} is \emph{true}, scalar-matrix operations are carried out.
+
+\lzz \hyt{doscmxplus}{\tcr{\emph{doscmxplus}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{doscmxplus}
+
+\lz When \emph{doscmxplus} is \emph{true}, scalar-matrix operations yield a matrix result. This switch is not subsumed under \emph{doallmxops}.
+
+\lzz \hyt{matrix\_element\_add}{\tcr{\emph{matrix\_element\_add}}} \qquad \tcr{default: \emph{+}} \hfill \tcr{[option variable]}\index{matrix\_element\_add}
+
+\lz \hyt{matrix\_element\_mult}{\tcr{\emph{matrix\_element\_mult}}} \qquad \tcr{default: \emph{*}} \hfill \tcr{[option variable]}\index{matrix\_element\_mult}
+
+\lz \hyt{matrix\_element\_transpose}{\tcr{\emph{matrix\_element\_transpose}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{matrix\_element\_transpose}
+
+\lzz \hyt{ratmx}{\tcr{\emph{ratmx}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{ratmx}
+
+\lz When \emph{ratmx} is \emph{false}, matrix addition, subtraction, and multiplication as well as function \emph{determinant} are performed in the representation of the matrix elements and cause the result of matrix inversion to be returned in general representation.
+
+\lz When \emph{ratmx} is \emph{true}, the operations mentioned above are performed in \hyl{CRE}{CRE form} and the result of matrix inverse is returned in CRE form. Note that this may cause the elements to be expanded (depending on the setting of \emph{ratfac}) which might not always be desirable.
+
+\lzz \hyt{scalarmatrixp}{\tcr{\emph{scalarmatrixp}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{scalarmatrixp}
+
+\lz When \emph{scalarmatrixp} is \emph{true}, then whenever a 1 x 1 matrix is produced as a result of computing the dot product of matrices, it is simplified to a scalar, being the sole element of the matrix. When \emph{scalarmatrixp} is \emph{all}, then all 1 x 1 matrices are simplified to scalars. When \emph{scalarmatrixp} is \emph{false}, 1 x 1 matrices are never simplified to scalars.
+
+\lz Known bug: The value returned by computing the dot product v.v of a column or row vector or a list v with v\textasciicircum \textasciicircum 2 is a 1 x 1 matrix, even if \emph{scalarmatrixp} is \emph{true}. In case of v being a list, it is even a 1 x 1 matrix when \emph{scalarmatrixp} is \emph{all}.
+
+\subsection{Build a matrix}
+
+There are several ways to build a matrix. It can be entered as a whole or it can be constructed column by column, row by row, or even by joining submatrices. A matrix can also be extracted from a bigger matrix. Special types of matrices like identity or diagonal matrices can easily be built with the respective specialized Maxima functions. \hyl{genmatrix}{\emph{Genmatrix}} allows for creating a matrix with a lambda function.
+
+\subsubsection{Enter a matrix}
+
+\lz \hyt{matrix}{\tcr{\emph{matrix ($ L_{r_1},\dots, L_{r_m}$)}}} \hfill \tcr{[function]}\index{matrix}
+
+\lz This function can be used to enter an $ m \times n $ matrix. Each row is given as a MaximaL list and must contain the same number n of elements. In wxMaxima the menu \emph{Algebra / Enter matrix} can be used to facilitate the input.
+
+\lz \begin{small} \color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   M:matrix([1,2,3],[4,5,6],[7,8,9]);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \begin{pmatrix}1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9\end{pmatrix} \]
+ \vspace{-4mm}\color{black} \end{small}
+
+\subsubsection{Append colums, rows or whole matrices}
+
+A matrix can be constructed by starting with a column or row vector and appending columns at the right or rows at the bottom one by one. In the same way, columns or rows can be appended to any existing matrix, too. The following functions can even be used to append whole matrices at the right or bottom of an existing matrix.
+
+\lzz \hyt{addcol}{\tcr{\emph{addcol ($ M, L_{c_1} \, | \, M_1,\dots, L_{c_k} \, | \, M_k$)}}} \hfill \tcr{[function]}\index{addcol}
+
+\hyt{addrow}{\tcr{\emph{addrow ($ M, L_{r_1} \, | \, M_1,\dots, L_{r_k} \, | \, M_k $)}}} \hfill \tcr{[function]}\index{addrow}
+
+\lz \emph{addcol ($ M, L_{c_1},\dots, L_{c_k} $)} appends at the right of the $ m \times n  $ matrix M the k columns containing the elements from lists $ L_{c_i}, \; i=1,\dots,k $, each having m elements.
+
+\lz \emph{addrow ($ M, L_{r_1},\dots, L_{r_k} $)} appends at the bottom of the $ m \times n  $ matrix M the k rows containing the elements from lists $ L_{r_i}, \; i=1,\dots,k $, each having n elements.
+
+\lz \emph{addcol ($ M, M_1,\dots, M_k $)} / \emph{addcol ($ M, M_1,\dots, M_k $)} append at the right / bottom of the $ m \times n  $ matrix M the k matrices $ M_i, \; i=1,\dots,k $, each having m rows / n columns.
+
+\lz Appending matrices and columns with \emph{addcol} can even be arbitrarily combined. Analogously, this holds for \emph{addrow}.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   M:Cvect(a,b,c);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \left( \begin{array} {c} a \\ b \\ c \end{array} \right) \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   N:addcol(M,[d,e,f]);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \left( \begin{array} {cc} a & d \\ b & e \\ c & f \end{array} \right) \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   addcol(N,N);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \left( \begin{array} {cccc} a & d & a & d \\ b & e & b & e\\ c & f & c & f \end{array} \right) \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   addcol(N,[1,2,3],N,[4,5,6]);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \left( \begin{array} {cccccc} a & d & 1 & a & d & 4 \\ b & e & 2 & b & e & 5 \\ c & f & 3 & c & f & 6 \end{array} \right) \]
+\color{black}
+\end{small} \vspace{-4mm} 
+
+\subsubsection{Extract a submatrix, column or row}
+
+\lz \hyt{submatrix}{\tcr{\emph{submatrix ($ \langle r_1,\dots,r_k, \rangle M \langle, c_1,\dots,c_l \rangle $)}}} \hfill \tcr{[function]}\index{submatrix}
+
+\lz Returns a new matrix constructed from the $ m \times n $ matrix M, with rows $ r_1,\dots,r_k $ and/or columns $ c_1,\dots,c_l $ deleted, row indices being $ 1 \leq r_i \leq k $ and column indices $ 1 \leq c_j \leq n $. Note that indices preceeding M are interpreted as rows, while those following M are interpreted as columns. The respective indices don't have to be in numerical order.
+
+\lz \hyt{row}{\tcr{\emph{row (M,i)}}} \hfill \tcr{[function]}\index{row}
+
+\lz Returns the i-th row of the matrix M. The return value is a row vector (which is a matrix).
+
+\lz \hyt{col}{\tcr{\emph{col (M,j)}}} \hfill \tcr{[function]}\index{col}
+
+\lz Returns the j-th column of the matrix M. The return value is a column vector (which is a matrix).
+
+\subsubsection{Build special matrices}
+
+\paragraph{Identity matrix}\mbox{}
+
+\lzz \hyt{ident}{\tcr{\emph{ident (n)}}} \hfill \tcr{[function]}\index{ident}
+
+\lz Returns an $ n \times n $ identity matrix.
+
+\paragraph{Zero matrix}\mbox{}
+
+\lzz \hyt{zeromatrix}{\tcr{\emph{zeromatrix (m,n)}}} \hfill \tcr{[function]}\index{zeromatrix}
+
+\lz Returns an $ m \times n $ zero matrix.
+
+\paragraph{Diagonal matrix}\mbox{}
+
+\lzz \hyt{diagmatrix}{\tcr{\emph{diagmatrix (n,x)}}} \hfill \tcr{[function]}\index{diagmatrix}
+
+\lz Returns an $ n \times n $ diagonal matrix, each element of the diagonal containing x, which can be any kind of expression. If x is a matrix, it is not copied; all diagonal elements refer to the same instance of x.
+
+\subsubsection{Genmatrix}
+
+\lz \hyt{genmatrix}{\tcr{\emph{genmatrix ($ a, i_2, j_2 \glangle ,i_1 \glangle ,j_1 \grangle \grangle $)}}} \hfill \tcr{[function]}\index{genmatrix}
+
+\lz This function creates a matrix 
+\begin{equation*}
+	\begin{pmatrix}
+	a_{i_1 j_1} & \cdots & a_{i_1 j_2} \\
+	\vdots & & \vdots \\
+	a_{i_2 j_1} & \cdots & a_{i_2 j_2} \\
+	\end{pmatrix}
+\end{equation*}
+from argument $ a $, which must be either a \emph{declared array} (created by \emph{array}, but not by \emph{make\_array}), an \emph{undeclared array}, an \hyl{array function}{\emph{array function}} or a \hyl{lambda function}{\emph{lambda function}} of two arguments, taking $ a[i_1, j_1] $ as the first and $ a[i_2, j_2] $ as the last element of the matrix. If $ j_1 $ is omitted, it is assumed to be equal to $ i_1 $. If both $ j_1 $ and $ i_1 $ are omitted, both are assumed to be equal to 1.
+
+\lz An example with an \emph{undeclared array} is given in section \ref{LA1}, with a lambda function in section \ref{LA10}.
+
+\subsection{Transform between representations}
+
+Transformation between different representations of a matrix can be achieved with the help of Maxima functions \emph{apply}, \emph{makelist}, and \emph{map} or \emph{maplist}. We give three examples.
+
+\subsubsection{List of sublists -> matrix}
+
+A list of sublists can be transformed into a corresponding matrix in the following way. Note that a sublist corresponds to a row.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   L:[[1,0,0],[0,1,0],[1,2,3]];
+<@\tcr{(\%o1)}@		     [[1,0,0],[0,1,0],[1,2,3]]
+<@\tcr{(\%i2)}@   M:apply(matrix,L);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \begin{pmatrix}1 & 0 & 0 \\ 0 & 1 & 0 \\ 1 & 2 & 3 \end{pmatrix} \]
+\color{black}
+\end{small} \vspace{-4mm}
+
+\subsubsection{Matrix -> list of column vectors}
+
+A matrix can be transformed into a list of column vectors, see example in sect. \ref{LA10}. In the following example we use the transpose of matrix M generated above.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   N:makelist(col(transpose(M),i),i,1,3);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} [\begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix}, \begin{pmatrix} 0 \\ 1 \\ 0 \end{pmatrix}, \begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix}] \]
+\color{black}
+\end{small}
+
+\subsubsection{List of column vectors -> list of sublists}
+
+A list of column vectors can be transformed into a list of lists.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   map(VtoList,N);
+<@\tcr{(\%o4)}@		     [[1,0,0],[0,1,0],[1,2,3]]
+\end{lstlisting}
+\color{black}
+\end{small} \vspace{-4mm}
+
+\subsection{Functions applied element by element}
+
+\subsubsection{Arithmetic operations and other MaximaL functions applicable to matrices}
+
+The operations + (addition), - (subtraction), * (multiplication), and / (division), are carried out element by element when the operands are two matrices, a scalar and a matrix, or a matrix and a scalar. 
+
+\lz The operation \^ \ 
+% Achtung: Genau so schreiben!
+(exponentiation, equivalently **) is carried out element by element, if the operands are a scalar and a matrix or vice versa, but not if the operands are two matrices.
+
+\lz Differentiation and integration of a matrix is also performed element by element, each element being considered as a function.
+
+\subsubsection{Mapping arbitrary functions and operators}
+
+\lz \hyt{matrixmap}{\tcr{\emph{matrixmap ($ f,M_1,\dots,M_n $)}}} \hfill \tcr{[function]}\index{matrixmap}
+
+\lz Applies an arbitrary function or operator f of n arguments to matrices $ M_1,\dots,M_n $ element by element, returning a matrix with element [i,j] equal to $ f(M_1[i,j], \dots, M_1[i,j]) $. The number of matrices has to correspond to the number of arguments required by f. \emph{matrixmap} is a version of function \emph{map} being applicable to matrices (which \emph{map} is not). See there for more explanations and examples.
+
+\lz In the following example, f is unbound at first and as such can have an arbitrary number of arguments, always returning a noun expression.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   M:matrix([1,2,3],[4,5,6],[7,8,9])$  matrixmap(f,M);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \begin{pmatrix} f(1) & f(2) & f(3) \\ f(4) & f(5) & f(6) \\ f(7) & f(8) & f(9) \end{pmatrix} \]
+\vspace{-4mm}\begin{lstlisting}
+<@\tcr{(\%i3)}@   N:matrix([a,b,c],[d,e,f],[g,h,i])$  matrixmap(f,M,N);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \begin{pmatrix} f(1,a) & f(2,b) & f(3,c) \\ f(4,d) & f(5,e) & f(6,f) \\ f(7,g) & f(8,h) & f(9,i) \end{pmatrix} \]
+\vspace{-4mm}\begin{lstlisting}
+<@\tcr{(\%i5)}@   f(x):=2*x$  matrixmap(f,M);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \begin{pmatrix} 2 & 4 & 6 \\ 8 & 10 & 12 \\ 14 & 16 & 18 \end{pmatrix} \]
+\vspace{-4mm}\begin{lstlisting}
+<@\tcr{(\%i7)}@   matrixmap("=",N,M);
+\end{lstlisting}
+\vspace{-3.5mm} \[\tag*{\tcr{\ttfamily (\%o7)}} \begin{pmatrix} a=1 & b=2 & c=3 \\ d=4 & e=5 & f=6 \\ g=7 & h=8 & i=9 \end{pmatrix} \]
+\color{black}
+\end{small}
+
+\lz \hyt{fullmapl}{\tcr{\emph{fullmapl ($ f,M_1,\dots,M_n $)}}} \hfill \tcr{[function]}\index{fullmapl}
+
+\lz \emph{fullmapl} is a version of function \emph{fullmap} being applicable to lists and matrices. See section \ref{DS1} for explanations and examples.
+
+\subsection{Transposition}
+
+\lz \hyt{transpose}{\tcr{\emph{transpose (M)}}} \hfill \tcr{[function]}\index{transpose}
+
+\lz Transposes matrix M. \emph{transpose} can also be used to transform a list into a column vector. For the general transposition of vectors, see \hyl{transposev}{\emph{transpose (v)}} and \hyl{Transpose}{\emph{Transpose}}.
+
+\subsection{Inversion}
+
+Matrix inversion can be carried out with function \emph{invert}, or directly by matrix exponentiation with -1. Both methods are equivalent.
+
+\lz \hyt{invert}{\tcr{\emph{invert (M)}}} \hfill \tcr{[function]}\index{invert}
+
+\lz \emph{invert(M)} is equivalent to \emph{M\textasciicircum\textasciicircum$ - $1 }, that is $ M^{<-1>} $. The inverse of the matrix M is returned. The inverse is computed via the LU decomposition. 
+
+\lz When \emph{ratmx} is true, elements of M are converted to \hyl{CRE}{\emph{canonical rational expressions (CRE)}}, and the elements of the return value are also CRE. When \emph{ratmx} is false, elements of M are not converted to a common representation. In particular, \emph{float} and \emph{bigfloat} elements are not converted to rationals. 
+
+\lz When \emph{detout} is true, the determinant is factored out of the inverse. The global flags \emph{doallmxops} and \emph{doscmxops} must be false to prevent the determinant from being absorbed into the inverse. \emph{xthru} can multiply the determinant into the inverse. 
+
+\lz \emph{invert} does not apply any simplifications to the elements of the inverse apart from the default arithmetic simplifications. \emph{ratsimp} and \emph{expand} can apply additional simplifications. In particular, when M has polynomial elements, \emph{expand(invert(M))} might be preferable.
+
+\subsection{Product}
+
+\subsubsection{Non-commutative matrix product}\label{LA4}
+
+The the non-commutative matrix product \index{matrix product}can be built with the dot operator, see section \ref{LA5}. The number of rows of argument \emph{a} has to equal the number of columns of \emph{b}. The dot operator is controlled by a number of flags which are described in section \ref{LA5}.
+
+\subsection{Rank}
+
+\lz \hyt{rank}{\tcr{\emph{rank (M)}}} \hfill \tcr{[function]}\index{rank}
+
+\lz Computes the rank of the matrix M. That is, the order of the largest non-singular
+subdeterminant of M.
+
+\lz \emph{rank} may return the wrong answer, if it cannot determine that a matrix element equivalent to zero is indeed so.
+
+\subsection{Gram-Schmidt procedure}
+
+\subsubsection{Orthogonalize}
+
+\lz \hyt{gramschmidt}{\tcr{\emph{gramschmidt ($ M \glangle, ip \grangle $)}}} \hfill \tcr{[function of \emph{eigen}]}\index{gramschmidt}
+
+\lz Carries out the Gram-Schmidt orthogonalization procedure on a set of vectors, given either as the rows (!) of a matrix \emph{M} or a list of lists, the sublists each having the same number of elements. \emph{M} is not modified by gramschmidt. 
+
+\lz The second argument \emph{ip}, if present, denotes the function employed by gramschmidt for the inner product; otherwise the function \hyl{innerproduct}{innerproduct} will be used. \emph{ip} has to be a prefix function of two arguments. If an infix function is to be used instead, it must be enclosed in double quotes, e.g. \emph{"."} for the dot operator.
+
+\lz The return value is a list of lists, the sublists of which are orthogonal and span the same space as x. If the dimension of the span of x is less than the number of rows or sublists, some sublists of the return value are zero. factor is called at each stage of the algorithm to simplify intermediate results. As a consequence, the return value may contain factored integers.
+
+\subsubsection{Orthonormalize}
+
+\lz \hyt{GramSchmidt}{\tcr{\emph{GramSchmidt ($ M \glangle, ip \grangle $)}}} \hfill \tcr{[function of \emph{rs\_vector}]}\index{gramschmidt}
+
+\lz Carries out the Gram-Schmidt orthonormalization procedure on a set of vectors, given either as the columns of a matrix M, a list of column vectors or a list of lists, the sublists each having the same number of elements. M is not modified by GramSchmidt.
+
+\lz GramSchmidt calls function gramschmidt.
+
+\lz The return value is a matrix, the vectors being its columns. The vectors are not only orthogonal and span the same space as x, but they are also normalized.
+
+\subsection{Triangularize}\label{LA11}
+
+\lz \hyt{triangularize}{\tcr{\emph{triangularize (M)}}} \hfill \tcr{[function]}\index{triangularize}
+
+\lz Returns the upper triangular form of the matrix M, as produced by Gaussian elimination.\footnote{This has nothing to do with triangularization of endomorphisms.} The return value is the same as from \emph{echelon}, except that the leading nonzero coefficient in each row is not normalized to 1.
+
+\lz The \citem{wikDefin}{6}matrix M is \emph{positive definite}, \index{matrix!positive definite}iff all diagonal elements of \emph{triangularize(M)} are positive. No statement on other forms of definiteness can be made. See math sect. \ref{M-Ma9i}.
+
+\subsection{Eigenvalue, eigenvector, diagonalize}
+
+\lz \hyt{eigenvalues}{\tcr{\emph{eigenvalues (M)}}} \hfill \tcr{[function of \emph{eigen}]}\index{eigenvalues}
+
+\hyt{eivals}{\tcr{\emph{eivals (M)}}} \hfill \tcr{[function of \emph{eigen}]}\index{eivals}
+
+\lz \emph{eivals} is a synonym for \emph{eigenvalues}. This function from the \emph{eigen} package returns a list of two sublists. The first sublist gives the eigenvalues of the matrix M, while the second one gives the algebraic multiplicities of the eigenvalues in the corresponding order. The package \emph{eigen.mac} is loaded automatically when \emph{eigenvalues} or \emph{eigenvectors} is called. This can also be done manually by \emph{load (eigen)}.
+
+\lz \emph{eigenvalues} calls the Maxima function \emph{solve} to find the roots of the characteristic polynomial of the matrix. Sometimes \emph{solve} may not be able to find the roots of the polynomial; in this case some other functions in this package (except \emph{innerproduct}, \emph{unitvector}, \emph{columnvector} and \emph{gramschmidt}) will not work. Sometimes \emph{solve} may find only a subset of the roots of the polynomial. This may happen when the factoring of the polynomial contains polynomials of degree 5 or more. In such cases a warning message is displayed and only the roots found and their corresponding multiplicities are returned.
+
+\lz In some cases the eigenvalues found by solve may be complicated expressions. In \emph{casus irreducibilis} \footnote{See thread maxima-discuss from Sept. 8, 2020.} the return value may contain complex terms which are not obvious to be zero. However, it may be possible to simplify the result using other functions. For example, the following real symmetric matrix should have real eigenvalues only.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   M: matrix([5/4,1/2,1/2],[1/2,5,-1],[1/2,-1,2]);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \begin{pmatrix}\frac{5}{4} & \frac{1}{2} & \frac{1}{2}\\
+\frac{1}{2} & 5 & -1\\
+\frac{1}{2} & -1 & 2\end{pmatrix} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   float(ratsimp(rectform(eigenvalues(M))));
+<@\tcr{(\%o2)}@   [[2.124542032328667,0.7946677527382047,5.330790214933128],[1.0,1.0,1.0]]
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lzz \hyt{charpoly}{\tcr{\emph{charpoly (M,x)}}} \hfill \tcr{[function]}\index{charpoly}
+
+\lz Returns the characteristic polynomial for the matrix M with respect to variable x, i.e. \emph{determinant (M $ - $ diagmatrix (length (M), x))}.
+
+\section{Determinant}
+
+\lz \hyt{determinant}{\tcr{\emph{determinant (M)}}} \hfill \tcr{[function]}\index{determinant}
+
+\lz Computes the determinant of matrix M. The form of the result depends upon the setting of the flag \hyl{ratmx}{\emph{ratmx}}. There is a special routine for computing the determinant of sparse matrices which is called when both \emph{ratmx} and \hyl{sparse}{\emph{sparse}} are \emph{true}.
+
+\subsection{Option variables for \emph{determinant}}
+
+Some option variables for matrices, see section \ref{LA7}, apply to \emph{determinant}, too.
+
+\lzz \hyt{sparse}{\tcr{\emph{sparse}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{sparse}
+
+\lz When \emph{sparse} and \emph{ratmx} are \emph{true}, \emph{determinant} will use special routines for computing sparse determinants.
+
+\end{document}

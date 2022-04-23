@@ -1,0 +1,422 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\part{Maxima Programming}
+
+\chapter{Compound statements}\label{F5}
+
+\section{Sequential and block}
+
+\subsection{Sequential}
+
+\tcr{\emph{($ expr_1,\dots,expr_n $)}} \hfill \tcr{[matchfix operator]}\index{sequential}
+
+\lz A number of statements can be enclosed in parentheses and separated by commas. Such a list of \emph{sub-statements} is the most simple form of a compound statement We call it a \hyl{sequential}{\emph{sequential}}. Maxima evaluates the sub-statements in sequence and only returns the value of the last one.
+
+\subsection{Block}
+
+\hyt{block}{\tcr{\emph{block ([$ v_1,\dots,v_n $], $ expr_1,\dots,expr_m $)}}} \hfill \tcr{[function]}\index{block}
+
+\tcr{\emph{block ([$ v_1,\dots,v_n $], local ($ v_1,\dots,v_n $), $ expr_1,\dots,expr_m $)}}
+
+\lz A \emph{block} allows to make variables \emph{$ v_1,\dots, v_m $} local to the sequence of sub-statements \emph{$ expr_1,\dots,expr_m $}. If these variables (symbols) are already bound, block saves their current values upon entry to the block and then unbinds the symbols so that they evaluate to themselves. The local variables may then be bound to arbitrary values within the block. When the block is exited, the saved values are restored, and the values assigned within the block are lost.
+
+\lz Note that the \emph{block} declaration of the first line will make variables \emph{$ v_1,\dots, v_m $} local only with respect to their values. However, in Maxima, just like in Lisp, a large number of qualities can be attributed to symbols by means of \hyl{property}{\emph{properties}}. Properties of \emph{$ v_1,\dots, v_m $} are not made local by a plain block declaration! They stay global, which means that properties already assigned to these symbols on entry to the block will remain inside of the block, and properties assigned to these symbols inside of the block will not be removed on exiting the block. In order to make symbols \emph{$ v_1,\dots, v_m $} local to the block with respect to their properties, too, they have to be declared with function \hyl{local}{\emph{local}} inside of the block. For example, some declarations of a symbol are implemented as properties of that symbol, including \emph{:=, array, dependencies, atvalue, matchdeclare, atomgrad, constant, nonscalar, assume}. \emph{local} saves and removes such declarations, if they exist, and makes declarations done within the block effective only inside of the block; otherwise such declarations done within a block are actually global declarations.
+
+\lz A block may appear within another block. Local variables are established each time a new block is evaluated. Local variables appear to be global to any \emph{enclosed blocks}. If a variable is non-local in a block, its value is the value most recently assigned by an \emph{enclosing block}, if any, otherwise, it is the value of the variable in the global environment. This policy may coincide with the usual understanding of \hyl{dynamic scope}{\emph{dynamic scope}}.
+
+\lz The value of the block is the value of its last sub-statement, or the value of the argument to the function \emph{return}, which may be used to exit explicitly from the block at any point. 
+
+\lz The function \emph{go} may be used to transfer control to the statement of the block that is tagged with the argument to \emph{go}. To tag a statement, precede it by an atomic argument as another sub-statement in the block. For example: \\
+\emph{block ([x], x:1, loop, x: x+1, ..., go (loop), ...).} \\
+The argument to \emph{go} must be the name of a tag appearing within the block; one cannot use \emph{go} to transfer to a tag in a block other than the one containing the \emph{go}. \\
+Using labels and \emph{go} to transfer control, however, is unfashionable and not recommended.
+
+\lzz \hyt{local}{\tcr{\emph{local ($ v_1,\dots,v_n $)}}} \hfill \tcr{[function]}\index{local}
+
+\lz The declaration \emph{local ($ v_1,\dots,v_m $)} within a block saves the properties associated with the symbols $ v_1,\dots,v_m $, removes them from the symbols, and restores any saved properties on exit from the block. This statement should best be placed directly after the list of the local variables at the beginning of the \emph{block}.
+
+\section{Function}\label{F1}
+
+\subsection{Function definition}
+
+\subsubsection{Defining the function}
+
+\hyt{:=}{\tcr{\emph{:=}}} \hfill \tcr{[infix  operator]}\index{:=}
+
+\tcr{\emph{f($x_1,\dots,x_n$) := expr}}
+
+\tcr{\emph{":="$ \; \big( f(x_1,\dots,x_n), expr \big)$}}
+
+\tcr{\emph{define $\big( f( x_1,\dots,x_n ), 'expr \big) $}}
+
+\lzz \hyt{define}{\tcr{\emph{define $\big( f( x_1,\dots,x_n ), expr \big) $}}} \hfill \tcr{[function]}\index{define}
+
+\tcr{\emph{f($x_1,\dots,x_n$) := $ ' \, ' $expr}}
+
+\lz A \emph{user} \hyl{function}{\emph{function}} has to be defined before it can be used, i.e. \emph{called}. A \hyl{function}{\emph{function}} can be defined either with the \hyl{:=}{\emph{function definition operator}} \emph{:=} or with function \emph{define}. Both ways are similar, but not identical. The similarity can be seen more clearly if the \emph{:=} operator is written as an \emph{operator function}. The difference between \emph{:=} and \emph{define} is that \emph{:=} never evaluates the function body unless explicitly forced by quote-quote ' ', whereas \emph{define} always evaluates the function body unless explicitly prevented by single quote $ ' $. The function name is not evaluated in either case. If the function name is to be evaluated, one of the following expressions can be used
+
+\lz \tcr{\emph{define (funmake ($ f, [x_1,\dots, x_n] $), expr)}}
+
+\tcr{\emph{define (funmake ($ f [x_1,\dots, x_n], [y_1,\dots, y_n] $), expr)}}
+
+\tcr{\emph{define (arraymake ($ f, [x_1,\dots, x_n] $), expr)}}
+
+\tcr{\emph{define (ev ($ expr_1), expr_2 $)}}.
+
+\lz The first expression using \hyl{funmake}{\emph{funmake}} returns an \hyl{ordinary function}{\emph{ordinary function}} with parameters in parentheses, see section \ref{F2}. The expression using \emph{arraymake} returns an \hyl{array function}{\emph{array function}} with parameters in square brackets, see section \ref{F3}. The second expression using \hyl{funmake}{\emph{funmake}} returns a \hyl{subscripted function}{\emph{subscripted function}}, see section \ref{F4}. The expression with \emph{ev} can be used in any case.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   f:g $  u:x $
+<@\tcr{(\%i3)}@   define (funmake (f, [u]), cos(u) + 1);
+<@\tcr{(\%o3)}@			g(x) := cos(x) + 1
+<@\tcr{(\%i4)}@   define (arraymake (f, [u]), cos(u) + 1);
+\end{lstlisting}
+\vspace{-5.5mm} \begin{small}
+\color{blue} \leqn
+\[ \tag*{\tcr{\ttfamily (\%o4)}} g_x := \cos(x)+1 \]
+\color{black} \reqn
+\end{small}
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   define (f(x,y), g (y,x));
+<@\tcr{(\%o5)}@			 f(x,y) := g(y,x)
+<@\tcr{(\%i6)}@   define (ev(f(x,y)), sin(x) - cos(y));
+<@\tcr{(\%o6)}@		      g(y,x) := sin(x) - cos(y)
+\end{lstlisting}
+\vspace{-2mm} 
+
+\subsubsection{Showing the function definition}
+
+\lz \hyt{findef}{\tcr{\emph{fundef(f)}}} \hfill \tcr{[function]}\index{fundef}
+
+\lz Returns the definition of function f. \emph{fundef} quotes its argument; the quote-quote operator $ ' \, ' $ defeats quotation. The argument may be the name of a macro (defined with ::=), an ordinary function (defined with := or define), an array function (defined with := or define, but enclosing arguments in square brackets []), a subscripted function (defined with := or define, but enclosing some arguments in square brackets and others in parentheses ( )), one of a family of subscripted functions selected by a particular subscript value, or a subscripted function defined with a constant subscript.
+
+\lzz \hyt{dispfun}{\tcr{\emph{dispfun($ \gpal f_1,\dots,f_n \gbar all \gpar $)}}} \hfill \tcr{[function]}\index{dispfun}
+
+\lz Displays the definition of the user-defined functions $ f_1, \dots, f_n $. Each argument may be the name of a macro (defined with ::=), an ordinary function (defined with := or an array function (defined with := or define, but enclosing arguments in square brackets []), a subscripted function (defined with := or define, but enclosing some arguments in square brackets and others in parentheses ( )), one of a family of subscripted functions selected by a particular subscript value, or a subscripted function defined with a constant subscript. \emph{dispfun (all)} displays all user-defined functions as given by the functions, arrays, and macros lists, omitting subscripted functions defined with constant subscripts. dispfun creates an \emph{intermediate expression label} \index{label!intermediate expression}(\%t1, \%t2, etc.) for each displayed function, and assigns the function definition to the label. \emph{dispfun} quotes its arguments; the quote-quote operator $ ' \, ' $ defeats quotation. dispfun returns the list of intermediate expression labels corresponding to the displayed functions. For an example and the use of these expression labels see \cite{MaxiManE}.
+
+\subsection{Function call}
+
+\subsubsection{Quoting a function call}\label{F7}
+
+A function call can be quoted in two different ways: 'f(x) is the noun form of the function call and has to be evaluated with the \hyl{nouns}{\emph{nouns}} flag set in \hyl{ev}{\emph{ev}}. '(f(x)) quotes the whole expression and can be evaluated without the noun flag set. In order to see whether a function call is a noun form or not, the flag \emph{noundisp} can be set, see Stavros' mail from Oct. 26, 2020 in Maxima discuss .
+
+\subsection{Ordinary function}\label{F2}
+
+\tcr{\emph{f($x_1,\dots,x_n$) := expr}}
+
+\tcr{\emph{f($x_1,\dots,x_n$) := block ([$ v_1,\dots,v_p $], $ expr_1,\dots,expr_m $)}}
+
+\tcr{\emph{f($x_1,\dots,x_n$) := block ([$ v_1,\dots,v_p $], local ($ x_1,\dots,x_n, v_1,\dots,v_p $), $ expr_1,\dots,expr_m $)}}
+
+\lz The first line defines a function named f with \hyl{parameter}{\emph{parameters}} $ x_1, \dots , x_n $ and \hyl{function body}{\emph{function body}} \emph{expr}.
+
+\lz An \hyl{ordinary function}{\emph{ordinary function}} \index{function!ordinary}is a function which encloses its parameters (at function definition) and arguments (at function call) with parentheses (). The function body of an ordinary function is evaluated every time the function is called. Before the function body is evaluated, the function call's \hyl{argument}{\emph{arguments}} (after having been evaluated themselves) are assigned to the function's parameters.
+
+\lz Usually the function body will be a \hyl{block}{\emph{block}}, allowing for the declaration of local variables, as demonstrated in the second and third line. (Note that the function parameters may not be repeated here.) Inside of a function body, \hyl{local}{\emph{local}} can - and should - be applied both to the local variables and the function parameters. If they are not declared \emph{local}, parameters, just like local variables, are local only with respect to their values, but not with respect to their properties!
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   properties(x);
+<@\tcr{(\%o1)}@				[]
+<@\tcr{(\%i2)}@   f(x):=block([a], local(a), a:1, declare (x,odd), x:a)$
+<@\tcr{(\%i3)}@   properties(x);
+<@\tcr{(\%o3)}@				[]
+<@\tcr{(\%i4)}@   f(3);
+<@\tcr{(\%o4)}@				1
+<@\tcr{(\%i5)}@   properties(x);
+<@\tcr{(\%o5)}@		  [database info, kind(x,odd)]
+<@\tcr{(\%i6)}@   kill(all)$
+<@\tcr{(\%i7)}@   f(x):=block([a], local(x,a), a:1, declare (x,odd), x:a)$
+<@\tcr{(\%i8)}@   f(3);
+<@\tcr{(\%o8)}@				1
+<@\tcr{(\%i9)}@   properties(x);
+<@\tcr{(\%o9)}@				[]
+\end{lstlisting}
+
+\lz If some parameter $ x_k $ is a quoted symbol (for \emph{define}: after evaluation), the function defined does not evaluate the corresponding argument when it is called. Otherwise all arguments are evaluated.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   f(x):=x^2;
+\end{lstlisting}
+\vspace{-5.5mm} 	\[ \tag*{\tcr{\ttfamily (\%o1)}} f(x):=x^2 \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   a:b$  f(a);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o2)}} b^2 \]
+\vspace{-10.5mm} 
+
+\lzz \begin{lstlisting}
+<@\tcr{(\%i3)}@   f('x):=x^2;
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o3)}} f('x):=x^2 \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   a:b$  f(a);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o4)}} a^2 \]
+\vspace{-10.5mm} 
+
+\lzz \begin{lstlisting}
+<@\tcr{(\%i5)}@   define(f('x),x^2);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o5)}} f(x):=x^2 \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   a:b$  f(a);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o6)}} b^2 \]
+\vspace{-10.5mm} 
+
+\lzz \begin{lstlisting}
+<@\tcr{(\%i7)}@   define(f('('x)),x^2);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o7)}} f('x):=x^2 \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i8)}@   a:b$  f(a);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o8)}} a^2 \]
+\color{black} \reqn
+\end{small} \vspace{-5mm}
+
+\lz \tcr{\emph{f($ x_1,\dots,x_{n-1}, [L] $) := expr}}
+
+\lz If the last or only parameter $ x_n $ is a list of one element, the function defined accepts a variable number of arguments. Arguments are assigned one-to-one to parameters $ x_1, \dots, x_{(n-1)} $, and any further arguments, if present, are assigned to $ x_n $ as a list. In this case, arguments $ x_1, \dots, x_{(n-1)} $ are \emph{required arguments}, \index{argument!required}while all further arguments, if present, are \emph{optional arguments}. \index{argument!optional}
+
+\lz All functions defined appear in the same global namespace. Thus, defining a function f within another function g does not automatically limit the scope of f to g. However, an additional statement \hyl{local}{\emph{local (f)}} inside of the \hyl{block}{\emph{block}} of g makes the definition of function f effective only within the block of function g.
+
+\lzz \hyt{functions}{\tcr{\emph{functions}}} \qquad \tcr{\ \ default: \emph{[]}} \hfill \tcr{[system variable]}
+
+\lz \emph{functions} is the list of ordinary Maxima functions having been defined by the user in the current session. 
+
+\subsection{Array function, memoizing function}\label{F3}
+
+\tcr{\emph{f[$ x_1,\dots, x_n$] := expr}}
+
+\lz \tcr{\emph{define (f[$x_1,\dots,x_n$], expr)}}
+
+\tcr{\emph{define (funmake (f, [$x_1,\dots,x_n$]), expr)}}
+
+\tcr{\emph{define (arraymake (f, [$x_1,\dots,x_n$]), expr)}}
+
+\tcr{\emph{define (ev (expr\_1), expr\_2)}}
+
+\lz \emph{ f[$x_1,\dots, x_n $] := expr} defines an \hyl{array function}{\emph{array function}}. \index{function!array}Its function body is evaluated just once for each distinct value of its arguments, and that value is returned, without evaluating the function body, whenever the arguments have those values again. Such a function is known as a \emph{memoizing function}. \index{function!memoizing}
+
+\subsection{Subscripted function}\label{F4}
+
+\tcr{\emph{f[$x_1,\dots, x_n$]($y_1,\dots, y_m$) := expr}}
+
+\lz \tcr{\emph{define (f[$x_1,\dots,x_n$]($y_1,\dots,y_n$), expr)}}
+
+\lz An \emph{subscripted function} \index{function!subscripted}\emph{ f[$x_1,\dots, x_n$]($y_1,\dots, y_m $) := expr} is a special case of an array function \emph{f[$ x_1,\dots, x_n $]} which returns a \hyl{lambda expression}{\emph{lambda expression}} with parameters $ y_1, \dots, y_m $. The function body of the subscripted function is evaluated only once for each distinct value of its parameters (subscripts) $ x_1, \dots, x_n $, and the corresponding lambda expression is that value returned. If the subscripted function is called not only with subscripts $ x_1, \dots, x_n $ in square brackets, but also with arguments $ y_1, \dots, y_n $ in parentheses, the corresponding lambda expression is evaluated and only its result is returned.
+
+\lz Note that a normal array function, see section \ref{F3}, is also represented by Maxima with its parameters as subscripts, because they appear in square brackets. This is somewhat misleading, since they don't constitute real indices, but plain variables. Therefore we don't call such a function a subscripted function.
+
+\lz In the following example, the function body is a simple sequential compound statement, a list of expressions in parentheses, which are evaluated consecutively. Only the value of the last of them is returned.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   f[n](x):= (print("Evaluating f for n=", n), diff (sin(x)^2, x, n));
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o1)}} f_n(x) := \left( \text{print ("Evaluating f for n=", n)}, \frac{d^n}{dx^n} \sin^2(x) \right) \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   f[1];
+Evaluating f for n=1
+<@\tcr{(\%o2)}@		   lambda([x], 2 cos(x) sin(x))
+<@\tcr{(\%i3)}@   f[1];
+<@\tcr{(\%o3)}@		   lambda([x], 2 cos(x) sin(x))
+<@\tcr{(\%i3)}@   f[1](%pi/3);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o3)}} \frac{\sqrt{3}}{2} \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   f[2];
+Evaluating f for n=2
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o4)}} \text{lambda } ([x], 2 \cos^2(x)-2 \sin^2(x)) \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   f[2](%pi/3);
+<@\tcr{(\%o5)}@				-1
+<@\tcr{(\%i6)}@   f[3](%pi/3);
+Evaluating f for n=3
+\end{lstlisting}
+\vspace{-6mm} \[ \tag*{\tcr{\ttfamily (\%o3)}} -2 \sqrt{3} \]
+\color{black} \reqn
+\end{small} \vspace{-8mm} 
+
+\subsection{Constructing (and calling) a function}
+
+\subsubsection{Apply: construct and call}
+
+\hyt{apply}{\tcr{\emph{apply (f,[$ v_1,\dots,v_n $])}}} \hfill \tcr{[function]} \index{apply}
+
+\lz \emph{apply (f,[$ v_1,\dots,v_n $])} evaluates its arguments and constructs an expression f($ v_1, \dots, v_n $), which is a function call of function f with arguments $ v_1,\dots,v_n $ in parentheses. The expression is simplified and evaluated, which means that f is called. The return value of \emph{apply} is the return value of this function call of f.
+
+\subsubsection{Funmake: construct only}
+
+\hyt{funmake}{\tcr{\emph{funmake (f,[$ v_1,\dots,v_n $])}}} \hfill \tcr{[function]} \index{funmake}
+
+\lz \emph{funmake (f,[$ v_1,\dots,v_n $])} evaluates its arguments and returns an expression f($ v_1, \dots, v_n $) which is a function call of function f with arguments $ v_1,\dots,v_n $ in parentheses. The return value is simplified, but not evaluated. So f is not called, even if it exists. To evaluate the return value, either ev(\%) or ''\% can be used, but only in a separate, second statement.
+
+\lz f can be an ordinary function, a subscripted function or a macro function. In case f is an already defined array function, \emph{funmake} will nevertheless return an expression with the arguments in parentheses. If an array function call with the arguments in square brackets is to be returned, use \emph{arraymake} instead.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   f(x,y):= y^2-x^2;
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o1)}} f(x,y) := y^2-x^2 \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   funmake(f,[a+1,b+1]);
+<@\tcr{(\%o2)}@			    f(a+1,b+1)
+<@\tcr{(\%i3)}@   ev(%);
+\end{lstlisting} 
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o3)}} (b+1)^2 - (a+1)^2 \]
+\vspace{-7.5mm} 
+
+\lzz \begin{lstlisting}
+<@\tcr{(\%i4)}@   g[a](x) := (x - 1)^a;
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o4)}} g_a(x):=(x-1)^a \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   funmake (g[n],[b]);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o5)}} \text{lambda } \big( [x], (x-1)^n \big) \, (b) \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   ev(%);
+\end{lstlisting} 
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o6)}} (b-1)^n \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   funmake ('g[n],[b]);
+\end{lstlisting} 
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o7)}} g_n(b) \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i8)}@   ev(%);
+\end{lstlisting} 
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o8)}} (b-1)^n \]
+\vspace{-7.5mm} 
+
+\lzz \begin{lstlisting}
+<@\tcr{(\%i9)}@   h(x) ::= (x - 1)/2;
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o9)}} h(x)::= \frac{x-1}{2} \]
+\vspace{-5.5mm} \begin{lstlisting}
+<@\tcr{(\%i10)}@  funmake(h,[u]);
+<@\tcr{(\%o10)}@			      h(u)
+<@\tcr{(\%i11)}@  ev(%);
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o11)}} \frac{u-1}{2} \]
+\color{black} \reqn
+\end{small}
+\vspace{-4mm} 
+
+\lz \emph{funmake} can be used in a function definition with \hyl{define}{\emph{define}} to evaluate the function name.
+
+\section{Lambda function, anonymous function}\label{F6}
+
+\hyt{lambda}{\tcr{\emph{lambda ($ [x_1,\dots, x_m], expr_1,\dots, expr_n $)}}} \hfill \tcr{[function]}
+
+\lz This is called a \emph{lambda function} or \emph{anonymous function}. \index{function!lambda}It defines and returns what is called a \hyl{lambda expression}{\emph{lambda expression}}, but does not evaluate it. 
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   lambda([x],x+1);
+<@\tcr{(\%o1)}@			 lambda([x],x+1)
+\end{lstlisting}
+
+\lz A lambda expression can be evaluated like an ordinary function by calling it with \hyl{argument}{\emph{arguments}} in parentheses corresponding to the lambda function's \hyl{parameter}{\emph{parameters}}. 
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   lambda([x],x+1)(3);
+<@\tcr{(\%o1)}@				4
+\end{lstlisting}
+
+\lz When a lambda expression is evaluated, unbound local variables $ x_1,\dots, x_m $ are created. Then the arguments (after having been evaluated themselves) are assigned to the parameters. $ expr_1,\dots, expr_n $ are evaluated in turn, and the value of \emph{$ expr_n $} is returned.
+
+\lzz \tcr{\emph{lambda ([$ x_1,\dots, x_m, [L]], expr_1,\dots, expr_n $)}}
+
+\lz If the last or only parameter $ x_n $ is a list of one element, the function defined accepts a variable number of arguments. Arguments are assigned one-to-one to parameters $ x_1, \dots, x_{(n-1)} $, and any further arguments, if present, are assigned to $ x_n $ as a list.
+
+\lz \emph{lambda} may appear within a \emph{block} or another \emph{lambda}; local variables are established each time another block or lambda expression is evaluated. Local variables appear to be global to any enclosed block or lambda. If a variable is not local, its value is the value most recently assigned in an enclosing block or lambda expression, if any, otherwise, it is the value of the variable in the global environment. This policy may coincide with the usual understanding of \emph{dynamic scope}.
+
+\lz A lambda function definition does not evaluate any of its arguments, neither the expressions nor the parameters given as a list in square brackets. Evaluation at definition time can, however, be forced individually with quote-quote. In this respect the lambda function definition behaves like the definition of an ordinary function with \emph{:=}. The difference is, that a lambda function has no individual name; the lambda expression itself substitutes the function name.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   x:a$
+<@\tcr{(\%i2)}@   lambda([x],x+1);
+<@\tcr{(\%o2)}@			 lambda([x],x+1)
+<@\tcr{(\%i3)}@   lambda([x],x+1)(3);
+<@\tcr{(\%o3)}@				4
+\end{lstlisting}
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   x:a$
+<@\tcr{(\%i2)}@   lambda([''x],x+1);
+<@\tcr{(\%o2)}@			 lambda([a],x+1)
+<@\tcr{(\%i3)}@   lambda([''x],x+1)(3);
+<@\tcr{(\%o3)}@			       a+1
+\end{lstlisting}
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   x:a$
+<@\tcr{(\%i2)}@   lambda([''x],''x+1);
+<@\tcr{(\%o2)}@			 lambda([a],a+1)
+<@\tcr{(\%i3)}@   lambda([''x],''x+1)(3);
+<@\tcr{(\%o3)}@				4
+\end{lstlisting}
+
+\lz A lambda expression can be assigned to a variable v. Evaluating this variable with arguments in parentheses corresponding to the parameters of the lambda expression looks like a function call of an ordinary function named v. However, \emph{properties} shows that v is not a function.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   v:lambda([x],x+1);
+<@\tcr{(\%o1)}@			 lambda([x],x+1)
+<@\tcr{(\%i2)}@   v(3);
+<@\tcr{(\%o2)}@				4
+<@\tcr{(\%i3)}@   properties(v);
+<@\tcr{(\%o3)}@			     [value]
+<@\tcr{(\%i4)}@   u(x):=x+1;
+<@\tcr{(\%o4)}@			    u(x):=x+1
+<@\tcr{(\%i5)}@   u(3);
+<@\tcr{(\%o5)}@				4
+<@\tcr{(\%i6)}@   properties(u);
+<@\tcr{(\%o6)}@			    [function]
+\end{lstlisting}
+
+\lz A lambda expression may appear in contexts in which a function name is expected. If a function definition is needed only for one specific context of calling this function, a lambda expression can efficiently substitute such a function definition and function call. It combines both steps, and the definition of a function name becomes unnecessary. In such a situation the definition of a lambda expression and its evaluation fall together. 
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   f(x):=2*x$
+<@\tcr{(\%i1)}@   map(f,[1,2,3,4,5]);
+<@\tcr{(\%o1)}@			   [2,4,6,8,10]
+
+<@\tcr{(\%i2)}@   map(lambda([x],2*x),[1,2,3,4,5]); 
+<@\tcr{(\%o2)}@			   [2,4,6,8,10]
+\end{lstlisting}
+
+\section{Macro function}
+
+A MaximaL macro function, sometimes simply called a \emph{macro}, \index{macro}is very similar to a Lisp macro. The difference to an ordinary MaximaL function is the following. A macro function when being called does not evaluate its arguments before the macro function body itself is evaluated. We say that a macro function \emph{quotes} its arguments, because a Maxima \emph{quote operator} inhibits evaluation of its arguments. The call of a macro function is executed in two steps. First the so-called \emph{macro expansion}  \index{macro expansion}is created,a term again refering to the macro concept in Lisp. The macro expansion is a form, which is immediately afterwards evaluated in the context from which the macro was called. With function \emph{macroexpand} only the first step is done. 
+
+\lz In many cases the effect of a macro function call is equivalent to an ordinary function call plus one additional evaluation with either quote-quote or \emph{ev}. Note that additional and even multiple evaluations with either quote-quote or \emph{ev} can follow both an ordinary and a macro function call. See \emph{"Macro function demonstration.wxm"} for an illustrative comparison of two macro functions with their corresponding ordinary functions.
+
+\subsection{Macro function definition}
+
+\hyt{::=}{\tcr{\emph{::=}}} \hfill \tcr{[infix  operator]}\index{::=}
+
+\lz This is the \emph{macro function definition operator}. \index{macro function definition operator}It is used with a syntax similar to the := operator.
+
+\lzz \hyt{macros}{\tcr{\emph{macros}}} \hfill \tcr{[system variable]}\index{macros}
+
+\lz The value of this system variable is a list of all user-defined macro functions. The macro function definition operator ::= puts a new macro function on this list. \emph{kill}, \emph{remove}, and \emph{remfunction} remove macro functions from the list.
+
+\subsection{Macro function expansion}
+
+\hyt{macroexpand}{\tcr{\emph{macroexpand (f(x))}}} \hfill \tcr{[infix  operator]}\index{macroexpand}
+
+\lz Expands the macro function call f(x) without evaluating it. If the argument of \emph{macroexpand} is not a macro function call, it is returned. If the expansion of expr yields another macro function call, that macro function call is also expanded. \emph{macro-expand} quotes its argument just as a function call of the macro function does. However, if the expansion of a macro function call has side effects (e.g. printing out something), these side effects are executed.
+
+\subsection{Macro function call}
+
+See introductory section.
+
+\end{document}

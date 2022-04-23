@@ -1,0 +1,560 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\part{Concepts of Symbolic Computation}
+
+\chapter{Data types and structures}
+
+\section{Introduction}
+
+For the data type \emph{string} see section \ref{S1}.
+
+\section{Numbers}
+
+\subsection{Introduction}
+
+\subsubsection{Types}\label{DS3}
+
+Maxima distinguishes four generic types of numbers: integer, rational number, floating point number and big floating point number. There is no generic type for complex numbers.
+
+\subsubsection{Predicate functions}
+
+\emph{numberp (expr)} \hfill [predicate function]\index{numberp}
+
+\lz If \emph{expr} evaluates to an integer, a rational number, a floating point number or a big floating point number, \emph{true} is returned. In all other cases (including a complex number) \emph{false} is returned.
+
+\lz \begin{remark}
+	The argument to this and the following predicate functions described in this section concerning numbers must really evaluate to a number in order for the function to be able to return \emph{true}. A symbol that does not evaluate to a number, even if it is declared to be of a numerical type, will always cause the function to return \emph{false.} The special predicate function \emph{featurep (symbol, feature)} can be used to test for such merely declared properties of a symbol.
+\end{remark}
+
+\begin{lstlisting}
+(%i1)	c;
+(%o1)				  c
+(%i2) 	declare(c, even);
+(%o2)				done
+(%i3) 	featurep(c, integer);
+(%o3)				true
+(%i4) 	integerp(c);
+(%o4)				false
+(%i5) 	numberp(c);
+(%o5)				false
+\end{lstlisting}
+
+\subsection{Integer and rational numbers}
+
+\subsubsection{Representation}
+
+\paragraph{External} \mbox{}
+
+\lz Integers are returned without a decimal point. Rational numbers are returned as a fraction of integers. Arithmetic calculations with interger and rational numbers are exact. In principal, integer and rational numbers can have an unlimited number of digits.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:1;
+<@\tcr{(\%o1)}@			        1
+<@\tcr{(\%i2)}@   b:-2/3;	
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} -\frac{2}{3} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   100!;
+<@\tcr{(\%o3)}@   933262154439441526816992388562667004907159682643816214685929\
+	638952175999932299156089414639761565182862536979208272237582\
+	51185210916864000000000000000000000000
+\end{lstlisting}
+\color{blue} \leqn
+\lz \end{small}
+
+\vspace{-2mm} \paragraph{Internal} \mbox{}
+
+\lz \begin{small}
+	\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:1/2;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}}
+ \frac{1}{2} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   :lisp $a
+	((RAT SIMP) 1 2) 
+\end{lstlisting}
+\color{blue} \leqn
+\lz \end{small}
+
+\subparagraph{Canonical rational expression (CRE)} \mbox{}
+
+
+
+\subsubsection{Predicate functions}
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:1$  b:2$  c:0$  d:3/4;
+<@\tcr{(\%i5)}@   integerp(a);
+<@\tcr{(\%o5)}@				true
+<@\tcr{(\%i6)}@   evenp(c);
+<@\tcr{(\%o6)}@				true
+<@\tcr{(\%i7)}@   oddp(a-b);
+<@\tcr{(\%o7)}@				true
+<@\tcr{(\%i8)}@   nonnegintegerp(2*c*a);
+<@\tcr{(\%o8)}@				true
+<@\tcr{(\%i9)}@   ratnump(a+d);
+<@\tcr{(\%o9)}@				true
+\end{lstlisting}
+
+\lz \emph{integerp (expr)} \hfill [Predicate function]\index{integerp}
+
+\lz If \emph{expr} evaluates to an integer, \emph{true} is returned. In all other cases \emph{false} is returned.
+
+\lzz \emph{evenp (expr)} \hfill [Predicate function]\index{evenp}
+
+\lz If \emph{expr} evaluates to an even integer, \emph{true} is returned. In all other cases \emph{false} is returned.
+
+\lzz \emph{oddp (expr)} \hfill [Predicate function]\index{oddp}
+
+\lz If \emph{expr} evaluates to an odd integer, \emph{true} is returned. In all other cases \emph{false} is returned.
+
+\lzz \emph{nonnegintegerp (expr)} \hfill [Predicate function]\index{nonintegerp}
+
+\lz If \emph{expr} evaluates to a non-negative integer, \emph{true} is returned. In all other cases \emph{false} is returned.
+
+\lzz \emph{ratnump (expr)} \hfill [Predicate function]\index{ratnump}
+
+\lz If \emph{expr} evaluates to an integer or a rationl number, \emph{true} is returned. In all other cases \emph{false} is returned.
+
+\lzz \subsubsection{Type conversion}
+
+\paragraph{Automatic} \mbox{}
+
+\lz If any element of an expression that does not contain floating point numbers evaluates to a rational number, then all integers in this expression are, when evaluated, converted to rational numbers, too, and the value returned is a rational number.
+
+\paragraph{Manual} \mbox{}
+
+\lz \emph{rationalize (expr)} \hfill [Function]\index{rationalize}
+
+\lz Converts all floating point numbers and bigfloats in \emph{expr} to rational numbers. Maxima knows a lot of identities but applies them only to exactly equivalent expressions. Floats are considered inexact so the identities aren't applied. \emph{rationalize} replaces floats with exactly equivalent rationals, so the identities can be applied.
+
+
+\lz It might be surprising that \verb|rationalize| (0.1) does not equal 1/10. This behavior is because the number 1/10 has a repeating, not a terminating binary representation.
+
+\lz \begin{small}
+	\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   rationalize(0.1);
+\end{lstlisting} \leqn
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{3602879701896397}{36028797018963968} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\begin{remark}
+	The exact value can be obtained with either function \emph{fullratsimp (expr)} or, if a CRE form is desired, with \emph{rat(expr)}.
+\end{remark}
+
+\lz \begin{small}
+	\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   rat(0.1);
+rat: replaced 0.1 by 1/10 = 0.1
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} /R/ \qquad \frac{1}{10} \]
+\vspace{-4mm}
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\subsection{Floating point numbers}
+
+\subsubsection{Ordinary floating point numbers}
+
+Maxima uses floating point numbers (floating points) with double presicion. Internally, all calculations are carried out in floating point.
+
+\lz Floating point numbers are returned with a decimal point, even when they denote an integer. The decimal point thus indicates that the internal format of this number is floating point and not integer.
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:1;
+<@\tcr{(\%o1)}@			    1
+<@\tcr{(\%i2)}@   float(a);
+<@\tcr{(\%o2)}@			   1.0
+\end{lstlisting}
+
+In scientific notation, the exponent of a floating point number can be separated by either "d", "e", or "f". Output is always returned with "e", as it is used in all internal calculations. Up to a certain number of digits, floating points given in scientific notation are returned in normal, non-exponential form.
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:2.3e3;
+<@\tcr{(\%o1)}@			  2300.0
+<@\tcr{(\%i2)}@   b:3.456789e-47
+<@\tcr{(\%i1)}@		       3.456789e-47
+\end{lstlisting}
+
+The file \verb|scientific-engineering-format.lisp|\footnote{RS only. In standard Maxima the file engineering-format.lisp provides only the engineering format.}, if loaded, provides a feature for having all floating points be returned in scientific notation, with one non-zero digit in front of the decimal point and the number of significant digits according to the value of \emph{fpprintprec}. This feature is activated by setting the option variable \emph{scientific\_format\_floats}.
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   load("scientific-engineering-format.lisp")$
+<@\tcr{(\%i2)}@   scientific_format_floats:true$
+<@\tcr{(\%i3)}@   a:2300.0;
+<@\tcr{(\%o3)}@			  2.3e3
+\end{lstlisting}
+
+Another feature of this file allows for all floating points to be returned in engineering format, that is with an exponent that is a multiple of three, with 1-3 non-zero digits in front of the decimal point and the number of significant digits according to the value of \emph{fpprintprec}. If set, \emph{engineering\_format\_floats} overrides \emph{scientific\_format\_floats}.
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   engineering_format_floats:true$
+<@\tcr{(\%i2)}@   b:0.23
+<@\tcr{(\%o2)}@			  230.0e-3
+\end{lstlisting}
+
+If any element of an expression that does not contain bigfloats evaluates to a floating point number, then all other numbers in this expression are, when evaluated, transformed to floating point, and the numerical value returned is a floating point number.
+
+\lz \begin{small}
+	\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:1/4;  b:23.4e2; 
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{1}{4} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%o1)}@			      2340.0
+<@\tcr{(\%i2)}@   a+b+c;	
+<@\tcr{(\%o2)}@			   2340.25 + c
+\end{lstlisting}
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\subsubsection{Big floating point numbers}
+
+In principal, big floating point numbers (bigfloats) can have an unlimited presicion. 
+
+\lz Bigfloats are always represented in scientific notation, the exponent being separated by "b".
+
+\lz If any element of an expression evaluates to a bigfloat number, then all other numbers in this expression, including ordinary floating point numbers, are, when evaluated, converted to bigfloats, and the numerical value returned is a bigfloat.
+
+\lzz \emph{bfloatp (expr)} \hfill [Predicate function]\index{bfloatp}
+
+\lz If \emph{expr} evaluates to a big floating point number, \emph{true} is returned. In all other cases \emph{false} is returned.
+
+\lzz \emph{bfloat(expr)} \hfill [Function]
+
+\lz Converts all numbers in \emph{expr} to bigfloats and returns a bigfloat. The number of significant digits in the returned bigfloat is specified by the option variable \emph{fpprec}.
+
+\lzz \emph{fpprec} \qquad Default value: 16 \hfill [Option variable]
+
+\lz Sets the number of significant digits for output of and for arithmetic operations on bigfloat numbers. This does not affect ordinary floating point numbers.
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   bfloat(%pi);
+<@\tcr{(\%o1)}@		      3.141592653589793b0
+<@\tcr{(\%i2)}@   fpprec:32$  bfloat(%pi);
+<@\tcr{(\%o2)}@		3.1415926535897932384626433832795b0
+\end{lstlisting}
+
+\subsection{Complex numbers}
+
+\index{number!complex} \index{complex numbers}
+
+\subsubsection{Introduction}
+
+\paragraph{Imaginary unit} \mbox{}
+
+\lzz \hyt{\%i}{\tcr{\emph{\%i}}} \hfill \tcr{[special variable]}\index{\%i}
+
+\lz In Maxima the imaginary unit $i$ with $ i^2 = -1 $ is written as \emph{\%i}.
+
+\vspace{1mm}\begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   sqrt(-1);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} i \]
+\vspace{-10mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   %i^2;
+<@\tcr{(\%o2)}@				-1
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+\vspace{-2mm} 
+
+\paragraph{Internal representation} \mbox{}
+
+\lz There is no generic data type for complex numbers. Maxima represents a complex number in standard form as a sum $ a + i \, b $, \emph{realpart} and \emph{imagpart} each being of one of the four generic types of numbers, see sect. \ref{DS3}. More complicated expressions involving complex numbers are represented just as real valued ones, with the only difference that the special variable \%i appears in them. This variable is treated as would be any other variable.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   r: 3+%i*5;
+<@\tcr{(\%o1)}@			      5i + 3
+<@\tcr{(\%i2)}@   :lisp $r
+((MPLUS SIMP) 3 ((MTIMES SIMP) 5 $%I))
+<@\tcr{(\%i3)}@   p: polarform(r);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \sqrt{34} \, e^{i \, \arctan \frac{5}{3}} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   :lisp $p
+((MTIMES SIMP) ((MEXPT SIMP) 34 ((RAT SIMP) 1 2))
+((MEXPT SIMP) $%E ((MTIMES SIMP) $%I ((%ATAN SIMP) ((RAT SIMP) 5 3)))))
+\end{lstlisting}
+\color{black} \reqn
+\end{small} \vspace{-2mm} 
+
+\paragraph{Canonical order} \mbox{}
+
+\lz The canonical order in which Maxima returns a complex-valued expression does not differ from the order of an equivalent expression which replaces \%i by any other variable. All the rules for determining the canonical order, including the effect of \emph{powerdisp}, therefore are completely unaware of complex numbers.
+
+\begin{lstlisting}
+<@\tcr{(\%i5)}@   powerdisp:false$  /* default */
+	a + b*%i;
+	1 + 2*%i;
+	1 + b*%i;
+	-b*%i +1;
+<@\tcr{(\%o2)}@  			     ib + a
+<@\tcr{(\%o3)}@  			     2i + 1
+<@\tcr{(\%04)}@  			     ib + 1
+<@\tcr{(\%05)}@  			     1 - ib
+<@\tcr{(\%i6)}@   z+k*%i+b+a*%i+4+3*%i+2-%i;
+<@\tcr{(\%o6)}@   		    z + ik + b + ia + 2i + 6
+<@\tcr{(\%i6)}@   z+k*%j+b+a*%j+4+3*%j+2-%j;
+<@\tcr{(\%o6)}@   	   	   z + %jk + b + %ja + 2%j + 6
+\end{lstlisting}
+
+\paragraph{Simplification} \mbox{}
+
+\lz Complex expressions are, in contrast to real ones, not always simplified as much as possible automatically. Simplification of products, quotients, roots, and other functions of complex expressions can usually be accomplished by applying \hyl{rectform}{\emph{rectform}}.
+
+\vspace{1mm}\begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   (2+%i)*(3-%i);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} (3-i) \, (i+2) \]
+\vspace{-9mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   rectform(%);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} i+7 \]
+\vspace{-9mm} 
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   (2+%i)/(3-%i);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{i+2}{3-i} \]
+\vspace{-8mm} 
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   rectform(%);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \frac{i}{2}+\frac{1}{2} \]
+\color{black} \reqn
+\end{small} \vspace{-2mm} 
+
+\paragraph{Properties} \mbox{}\label{DS4a}
+
+\lz A variable can be declared the property \emph{real}, \emph{complex}, or \emph{imaginary}. These properties are recognized by the functions of section \ref{DS4} and \ref{DS4b}. Note that these functions consider symbols, unless declared otherwise (\emph{complex}, \emph{imaginary}) or evaluating to a complex expression, as \emph{real}.
+
+\vspace{2mm}\begin{lstlisting}
+<@\tcr{(\%i1)}@   declare(z,complex,r,real)$ \end{lstlisting}\vspace{-1mm}
+
+\paragraph{Code} \mbox{}
+
+\lz The code of functions and variables for complex numbers is contained in file \emph{conjugate.lisp}.
+
+\paragraph{Generic complex data type} \mbox{}
+
+\lz There have been atempts in Maxima to introduce a generic data type for complex numbers, see Maxima-discuss thread \emph{Complex numeric type - almost done in numeric.lisp but not activated - why?} (August 2017).
+
+\subsubsection{Standard (rectangular) and polar form}\label{DS4}
+
+Maxima distinguishes standard (rectangular) and polar form of complex-valued expressions. The standard form is obtained by function \emph{rectform}, the polar form by function \emph{polarform}. We get the real part of an expression in standard form with function \emph{realpart}, the imaginary part with \emph{imagpart}. Function \emph{cabs} returns the complex absolute value, \emph{carg} the complex argument of an expression in polar form.
+
+\lz Note that these functions consider symbols, unless declared otherwise (\emph{complex}, \emph{imaginary}), see section \ref{DS4a}, or evaluating to a complex expression, as \emph{real}. 
+
+\paragraph{Standard (rectangular) form} \mbox{}
+
+\lzz \hyt{rectform}{\tcr{\emph{rectform (expr)}}} \hfill \tcr{[function]}\index{rectform}
+
+\lz Converts a complex expression \emph{expr} to standard form  $ a + i \, b $ with $ a,b \in \R $. Note that e.g. for a complex function this decomposition is always possible. While the imaginary part is parenthezised when it contains more than one element, this is not done for the real part. If \emph{expr} is an equation, both sides are decomposed separately. \emph{rectform} recognizes if a variable has been declared any of the properties \emph{real}, \emph{imaginary} or \emph{complex}.
+
+\vspace{2mm}\begin{lstlisting}
+<@\tcr{(\%i1)}@   rectform(sqrt(2)*%e^(%i*%pi/4));
+<@\tcr{(\%o1)}@			      i + 1
+<@\tcr{(\%i2)}@   expr: z+k*%i+b+a*%i+4+3*%i+2-%i;
+<@\tcr{(\%o2)}@   		     z + ik + b + ia + 2i + 6
+<@\tcr{(\%i3)}@   rectform(expr);
+<@\tcr{(\%o3)}@		     z + i(k + a + 2) + b + 6
+<@\tcr{(\%i5)}@   declare(z,complex,b,real)$ rectform(expr);
+<@\tcr{(\%o5)}@		Re(z) + i(Im(z) + k + a + 2) + b + 6  
+\end{lstlisting}\vspace{-1mm}
+
+\lzz \hyt{realpart}{\tcr{\emph{realpart (expr)}}} \hfill \tcr{[function]}\index{realpart}
+
+\hyt{imagpart}{\tcr{\emph{imagpart (expr)}}} \hfill \tcr{[function]}\index{imagpart}
+
+\lz Return the real resp. imaginary part of \emph{expr}. These functions work on expressions involving trigonometric and hyperbolic functions, as well as square root, logarithm, and exponentiation. 
+
+\vspace{2mm}\begin{lstlisting}
+<@\tcr{(\%i6)}@   realpart(expr);
+<@\tcr{(\%o6)}@			      z+b+6
+<@\tcr{(\%i7)}@   imagpart(expr);
+<@\tcr{(\%o7)}@			      k+a+2
+\end{lstlisting}\vspace{-1mm}
+
+\paragraph{Polar coordinate form} \mbox{}
+
+\lzz \hyt{polarform}{\tcr{\emph{polarform (expr)}}} \hfill \tcr{[function]}\index{polarform}
+
+\lz Converts a complex expression to the equivalent polar coordinate form
+\begin{equation*}
+	r \, e^{i \, \vap} = r \big( \cos \vap + i \sin \vap \big)
+\end{equation*}
+with r being the complex absolute value and $ \vap $ the complex argument.
+
+\lzz \hyt{cabs}{\tcr{\emph{cabs (expr)}}} \hfill \tcr{[function]}\index{cabs}
+
+\hyt{carg}{\tcr{\emph{carg (expr)}}} \hfill \tcr{[function]}\index{carg}
+
+\lz Return the complex absolute value resp. the complex argument of \emph{expr}.
+
+\begin{small}
+\color{blue} \leqn
+\vspace{2mm}\begin{lstlisting}
+<@\tcr{(\%i1)}@   polarform(3+4*%i);
+\end{lstlisting}
+\vspace{-7mm} \[\tag*{\tcr{\ttfamily (\%o1)}} 5 \, e^{i \, \arctan \frac{4}{3}} \]
+\vspace{-9mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   polarform(a+b*%i);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \sqrt{a^2+b^2} \, e^{i \, \text{ atan2 } (b,a)} \]
+\vspace{-9mm} 
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   cabs(a+b*%i);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \sqrt{a^2+b^2} \]
+\vspace{-9mm} 
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   carg(a+b*%i);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \text{atan2 } (b,a) \]
+\vspace{-8mm} 
+\color{black} \reqn
+\end{small}
+
+\subsubsection{Complex conjugate}\label{DS4b}
+
+\lzz \hyt{conjugate}{\tcr{\emph{conjugate (expr)}}} \hfill \tcr{[function]}\index{conjugate}
+
+\lz Returns the complex conjugate of \emph{expr}. Symbols, unless declared otherwise (complex, imaginary) or evaluating to a complex expression, are considered real. \emph{conjugate} knows identities involving complex conjugates and applies them for simplification, if it can determine that the arguments are complex.
+
+\begin{small}
+\color{blue} \leqn
+\vspace{2mm}\begin{lstlisting}
+<@\tcr{(\%i1)}@   conjugate(a+b*%i);
+<@\tcr{(\%o1)}@			       a-ib
+<@\tcr{(\%i2)}@   conjugate(c);
+<@\tcr{(\%o2)}@			  	c
+<@\tcr{(\%i3)}@   declare(d,imaginary)$ conjugate(d);
+<@\tcr{(\%o4)}@			 	-d
+<@\tcr{(\%i5)}@   polarform(1+2*%i);
+\end{lstlisting}
+\vspace{-5mm} \[ \tag*{\tcr{\ttfamily (\%o5)}} \sqrt{5} \, e^{i \, \arctan 2} \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   conjugate(%);
+\end{lstlisting}
+\vspace{-5mm} \[ \tag*{\tcr{\ttfamily (\%o6)}} \sqrt{5} \, e^{-i \, \arctan 2} \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   conjugate(a1*a2);
+<@\tcr{(\%o7)}@   			      a1 a2
+<@\tcr{(\%i8)}@   declare([z1,z2],complex)$ conjugate(z1*z2);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o9)}} \ov{z1} \en \ov{z2} \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i10)}@  f:a+b*%i$ (f+conjugate(f))/2;
+<@\tcr{(\%o10)}@   			       a
+\end{lstlisting}\vspace{-2mm} 
+\color{black} \reqn
+\end{small}
+
+\paragraph{Internal representation} \mbox{}
+
+\lz Internally, the complex conjugate is represented in the following way:
+
+\begin{small}
+\color{blue} \leqn
+\vspace{2mm}\begin{lstlisting}
+<@\tcr{(\%i1)}@   declare(a,complex)$ b:conjugate(a);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \ov{a} \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   :lisp $b
+(($CONJUGATE SIMP) $A)
+\end{lstlisting}\vspace{-2mm} 
+\color{black} \reqn
+\end{small}
+
+\subsubsection{Predicate function}
+
+\lzz \hyt{complexp}{\tcr{\emph{complexp (expr)}}} \hfill \tcr{[own function]}\index{complexp}
+
+\lz If \emph{expr} evaluates to a complex number, \emph{true} is returned. In all other cases \emph{false} is returned.
+
+\begin{lstlisting}
+complexp(expr):=if numberp(float(realpart(expr))) 
+and numberp(float(imagpart(expr))) then true;
+\end{lstlisting}
+
+\begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   complexp(2/3);
+<@\tcr{(\%o1)}@			     true
+<@\tcr{(\%i2)}@   complexp((2+3*%i)/(5+2*%i));
+<@\tcr{(\%o2)}@			     true
+<@\tcr{(\%i3)}@   polarform(2+3*%i);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \sqrt{(13)} \, e^{i \, \arctan \frac{3}{2}} \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   complexp(%);
+<@\tcr{(\%o4)}@			     true
+<@\tcr{(\%i5)}@   complexp(3*cos(%pi/2)+7*%i*sin(0.5));
+<@\tcr{(\%o5)}@			     true
+<@\tcr{(\%i6)}@   complexp(a+b*%i);
+<@\tcr{(\%o6)}@			     false
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\section{Boolean values}
+
+\section{Constant}
+
+\section{Sharing of data}
+
+It is very important to understand a concept  employed not only in Lisp and Maxima, but also in many other programming languages and CAS', the concept of \emph{sharing} data instead of \emph{copying} them. Assignment of a list or matrix (or a vector, which is always a list or a matrix) from symbol \emph{a} to symbol \emph{b} will not create a \emph{copy} of this data structure which then belongs to \emph{b}, but will \emph{share} the existing data structure belonging to symbol \emph{a}. This means that symbol \emph{b} will only receive a pointer to the existing data structure, not a new one with the same values as the one of symbol \emph{a}.
+
+\lz Now if symbol \emph{a} is killed or is assigned a completely \emph{new} data structure, the old data structure will remain belonging only to symbol \emph{b}. But if the old data structure of symbol \emph{a} is only \emph{modified} in the value of some element, symbol \emph{b} will evaluate to this modified data structure of symbol \emph{a}. And vice versa, if symbol \emph{b} modifies the value of some element of the shared data structure, symbol \emph{a} will evaluate to this modified structure.
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:[1,2,3];
+<@\tcr{(\%o1)}@			     [1,2,3]
+<@\tcr{(\%i2)}@   b:a;
+<@\tcr{(\%o2)}@			     [1,2,3]
+<@\tcr{(\%i3)}@   a:[4,5,6];
+<@\tcr{(\%o3)}@			     [4,5,6]
+<@\tcr{(\%i4)}@   b;
+<@\tcr{(\%o4)}@			     [1,2,3]
+
+<@\tcr{(\%i1)}@   a:[1,2,3];
+<@\tcr{(\%o1)}@			     [1,2,3]
+<@\tcr{(\%i2)}@   b:a;
+<@\tcr{(\%o2)}@			     [1,2,3]
+<@\tcr{(\%i3)}@   a[2]:x$ a;
+<@\tcr{(\%o4)}@			     [1,x,3]
+<@\tcr{(\%i5)}@   b;
+<@\tcr{(\%o5)}@			     [1,x,3]
+<@\tcr{(\%i6)}@   b[3]:y$ b;
+<@\tcr{(\%o7)}@			     [1,x,y]
+<@\tcr{(\%i8)}@   a;
+<@\tcr{(\%o8)}@			     [1,x,y]
+\end{lstlisting}
+
+\lz Note: Adding columns or rows to an existing matrix with \hyl{addcol}{\emph{addcol}} or \hyl{addrow}{\emph{addrow}} will create a \emph{new} data structure with respect to sharing.
+
+\lz In order to create a real copy of an existing list or matrix, the functions \emph{copylist} and \emph{copymatrix} have to be used.
+
+
+\end{document}

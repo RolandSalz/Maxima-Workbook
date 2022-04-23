@@ -1,0 +1,144 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\appendix	
+\part{Appendices}
+
+\chapter{Glossary}
+
+\section{MaximaL terminology}
+
+In this section we define the terminology needed to describe MaximaL. Sometimes this terminology is semantically close to the terminology used in Lisp, which will be given in the next section.
+
+\lzz \hyt{argument}{\tcr{\emph{Argument}}} \index{argument}
+
+\lz If a \hyl{function}{\emph{function}} f has been defined with \hyl{parameter}{\emph{parameters}}, a function call of f has to be supplied with corresponding \emph{arguments}. When f is evaluated, arguments are assigned to their corresponding parameters. For the distinction of \tcr{\emph{required}} and \tcr{\emph{optional arguments}}, see section \ref{F2}.
+
+\lzz \hyt{array}{\tcr{\emph{Array}}} \index{array}
+
+\lz An \emph{array} is a data structure ...
+
+\lzz \hyt{assignment}{\tcr{\emph{Assignment}}} \index{assignment}
+
+\lz Binding a value to a variable. This is done explicitly with the \hyl{:}{\emph{assignment operator}}. The value can be a number, but also a symbol or an expression. In an \hyt{indirect assignment}{\tcr{\emph{indirect assignment}}}, \index{assignment!indirect}done with the \hyl{::}{\emph{indirect assignment operator}}, not a symbol is bound with a value, but the value of the symbol, which must again be a symbol, is bound.
+
+\lzz \hyt{atom}{\tcr{\emph{Atom}}} \index{atom}
+
+\lz An atom is an \hyl{expression}{\emph{expression}} consisting of only one element (symbol or number).
+
+\lzz \hyt{binding}{\tcr{\emph{Binding}}} \index{binding}
+
+\lz A binding ...
+
+\lzz \hyt{CRE}{\tcr{\emph{Canonical rational expression (CRE)}}} \index{CRE}\index{canonical rational expression (CRE)}
+
+\lz A \emph{canonical rational expression} is a special internal representation of a Maxima expression. See section \ref{Ex3}.
+
+\lzz \hyt{constant}{\tcr{\emph{Constant}}} \index{constant}
+
+\lz There are \tcr{\emph{numerical constants}} \index{constant!numerical}and \tcr{\emph{symbolical constants}}. \index{constant!symbolical}A number is a numerical constant. Maxima also recognizes certain symbolical constants such as \emph{\%pi}, \index{\%pi}\emph{\%e} \index{\%e}and \emph{\%i} \index{\%i} which stand for $ \pi $, Euler's number $ e $ and the imaginary unit $ i $, respectively. For Maxima's naming conventions of \tcr{\emph{system constants}} \index{constant!system}see section \ref{B1}. Of course the user may assign his own symbolical constants.
+
+\lzz \hyt{equation}{\tcr{\emph{Equation}}} \index{equation}
+
+\lz An \emph{equation} \index{equation}is an \hyl{expression}{\emph{expression}} comprising an equal sign \hyl{=}{=}, one of the \emph{identity operators}, as its major operator. An \tcr{\emph{unequation}} is an expression with the \emph{unequation operator} \# as its major operator.
+
+\lzz \hyt{expression}{\tcr{\emph{Expression}}} \index{expression}
+
+\lz Any meaningful combination of operators, symbols and numbers is called an \emph{expression}. An expression can be a mathematical expression, but also a function call, a function definition or any other statement. An expression can have \tcr{\emph{subexpressions}} and is build up of \tcr{\emph{elements}}. An \hyl{atom}{\tcr{\emph{atom}}} or \tcr{\emph{atomic expression}} contains only one element. A \tcr{\emph{complete subexpression}} ... See \hyl{substeq}{\emph{subst (eq\_1, expr)}} for an example.
+
+\lz See also \hyl{lambda expression}{\tcr{\emph{lambda expression}}}.
+
+\lzz \hyt{function}{\tcr{\emph{Function}}} \index{function}
+
+\lz A \emph{function} is a special \hyl{compound statement}{\emph{compound statement}} which is assigned a \tcr{\emph{(function) name}}, has \hyt{parameter}{\tcr{\emph{parameters}}} \index{parameter} and in addition can have \hyl{local variable}{\emph{local variables}}. Maxima comprises a large number of \tcr{\emph{system functions}}, as for instance \emph{diff} and \emph{integrate}. Furthermore, the user can define his own \tcr{\emph{user functions}}. A special operator, the \hyl{:=}{\emph{function definition operator}} :=, is used for this purpose. On the left hand side, the function name and its parameters are specified, while on the right hand side, the \hyt{function body}{\tcr{\emph{function body}}}. Alternatively, function \hyl{define}{\emph{define}} can be used.
+
+\lz On \emph{calling} a function, \hyt{argument}{\tcr{\emph{arguments}}} \index{argument}\footnote{Instead of \emph{parameter} and \emph{argument}, the terminology \emph{formal argument} \index{argument!formal}and \emph{actual argument} \index{argument!actual}is used in the Maxima Manual.}are passed to it which are assigned to the function's parameters at evaluation time. The result of the function's subsequent computations, i.e. the evaluation of the function, is \emph{returned}. We speak of the \tcr{\emph{return value}} \index{return value}of a \tcr{\emph{function call}}. A function call can be incorporated in an expression just like a variable. An \hyt{ordinary function}{\tcr{\emph{ordinary function}}} \index{function!ordinary}is evaluated on every call, see section \ref{F2}.
+
+\lz An \hyt{array function}{\tcr{\emph{array function}}} \index{function!array}stores the function value the first time it is called with a given argument, and returns the stored value, without recomputing it, when that same argument is given. Such a function is known as a \hyt{memoizing function}{\tcr{\emph{memoizing function}}}, see section \ref{F3}.
+
+\lz A \hyt{subscripted function}{\tcr{\emph{subscripted function}}} \index{function!subscripted}is a special kind of array function which returns a \hyl{lambda expression}{\emph{lambda expression}}. It can be used to create a whole family of functions with a single definition, see section \ref{F4}.
+
+\lz In addition there are functions without name, so-called \hyt{lambda function}{\tcr{\emph{lambda functions}}} \index{function!lambda} \index{lambda function}or \emph{anonymous functions}, \index{function!anonymous} \index{anonymous function}which can be defined and called at the same time. Their return value is called a \hyl{lambda expression}{\emph{lambda expression}}. See section \ref{F6}.
+
+\lz A \hyt{macro function}{\tcr{\emph{macro function}}} \index{macro function} \index{function!macro}is similar to an ordinary function, but has a slightly different behavior. It does not evaluate its arguments and it returns what is known as a \hyl{macro expansion}{\emph{macro expansion}}. This means, the \emph{return value} is itself a Maxima \emph{statement} which is immediately evaluated. Macros are defined with the \hyl{::=}{\emph{macro function definition operator}} ::=.
+
+\lz An \hyt{undeclared function}{\tcr{\emph{undeclared function}}} \index{undeclared function} \index{function!undeclared}is just a symbol which stands for a function, possibly followed by one or more arguments in parentheses. It has not been declared with a function definition. It is not bound. On calling it, it evaluates to itself. However, for the purpose of differentiation, dependencies of the function on certain variables can be declared with \hyl{depends}{\emph{depends}}.
+
+\lzz \hyt{lambda expression}{\tcr{\emph{Lambda expression}}}
+
+\lz The return value of a \hyl{lambda function}{\emph{lambda function}} is called a \emph{lambda expression}. \index{expression!lambda} \index{lambda expression} See section \ref{F6}.
+
+\lzz \hyt{macro expansion}{\tcr{\emph{Macro expansion}}} \index{macro expansion}
+
+\lz Macro expansion is part of the mechanism of a \hyl{macro function}{\emph{macro function}}.
+
+\lzz \hyt{operator}{\tcr{\emph{Operator}}} \index{operator}
+
+\lz A Maxima \emph{operator} can be view in a way similar to a mathematical operator. The arithmetic operators +, -, *, /, for example, are employed in an infix notation just as in mathematics. 
+
+\lz The equal sign =, the assignment : or the function definition := are examples of other Maxima \tcr{\emph{system operators}}. 
+
+\lz Maxima even allows the user to define his own operators, be they used in \emph{prefix}, \emph{infix}, \emph{postfix}, \emph{matchfix} or other notations.
+
+\lzz \hyt{parameter}{\tcr{\emph{Parameter}}} \index{parameter}
+
+\lz A \emph{parameter} is a special local variable defined for a \hyl{function}{function}, which is assigned the value of a corresponding \hyl{argument}{\emph{argument}} at function call.
+
+\lzz \hyt{pattern matching}{\tcr{\emph{Pattern matching}}} \index{pattern matching}
+
+\lz For the definition see section \ref{RP1}.
+
+\lzz \hyt{predicate}{\tcr{\emph{Predicate}}} \index{predicate}
+
+\lz A predicate is an expression returning a Boolean value. This may be a function or a lambda expression with a Boolean return value, a relational expression evaluated by \emph{is}, or the Boolean constants \emph{true} and \emph{false}. For a \hyt{match predicate}{\tcr{\emph{match predicate}}} \index{predicate!match} see \hyl{matchdeclare}{matchdeclare}.
+
+\lzz \hyt{property}{\tcr{\emph{Property}}} \index{property}
+
+\lz A \tcr{\emph{MaximaL property}} ... A \tcr{\emph{Lisp property}} ...
+
+\lzz \hyt{quote-quote}{\tcr{\emph{Quote-quote ' '}}} \index{quote-quote} is twice the quote character, not the \emph{doubel-quote ''} character.
+
+\lzz \hyt{rule}{\tcr{\emph{Rule}}} \index{rule}
+
+\lz A rule ...
+
+\lzz \hyt{scope}{\tcr{\emph{Scope}}} \index{scope}
+
+\lzz  We distinguish \hyt{dynamic scope}{\tcr{\emph{dynamic scope}}} \index{scope!dynamic}from \hyt{lexical scope}{\tcr{\emph{lexical scope}}}... \index{scope!lexical}
+
+\lzz \hyt{symbol}{\tcr{\emph{Symbol, identifier}}} \index{symbol} \index{identifier}
+
+\lz Maxima allows for symbolical computation. Its basic element is the \emph{symbol}, \index{symbol}also called \emph{identifier}. \index{identifier}A symbol is a name that stands for something else. It can stand for a constant (as we have seen already), a variable, an operator, an expression, a function and so on.
+
+\lzz \hyt{statement}{\tcr{\emph{Statement}}} \index{statement}
+
+\lz An input expression terminated by ; or \$ which is to be evaluated is called a \emph{statement}. In Lisp it would be called a \emph{form}.
+
+\lz If a number of statements are combined, e.g. as a list enclosed in parentheses and separated by commas, called a \hyt{sequential}{\tcr{\emph{sequential}}}, we speak of a \hyt{compound statement}{\tcr{\emph{compound statement}}}. \index{statement!compound} The statements forming a compound statement are called its \tcr{\emph{sub-statements}}. \tcr{\emph{Block}} and \hyl{function}{\tcr{\emph{function}}} are other special forms of a compound statement. A block is a compound statement which can have local variables, a function is assigned a name and can have parameters, see chapter \ref{F5}.
+
+\lzz \hyt{value}{\tcr{\emph{Value}}} \index{value}
+
+\lz A \hyl{symbol}{\emph{symbol}} (i.e. a variable, a constant, a function, a parameter, etc.) can be unbound; then it has not been assigned a value. When a value has been assigned to the symbol, it is bound. Binding a value to a symbol is called \hyl{assignment}{\emph{assignment}}. Retrieving the value of a symbol is called \emph{referencing} or \emph{evaluation}.
+
+\lz The \tcr{\emph{return value}} \index{value!return} \index{return value}is what a \hyl{function}{\emph{function}} returns when it is called and evaluated.
+
+\lzz \hyt{variable}{\tcr{\emph{Variable}}} \index{variable}
+
+\lz A \emph{variable} has a name (which is represented by a \emph{symbol}) and possibly a \emph{value}. \hyl{Assignment}{\emph{Assignment}} of a value to a variable is called \emph{binding}. \index{binding}We say: the variable is bound to a value. When a variable has been bound, it is \emph{referencing} \index{referencing}this particular value. \emph{Evaluation} \index{evaluation}in the strict sense means \emph{dereferencing}, \index{dereferencing}which is: obtaining from a variable the value which was bound to it previously.
+
+\lz In general, Maxima does not require a variable to be defined explicitly by the user before using it. In particular, Maxima does not require a variable to have a specific type (of value). Just as when doing mathematics on a sheet of paper, we can start using a variable at any time. It will be defined (allocated) at use time by Maxima automatically. We can start using a variable without binding it to a value. Maxima recognizes the symbol, but it remains \emph{unbound}. But we can also bind it at any time, even right at the beginning of its use. The type of value of a specific variable may change at any time, whenever the value itself changes.
+
+\lz The value of a variable does not need to be a numerical constant. It can be another variable or any combination of variables and operators, that is, an \emph{expression}. It can even be much more than this. The variety of types (of values) of a variable is so broad that in Lisp and in Maxima we generally use the term \emph{symbol} to denote not only the name of variable, but the variable as a whole.
+
+\lz One of the specific features of Lisp is that a symbol not only can have a value, but also \emph{properties}. A \index{property}Maxima symbol can have properties, too, as we will see later. It can even have two types of properties, Lisp properties and Maxima properties.
+
+\lz There are \tcr{\emph{user variables}},  \index{variable!user}which the user defines, and \tcr{\emph{system variables}}. \index{variable!system}System variables which can be set by the user to select certain options of operation are called \tcr{\emph{option variables}}. \index{variable!option}With respect to the name space where the variable appears we distinguish between \tcr{\emph{global variables}} \index{variable!global}and \hyt{local variable}{\tcr{\emph{local variables}}}. \index{variable!local} For a \hyt{match variable}{\tcr{\emph{match variable}}} \index{variable!match} see \hyl{matchdeclare}{matchdeclare}.
+
+\section{Lisp terminology}
+
+\hyt{form}{\tcr{\emph{Form}}} \index{form}
+
+\lz A Lisp form ...
+
+\end{document}

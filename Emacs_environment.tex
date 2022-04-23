@@ -1,0 +1,495 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\part{Developer's environment}
+	
+\chapter{Emacs-based Maxima Lisp IDE}
+
+It should be mentioned first that I owe large parts of the information provided in this chapter to the kind help of Michel Talon and Serge de Marre. Michel could answer almost any question about how to set up the environment under Windows, although he himself does not have a Windows machine at all. Serge was maybe the first one who had figured out how to fully set it up under Windows. With videos on Youtube he showed how it works. Both helped me for weeks with this non-trivial matter. Thanks a lot to both of you.
+
+\lz Hopefully, what took me months to find out and set up can be accomplished by the reader of the following instructions in a couple of days. 
+
+\section{Operating systems and shells}
+
+We are going to set up and use the Emacs-based Maxima Lisp IDE primarily under Windows 10. But we will also set up a complete Linux environment inside of \emph{VirtualBox} \index{VirtualBox}under Windows and in addition use Linux-like environments directly under Windows, namely \emph{MinGW} \index{MinGW}and \emph{Cygwin}. \index{Cygwin}
+
+\section{Maxima}
+
+As a basis we need to have Maxima installed. There are two basic options.
+
+\subsection{Installer}
+
+The easiest way to install Maxima on Windows is to use the \emph{Maxima installer} \index{Maxima!installer}which can be downloaded from Sourceforge and which is available for every new release. 
+
+\lz Download the latest Maxima installer and install it in C:/Maxima/, disregarding the default. Copy shortcuts for wxMaxima, console Maxima and XMaxima to the desktop. Special icons for the latter two can be found in the directory tree.
+
+\lz The installer comes with 64 bit \emph{SBCL} \index{SBCL: Steel Bank Common Lisp}and \emph{Clisp}. \index{Clisp}Although it is preset to Clisp, it is recommended to set the standard Lisp to SBCL, because it is much faster and much more powerful. We will only use SBCL. Note that Clisp does not support threading and does not work properly under Emacs in combination with Slime, especially if it comes to the \emph{slime-connect} facility, see below.
+
+\lz Use the \emph{Configure default Lisp for Maxima} feature from the Windows program menu to set Lisp to SBCL.
+
+\subsection{Building Maxima from tarball or repository}
+
+Using Maxima from an installer does have some drawbacks, though. Due to the fact that it was not compiled on the same system where it is used, Emacs cannot find the source code interactively within a running Maxima session under Slime. Finding the source code automatically for a given MaximaL function, however, is a very useful feature, as we will see later.
+
+\lz In order to allow for this feature to work, we will have to build Maxima ourselves. This can be done from a \emph{Maxima tarball} \index{Maxima!tarball}which is provided for every new release and can be downloaded from Sourceforge. Or it can be done from a local copy of the \emph{Maxima repository} \index{Maxima!repository}which also resides on Sourceforge. In this case, the build process is a little bit longer, but we can use the latest snapshot available.
+
+\lz We build Maxima directly under Windows with the so-called \emph{Lisp only build} process, see chapter \ref{BW1}. Alternatively, Maxima can be built for Windows under Cygwin, see section \ref{label}.
+
+\section{External program editor}
+
+\subsection{Notepad++}
+
+If we are not really familiar with the Emacs editor yet, it is worthwhile to use \emph{Notepad++} \index{Notepad++}in addition. See \href{https://notepad-plus-plus.org/}{https://notepad-plus-plus.org/} for reference. It is widely used, supported by Git, and has parentheses highlighting which is most important for programming in Lisp and very useful for MaximaL, too. In addition, we will install a special highlighting profile for MaximaL. 
+
+\lz Install the latest version of Notepad++, 64 bit, in the default directory C:/Program Files/Notepad++. We will soon need it. Make it the default program to open files of type .lisp, .mac, .txt, .sbclrc, .emacs, etc., whenever you open any of these file types later.
+
+\lz A \emph{highlighting profile for Maxima}, which recognizes our amended functions, is available at \href{http://www.roland-salz.de/html/maxima.html}{http://www.roland-salz.de/html/maxima.html}. To download it, rightclick on \emph{Maxima\_Notepad++.xml} and "Save as" \emph{Maxima\_Notepad++.xml}. To install it from Notepad++, select Language/Select your language/Import. After restarting Note-pad++, \emph{Maxima} will appear in the language menu and automatically be applied to \emph{.mac} files.
+
+%NetObjects ändert den externen Link immer auf Maxima_Notepad__.xml, obwohl man mit FileZilla durchaus auch den Originalnamen hochladen kann. Unter diesem Namen wird das File im Server abgespeichert.
+
+\section{7zip}
+
+Install 7zip, because you will need to unzip .tar.gz files soon.
+
+\section{SBCL: Steel Bank Common Lisp}\index{SBCL: Steel Bank Common Lisp}
+
+A considerable number of Lisp compilers is available, and Maxima supports many of them. The Windows installer comes with SBCL and Clisp. Independently of this, we use SBCL for a number of reasons. It is fast, provides a wide range of facilities, usually creates no problems with Maxima and has become a kind of de facto standard for Common Lisp use. See the \emph{SBCL User Manual} \citem{SbclMan}{}for reference.
+
+\lz In principle we can use the SBCL installation coming with the Maxima installer as \emph{inferior Lisp} under Emacs, too. However, we can also install SBCL separately in addition, for instance if we want to use a different (newer) version or if we want to be independent of what happens to come with the consecutive installers. We prefer the latter option.
+
+\subsection{Installation}
+
+Install the latest version of SBCL in the default directory, that is in \emph{C:/Program Files/Steel Bank Common Lisp/<version>}. The Windows path and the environment variable SBCL\_HOME will be created automatically for our active Windows user, if they don't exist yet. However, a Windows restart is necessary to activate them. Check that they are properly set with left click on \emph{Dieser PC}, \emph{properties}, \emph{Erweiterte Systemeinstellungen}, \emph{environment variables}, looking at the lower field for our active Windows user. We should see appended at the end of the \emph{path} variable the path
+\begin{lstlisting}[style=blue]
+C:\Program Files\Steel Bank Common Lisp\1.4.2\.
+\end{lstlisting}
+In addition, we should see the environment variable SBCL\_HOME with the value
+\begin{lstlisting}[style=blue]
+C:\Program Files\Steel Bank Common Lisp\1.4.2\.
+\end{lstlisting}
+If, later under Emacs, we want to use the separately installed SBCL and the one from the Maxima installer alternately, we do not need to change the Windows environment variables any more. Instead, the local copies of them, which Emacs actually uses, can be adjusted easily in the \emph{.emacs} init file, see section \ref{EE1}.
+
+\lz SBCL uses this environment variable to locate the folder where to search for its core file. If the folder does not match the SBCL version that was invoked with the .exe file, a severe error situation will arise and it will not be able to start SBCL.
+
+\lz To update the SBCL version, just execute the new SBCL installer. We do not need to deinstall the old one first. A subfolder with the new version will be created and the Windows environment variables will be adjusted automatically. We only need to adapt our personal setup and initialization files (e.g. \emph{.emacs}, see below).
+
+\subsection{Setup}
+
+\subsubsection{Set start directory}\label{EE2a}
+
+The directory from which SBCL is started is called the \hyt{SBCL start directory}{\emph{SBCL start directory}}. The SBCL system variable *default-pathname-defaults* will be set to this directory and make it the so-called \emph{current directory}. This will be the default path for file loads from within SBCL. Note that relative paths can be used on the basis of the current directory, and the standard file extension .lisp can be omitted. This also works under Maxima, if a Lisp load command is executed, e.g.
+
+\begin{lstlisting}[style=lisp]
+:lisp (load "System/Emacs/startswank")
+\end{lstlisting}
+
+However, if we load with the Maxima command, we can use relative paths, too, but we have to include the file extension \emph{.lisp}
+
+\begin{lstlisting}[style=lisp]
+load ("System/Emacs/startswank.lisp")
+\end{lstlisting}
+
+\subsubsection{Init file ".sbclrc"}\label{EE2}\index{sbclrc@.sbclrc init-file}
+
+A Lisp init file named ".sbclrc" can be created. It will be loaded and executed every time SBCL starts. Unfortunately, this file has to be placed in two different locations:
+
+\lz \tcb{C:/Users/<user>} \\
+for wxMaxima, xMaxima, the Maxima console under Windows and the SBCL console (64 bit) under Windows.
+
+\lz \tcb{C:/Users/<user>/AppData/Roaming} \\
+for all applications under Emacs and for the SBCL console (32 bit) under Windows.
+
+\lz In order to find out where the init-file is supposed to be for a specific SBCL application, use one of the following commands from within the particular application:
+
+\begin{lstlisting}[style=lisp]
+(sb-impl::userinit-pathname)
+(funcall sb-ext:*userinit-pathname-function*)
+\end{lstlisting}
+
+If it is a Maxima application, simply preceed each Lisp command by ":lisp " at the Maxima prompt:
+\begin{lstlisting}[style=lisp]
+:lisp (sb-impl::userinit-pathname)
+:lisp (funcall sb-ext:*userinit-pathname-function*)
+\end{lstlisting}
+The copies from both directories can be loaded into Notepad++ simultaneously under identical file names; as you will soon see, we will introduce a tiny difference between the two copies.
+
+\lz For our Maxima Lisp developer's environment this file should contain the following forms. The complete model file can be found in Annex \ref{AA2}.
+
+\lzz 1. The following lines are inserted automatically by (ql:add-to-init-file). They will cause Quicklisp to be loaded on each start of SBCL.
+
+\begin{lstlisting}[style=lisp]
+#-quicklisp
+(let ((quicklisp-init (merge-pathnames "C:/quicklisp/setup.lisp" (user-homedir-pathname))))
+(when (probe-file quicklisp-init)
+(load quicklisp-init)))
+(format t "~%~a" "Quicklisp loaded.")
+\end{lstlisting}
+
+\lz 2. Set compiler option for maximum debug support:
+
+\begin{lstlisting}[style=lisp]
+(declaim (optimize (debug 3)))
+(format t "~%~a" "(declaim (optimize (debug 3))) set.")
+\end{lstlisting}
+
+\lz 3. Set external format to UTF-8:
+
+\begin{lstlisting}[style=lisp]
+(setf sb-impl::*default-external-format* :utf-8)
+(format t "~%~a" "External format set to UTF-8.")
+\end{lstlisting}
+
+\lz 4. Display final messages:
+
+\begin{lstlisting}[style=lisp]
+(format t "~%~a" "Init-File C:/Users/<user>(/AppData/Roaming)/.sbclrc completed.")
+(format t "~%~a~a" "Current directory (also from Maxima) is " *default-pathname-defaults*)
+(format t "~%~a" "To change the current directory use (setq *default-pathnames-default* #P\"D:/Maxima/Builds/\").")
+(format t "~%~a" "Relative paths can be used and the standard file extension .lisp can be omitted, e.g.: (load \"subdir/subdir/filename\").")
+(format t "~%~a" " ")
+\end{lstlisting}
+
+In the first command adjust the Windows user and include or omit the parenthesized part, according to where the init file is placed. This way the init file will itself show where it is located for each SBCL application. The second line will show the current directory to the user on start of SBCL.
+
+\subsubsection{Starting sessions from the Windows console}
+
+We can start an SBCL session from the Windows console. Open the Windows shell (DOS prompt), cd to what you want to have as the \hyl{SBCL start directory}{start directory} and type SBCL.
+
+\lz To invoke the command history, type C-<uparrow>.
+
+\section{Emacs}\index{Emacs}
+
+\subsection{Overview}
+
+\emph{Emacs} \index{Emacs}\citem{EmacsMan}{}is a Lisp based IDE and much more. The \emph{Emacs Manual} provides an impressive description.
+
+\subsubsection{Editor}
+
+It's not without reason that one generally defines
+\begin{center}
+	Emacs = Escape, Meta, Alt, Control, Shift.
+\end{center}
+Although the Emacs editor and in particular its embedding in the overall IDE structure has very powerful features, it will take some time to get used to it. Before starting to work with Emacs, the \emph{Emacs Tutorial}, \citem{EmacsTut}{}an introduction to the editor and the basic Emacs environment should be studied in detail. It comes with the Emacs installation and is a plain text file of some 20 pages linked to the Emacs opening screen. The German version of Emacs comes with a German translation.
+
+\subsubsection{eLisp under Emacs}
+
+Emacs is written in \emph{eLisp}, \index{eLisp}a dialect of Common Lisp. eLisp must be used to program the \emph{.emacs} init file and any file to be loaded from it. But of course eLisp can also be used under Emacs for any other purpose. Emacs supplies is with special debugging facilities. See \citem{eLispMan}{}the extensive \emph{eLisp Manual} for details.
+
+\subsubsection{Inferior Lisp under Emacs}
+
+Any other Common Lisp variant installed on the computer can be set up to be used as \emph{inferior Lisp} \index{Lisp!inferior}under Emacs. This setup is done in the \emph{.emacs} init-file. We will use SBCL. Note that inferior Lisp is independent of the Lisp used by Maxima and of eLisp. All can be different.
+
+\lz The Emacs IDE can thus be used for any other Lisp development independent of Maxima.
+
+\subsubsection{Maxima under Emacs}
+
+There are various Maxima interfaces that work under Emacs. We use the Maxima console and \emph{iMaxima} which provides output created with LateX.
+
+\lz The \index{iMaxima interface}iMaxima interface and how to set it up under Emacs and Windows is described in detail on Yasuaki Honda's \emph{iMaxima and iMath} \citem{iMaximaHP}{}website.
+
+\subsubsection{Slime: Superior Interaction Mode for Emacs}
+
+\emph{Slime} \index{Slime}is an enhancement for Emacs. It provides much more elaborate debugging facilities and with \emph{slime-connect}, \index{slime-connect}see below, it allows for setting up a parallel session of MaximaL and Maxima Lisp. See the \emph{Slime Manual} \citem{SlimeMan}{}for details.
+
+\subsection{Installation and update}
+
+Download the preconfigured installer version emacs-w64-25.3-O2-with-modules.7z from Sourceforge. This will set up Emacs properly with all the necessary dll files installed in the bin directory. Unzip it with 7zip. First unzip it to C:/. Then move the folder to C:/Program Files/Emacs (this does not work directly, because it needs administrator approval which cannot be given during the unzip process).
+
+\lz Alternatively, a version with almost no dll files is emacs-25.3-x86\_64.zip from the GNU mirror. 
+
+\lz Numerous lib*.dll files can be added to the bin directory in order to bring Emacs to its full power (read the readme file that comes with Emacs). A large number of them and many other dependencies (.exe files) are included in emacs-25-x86\_64-deps.zip, which also gives a complete Emacs installation. 
+
+\lz In particular we need zlib1.dll and libpng16-16.dll, which gives support for png files, required for the iMaxima Latex interface to work.
+
+\lz Run bin/runemacs.exe to start Emacs and create a shortcut for it on the desktop.
+
+\lz Slime has to be installed separately. We will do this with the help of Quicklisp soon.
+
+\subsection{Setup}
+
+\subsubsection{Set start directory}\label{EE1a}
+
+We can set the Emacs start directory in its desktop shortcut (right click / properties / execute in). We use the path
+
+\begin{lstlisting}[style=lisp]
+D:\Programme\Lisp
+\end{lstlisting}
+
+This will be the default path for file loads from within Emacs (by typing C-x C-f in the mini buffer). This will also be the default for the start directory and therefore the current directory for SBCL (in case we invoke it from within Emacs), to which the variable *default-pathname-defaults* will be set. To show or change it from within SBCL use
+
+\begin{lstlisting}[style=lisp]
+*default-pathname-defaults*
+(setf *default-pathname-defaults* #P"D:/Maxima/Repos/")
+\end{lstlisting}
+
+If we want a different SBCL start directory than the one for Emacs, we can in \emph{start-sbcl.bat} (see below) cd to a different directory prior to invoking SBCL.
+
+\subsubsection{Init file ".emacs"}\label{EE1}\index{emacs@.emacs init file}
+
+An \citem{EmacsMan}{}eLisp init file named \emph{.emacs} can be placed in C:/Users/<user>/AppData/Roaming. It will be loaded and executed every time Emacs starts.
+
+\lz Note: Under Windows it is sometimes difficult to copy/rename a file with a leading dot. However, it can always be done with "save as" from Notepad++.
+
+\lz For our Maxima Lisp developer's environment this file should contain the following lines. The complete model file can be found in Annex \ref{AA1}.
+
+\lzz 1. \emph{Load Quicklisp Slime Helper}:
+\begin{lstlisting}[style=lisp]
+(load "C:/quicklisp/slime-helper.el")
+\end{lstlisting}
+
+\lz 2. \emph{Set inferior Lisp to SBCL}. We write a short Windows batch-file \emph{start-sbcl.bat} which we place e.g. in D:/Programme/Lisp/System/SBCL and which we use to start SBCL. It allows us (by means of the Windows cd command) to preselect the start directory for SBCL. It will be SBCL's current directory. If we do not set the start directory in this file, the Emacs start directory will be used as default. The batch file is
+
+\begin{lstlisting}[style=smallblue]
+"C:/Program Files/Steel Bank Common Lisp/1.4.2/sbcl.exe"
+rem "C:/Maxima-5.41.0/bin/sbcl.exe"
+
+rem Prior to calling SBCL we can set the SBCL start directory.
+rem If we don't, the Emacs start directory will be the default.
+rem Example:
+rem D:
+rem cd /Programme/Lisp
+\end{lstlisting}
+
+\lz The above assumes that we use a separately installed SBCL. If instead we want to use the SBCL from the Maxima installer, we have to activate the out-commented path instead. In the init-file we write
+
+\begin{lstlisting}[style=lisp]
+(setq inferior-lisp-program "D:/Programme/Lisp/System/SBCL/start-sbcl.bat")
+\end{lstlisting}
+
+\lz 3. \citem{iMaximaHP}{}\emph{Setup Maxima}. We need to load the system eLisp file \emph{setup-imaxima-imath.el} which comes with Maxima. Best is to create a local copy in a fixed place on our computer, so we do not always have to adapt the path to the file if we use different Maxima installations. This file sets up Emacs to support Maxima and the Latex-based interface iMaxima. We do not need to customize this file. But before loading the file we set two system variables. *maxima-build-type* specifies whether we use Maxima from an installer or whether we have built Maxima from a tarball or a local copy of the repository. *maxima-build-dir* specifies the path to the root directory of the Maxima we want to use. If we do not specify these two system variables, the first Maxima installer found in "C:/" will be used. (Note that this is the oldest one installed.) So in the init-file we write
+
+\begin{lstlisting}[style=lisp]
+; *maxima-build-type* can be "repo-tarball" or "installer"
+(defvar *maxima-build-type* "installer")
+
+; *maxima-build-dir* contains the root directory of the build, 
+terminated by a slash.
+(defvar *maxima-build-dir* "C:/Maxima/maxima-5.41.0/")
+; (defvar *maxima-build-dir* "D:/Maxima/builds/lob-2017-04-04-lb/")
+
+(load "D:/Programme/Lisp/System/Emacs/setup-imaxima-imath.el")
+\end{lstlisting}
+
+\lz 4. \citem{SlimeMan}{}\emph{Key reassignments for Slime}. In order to ease our work under Slime we change the keys for a number of its system functions. 
+
+\begin{lstlisting}[style=lisp]
+(eval-after-load 'slime
+`(progn
+(global-set-key (kbd "C-c a") 'slime-eval-last-expression)
+(global-set-key (kbd "C-c c") 'slime-compile-defun)
+(global-set-key (kbd "C-c d") 'slime-eval-defun)
+(global-set-key (kbd "C-c e") 'slime-eval-last-expression-in-repl)
+(global-set-key (kbd "C-c f") 'slime-compile-file)
+(global-set-key (kbd "C-c g") 'slime-compile-and-load-file)
+(global-set-key (kbd "C-c i") 'slime-inspect)
+(global-set-key (kbd "C-c l") 'slime-load-file)
+(global-set-key (kbd "C-c m") 'slime-macroexpand-1)
+(global-set-key (kbd "C-c n") 'slime-macroexpand-all)
+(global-set-key (kbd "C-c p") 'slime-eval-print-last-expression)
+(global-set-key (kbd "C-c r") 'slime-compile-region)
+(global-set-key (kbd "C-c s") 'slime-eval-region)
+))
+\end{lstlisting}
+
+5. \citem{EmacsMan}{}\emph{Customizing Emacs}. Emacs can be extensively customized. The changes made are stored automatically at the end of ".emacs". For example, the following code will be inserted when we do \\
+M-x customize, Editor, Basic settings, Tab width, default 8 -> 2, Save.
+
+\begin{lstlisting}[style=lisp]
+(custom-set-variables
+;; custom-set-variables was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+'(safe-local-variable-values (quote ((Base . 10) (Syntax . Common-Lisp) (Package . Maxima))))
+'(tab-width 2))
+(custom-set-faces
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+)
+\end{lstlisting}
+
+\subsubsection{Customization}
+
+In Emacs \emph{Options/Set Default Font} set Courier New size to 12. Store this with \emph{Save Options}, so I don't have to set it again on every start of Emacs. This will be written automatically into the .emacs file.
+
+\subsubsection{Slime and Swank setup}
+
+A special setup is necessary for running Maxima or iMaxima under Emacs with Slime. We have to write a short Lisp program named \emph{startswank.lisp} and place it e.g. in 
+
+\begin{lstlisting}[style=lisp]
+D:/Programme/Lisp/System/Emacs
+\end{lstlisting}
+
+This is the code
+
+\begin{lstlisting}[style=lisp]
+(require 'asdf)
+(pushnew "C:/quicklisp/dists/quicklisp/software/slime-v2.20/" asdf:*central-registry*)
+(require :swank)
+(swank:create-server :port 4005 :dont-close t)
+\end{lstlisting}
+
+\subsubsection{Starting sessions under Emacs}
+
+To start a Lisp session under Emacs \emph{without} Slime, type Alt-X and then in the minibuffer \emph{run-lisp} or \emph{inferior-lisp}.
+
+\lz The error message \emph{spawning child process} is a typical sign of SBCL searching in the wrong directory for its core file. Check that the path specified in start-sbcl.bat is correct. Check that the Windows environment variables of the current user (PATH and SBCL\_HOME) are properly set, see above.
+
+\lz To invoke the command history under SBCL, type \emph{Ctrl-<uparrow>}.
+
+\lz To start a Lisp session under Emacs \emph{with} Slime, type Alt-X and then in the minibuffer \emph{slime}. The screen will split and the Slime prompt will show up.
+
+\lz To start a console Maxima session under Emacs \emph{without} Slime, type Alt-X and then in the minibuffer "maxima".
+
+\lz To start an iMaxima session under Emacs \emph{without} Slime, type Alt-X and then in the minibuffer "imaxima".
+
+\lz To start a console Maxima or iMaxima session under Emacs \emph{with} Slime, proceed as follows
+
+\lz 1. Start Maxima or iMaxima under Emacs as described above. 
+
+\lz 2. At the Maxima prompt, enter
+
+\begin{lstlisting}[style=lisp]
+load ("System/Emacs/startswank.lisp");
+\end{lstlisting}
+
+3. If the load succeeded, type Alt-X and then in the minibuffer "slime-connect".\index{slime-connect}
+
+\lz 4. At the message \emph{Host: 127.0.0.1} hit return in the minibuffer.
+
+\lz 5. At the message \emph{Port: 4005} again hit return in the minibuffer.
+
+\lz Now the Emacs screen splits and a new window is opened with a prompt \emph{Maxima>}. This is a Lisp session under Slime inside of the running Maxima session. All Maxima variables and functions can be addressed from it. This Emacs buffer can be used to debug or make modifications to the Maxima source code while Maxima is running. We can switch back and forth between the Maxima-Lisp and the Maxima-MaximaL windows by "Ctrl-x o" and enter input in both. The first time we switch back to the MaximaL window, there will be no Maxima prompt visible. Nevertheless, we can enter something followed by a semicolon, e.g. "a;" and the input prompt will reappear. Note that MaximaL variables have slightly different names under Lisp: they have to be preceeded by a "\$" character, so e.g. the variable "a" has to be addressed as "\$a" from the Lisp window. And as always in Lisp, commands are not terminated by a semicolon as they are in MaximaL.
+
+\lz It should be noted here that we won't have Slime's full functionality unless we use a Maxima built by ourselves. See chapter \ref{BW1} for how this is done. Then, if the build succeeded, set up Emacs to use this build. Only this will allow Slime to interactively find the source code of Maxima functions while Maxima is running in parallel with a Lisp session under Emacs.
+
+\section{Quicklisp}
+
+\emph{Quicklisp} \index{Quicklisp}is a Lisp library and installation system. It runs under Lisp, so we will install it and use it from SBCL. A good introduction and instruction how to use it can be found at \href{https://www.quicklisp.org/beta/}{https://www.quicklisp.org/beta/}. We will soon use Quicklisp to install Slime.
+
+\subsection{Installation}
+
+Quicklisp will be installed via our Lisp system, which is SBCL. Download the file \emph{quicklisp.lisp} from the Quicklisp homepage. Start SBCL from the Windows console by typing "SBCL" at the DOS prompt. See that you are connected to the internet. Then, at the SBCL prompt, enter the following Lisp commands one by one. This will install Quicklisp in "C:/Quicklisp". Don't install it in the program files subdirectory, because Quicklisp does not like blanks in the filename. Then Quicklisp is loaded and some code is added to our .sbclrc init-file, see section \ref{EE2}, in order for Quicklisp to be loaded automatically whenever we start SBCL.
+
+\begin{lstlisting}[style=lisp]
+(load "C:/Users/<user>/Downloads/quicklisp.lisp")
+(quicklisp-quickstart:install :path "C:/Quicklisp/")
+(load "C:/Quicklisp/setup.lisp")
+(ql:add-to-init-file)
+\end{lstlisting}
+
+If in the future we want to update our quicklisp installation, all we have to do is (from SBCL)
+
+\begin{lstlisting}[style=lisp]
+(ql:update-client)
+(ql:update-dist "quicklisp")
+\end{lstlisting}
+
+Now that we have installed Quicklisp, we stay in SBCL to continue with installing Slime.
+
+\section{Slime}
+
+If we install Slime via Quicklisp (alternatively it can be installed from Melpa), it will be stored inside of C:/Quicklisp. Under SBCL, execute the following Lisp forms one by one. This will install Slime including the Swank facilities. The last form will install slime-helper.el and add some code to our .emacs init file, see section \ref{EE1}, in order to load it and facilitate working with Slime. See \emph{http://quickdocs.org/quicklisp-slime-helper/}. 
+
+\begin{lstlisting}[style=lisp]
+(ql:update-client)
+(ql:update-dist "quicklisp")
+(ql:system-apropos "slime")
+(ql:quickload "swank")
+(ql:quickload "quicklisp-slime-helper")
+\end{lstlisting}
+
+We can check which version we have installed by looking at
+
+\emph{C:/Quicklisp/dists/quicklisp/software}. We should find a folder here named \emph{slime-v2.20}.
+
+\lz If we want to update an existing Slime installation, we follow exactly the same procedure as described above. A subfolder with the new version will be installed. It is not necessary to uninstall the old one. We only have to adapt the paths in our personal setup and initialization files (e.g. in \emph{startswank.lisp}, see below).
+
+\section{Asdf/Uiop}
+
+\lz \emph{ASDF} \index{ASDF}(Another system definition facility) is a Lisp build system. See \href{https://common-lisp.net/project/asdf/}{https://common-lisp.net/project/asdf/} for a description. \emph{UIOP} \index{Uiop}\index{ASDF!UIOP}is an extension of ASDF which significantly enhances Common Lisp's functionality. For instance, it emulates file handling procedures for Windows.
+
+\subsection{Installation}
+
+Our Quicklisp installation comes with a Lisp source file \emph{asdf.lisp} in the main folder. But Asdf/Uiop is already included in our SBCL installation, too. Here, in the contrib folder, we find the compiled files \emph{asdf.fasl} and \emph{uiop.fasl}. These are the files used by SBCL. It is important to have the latest possible version of Asdf/Uiop installed here. To find out which version we have in our SBCL installation, we can do from SBCL
+
+\begin{lstlisting}[style=lisp]
+(require 'asdf)
+asdf::*asdf-version*
+"3.3.1"
+\end{lstlisting}
+
+The version of the asdf.lisp in our Quicklisp installation can be found in the source code itself. Just open the file with Notepad++. It turns out to be much older, in our case it is 2.26. We continue our investigations from SBCL:
+
+\begin{lstlisting}[style=lisp]
+(ql:update-client)
+(ql:update-dist "quicklisp")
+(ql:system-apropos "asdf")
+\end{lstlisting}
+
+tells us that the Quicklisp library has version 3.3.1 available. Finally, we take a look at the Asdf homepage and find out that the latest released version is 3.3.2. So we download the corresponding asdf.tar.gz and unpack it with 7zip (This goes in two steps: first we unzip the .tar.gz, then the resulting .tar). In addition, we download the latest \emph{asdf.lisp} file from the Asdf archive. Oops, if we just click on the file, we get one very long string without any line breaks. But what we want can be done in the following way: rightclick on the file in the archive, select "save as" and set the file name to \emph{asdf.lisp}. Then we open the file with Notepad++. Now we have the correct Windows line endings (CR/LF instead of Unix LF only)! What we want to do now is compile this file ourselves to create the asdf.fasl (which should include Uiop as well and) which we will insert into our SBCL/contrib folder to replace the existing version. We always save the existing versions, of course, by renaming them. Let's assume the asdf.lisp is in the downloads folder. Then we continue with SBCL
+
+\begin{lstlisting}[style=lisp]
+(compile-file "C:/Users/<user>/Downloads/asdf.lisp")
+\end{lstlisting}
+
+and wait patiently until the compilation process is finished. Check that there were no error conditions. We got three, so we fall back to asdf 3.3.1. With this version, compilation was successful. Now the asdf.fasl file should be in the download folder, too. We copy it into the folder \emph{Program Files/Steel Bank Common Lisp/1.4.2/contrib}. Then we leave SBCL by entering \tcb{(quit)}, start it again from the Windows DOS prompt and continue with checking
+
+\begin{lstlisting}[style=lisp]
+(require 'asdf)
+asdf::*asdf-version*
+"3.3.1"
+\end{lstlisting}
+
+It is obvious how we have to install a possible update later.
+
+\lz Note: We experienced that loading startswank.lisp from a (i)Maxima session under Emacs does not work with our sbcl 1.4.2 using its original asdf 3.3.1 nor with our self-compiled asdf 3.3.1. With our sbcl 1.3.18 it works with its original asdf 3.1.5, but not with asdf 3.3.1. 
+
+\section{Latex}
+
+We need to have a Latex installation on our system if we want to use the iMaxima interface, which runs under Emacs and gives LateX output.
+
+\subsection{MikTeX}
+
+\emph{MikTeX} \index{MikTeX}provides the Latex environment needed for iMaxima. This is a very complicated system, and it is important to follow the installation instruction carefully.
+
+\lz Download the latest version from miktex.org. Execute the program as administrator (Rightclick). Install MikTeX in the default directory C:/Program Files/MikTeX 2.9. Load packages on the fly: "yes". If during installation your antivirus program complains, ignore it this time and continue the installation.
+
+\lz For maintenance always use the subdirectory Maintenance(Admin). After the installation, open the MikTex packet manager from the MikTeX 2.9/Maintenance(Admin) directory in the program menu. Install packages mhequ, breqn, mathtools, l3kernel, unicode-data. These files are needed for iMaxima. Immediately run Update from Maintenance(Admin), too, and install all the available updates proposed.
+
+\subsection{Ghostscript}
+
+\emph{Ghostscript} \index{Ghostscript}is needed for iMaxima, too.
+
+\lz Install Ghostscript in the default directory C:/Program Files/gs. An overview about the software is to be found under C:/Program Files/gs/gs9.21/doc/Readme.htm.
+
+\subsection{TeXstudio, JabRef, etc.}
+
+\emph{TeXstudio} \index{TeXstudio}is not needed for iMaxima, but it is a nice LateX editor which runs on top of MikTeX. This documentation was written with TeXstudio. The author wishes to thank the TeXstudio team for the kind help and support.
+
+\lz Note that the wxMaxima interface provides nice LateX output via the context menu.
+
+\lz Install TeXstudio in the default directory C:/Program Files (x86)/TeXstudio. Set biber to be the standard bibliography program.
+
+\lz \emph{JabRef} is a nice program to maintain a larger bibliography. Personally, we prefer to edit the .bib file with Notepad++, however, and use JabRef only to display the result and do searches in it.
+
+\section{Linux and Linux-like environments}
+
+\subsection{Cygwin}
+
+Install Cygwin in C:/Program Files/cygwin64.
+
+\subsection{MinGW}
+
+Install MinGW in C:/Program Files/MinGW.
+
+\subsection{Linux in VirtualBox under Windows}
+
+\subsubsection{VirtualBox}
+
+\subsubsection{Linux}
+
+\end{document}

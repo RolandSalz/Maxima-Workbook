@@ -1,0 +1,138 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\chapter{SBCL init file \emph{.sbclrc}}\label{AA2}
+
+The following is a model of the complete SBCL init file ".sclrc" to be placed both in C:/Users/<user> and C/:Users/<user>/AppData/Roaming. See section \ref{EE2} for explanations.
+
+\begin{lstlisting}[style=lisp]
+; initialize Quicklisp
+#-quicklisp
+(let ((quicklisp-init (merge-pathnames "C:/quicklisp/setup.lisp" (user-homedir-pathname))))
+(when (probe-file quicklisp-init)
+(load quicklisp-init)))
+(format t "~%~a" "Quicklisp loaded.")
+
+; Set compiler option for maximum debug support
+(declaim (optimize (debug 3)))
+(format t "~%~a" "(declaim (optimize (debug 3))) set.")
+
+; Set external format to UTF-8
+(setf sb-impl::*default-external-format* :utf-8)
+(format t "~%~a" "External format set to UTF-8.")
+
+; display final messages
+(format t "~%~a" "Init-File C:/Users/<user>(/AppData/Roaming)/.sbclrc completed.")
+(format t "~%~a~a" "Current directory (also from Maxima) is " *default-pathname-defaults*)
+(format t "~%~a" "To change the current directory use (setq *default-pathnames-default* #P\"D:/Maxima/Builds/\").")
+(format t "~%~a" "Relative paths can be used and standard file extension .lisp omitted, e.g.: (load \"subdir/subdir/filename\").")
+(format t "~%~a" " ")
+\end{lstlisting}
+
+\chapter{Emacs init file \emph{.emacs}}\label{AA1}
+
+The following is a model of the complete Emacs init file \emph{.emacs} to be places in C:/Users/<user>/AppData/Roaming. See section \ref{EE1} for explanations.
+
+\lzz \begin{lstlisting}[style=lisp]
+; load Quicklisp Slime helper
+(load "C:/Quicklisp/slime-helper.el")
+
+; set inferior Lisp to SBCL
+(setq inferior-lisp-program "C:Users/<user>/start-sbcl.bat")
+
+; Manually set temporary copy of Windows environment variable SBCL_HOME
+; This is here only for debugging. Normally we don't have to do this. The Windows environment variable is set to our separately installed inferior Lisp, and Maxima will set the temporary copy of the variable itself.
+; (setenv "SBCL_HOME" "C:/maxima-5.41.0/bin")
+; (setenv "SBCL_HOME" "C:/Program Files/Steel Bank Common Lisp/1.3.18/")
+
+; set up Maxima
+; *maxima-build-type* can be "repo-tarball" or "installer"
+(defvar *maxima-build-type* "installer")
+; *maxima-build-dir* contains the root directory of the build, terminated by a slash.
+(defvar *maxima-build-dir* "C:/Maxima/maxima-5.41.0/")
+; (defvar *maxima-build-dir* "D:/Maxima/builds/lob-2017-04-04-lb/")
+(load "D:/Programme/Maxima/System/Emacs and Slime setup for Maxima/setup-imaxima-imath.el")
+
+; Key reassignments for Slime
+(eval-after-load 'slime
+  `(progn
+    (global-set-key (kbd "C-c a") 'slime-eval-last-expression)
+    (global-set-key (kbd "C-c c") 'slime-compile-defun)
+    (global-set-key (kbd "C-c d") 'slime-eval-defun)
+    (global-set-key (kbd "C-c e") 'slime-eval-last-expression-in-repl)
+    (global-set-key (kbd "C-c f") 'slime-compile-file)
+    (global-set-key (kbd "C-c g") 'slime-compile-and-load-file)
+    (global-set-key (kbd "C-c i") 'slime-inspect)
+    (global-set-key (kbd "C-c l") 'slime-load-file)
+    (global-set-key (kbd "C-c m") 'slime-macroexpand-1)
+    (global-set-key (kbd "C-c n") 'slime-macroexpand-all)
+    (global-set-key (kbd "C-c p") 'slime-eval-print-last-expression)
+    (global-set-key (kbd "C-c r") 'slime-compile-region)
+    (global-set-key (kbd "C-c s") 'slime-eval-region)
+  ))
+
+; The following is placed here automatically by
+; M-x customize, Editor, Basic settings, Tab width, default 8 -> 2, Save
+(custom-set-variables
+;; custom-set-variables was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+'(safe-local-variable-values (quote ((Base . 10) (Syntax . Common-Lisp) (Package . Maxima))))
+'(tab-width 2))
+(custom-set-faces
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+)
+\end{lstlisting}
+
+\lzzz This is the file \emph{start-sbcl.bat}:
+
+\begin{lstlisting}[style=smallblue]
+"C:/Program Files/Steel Bank Common Lisp/1.3.18/sbcl.exe"
+rem "C:/Maxima-5.41.0/bin/sbcl.exe"
+
+rem Prior to calling SBCL we can set the SBCL start directory.
+rem If we don't, the Emacs start directory will be the default.
+rem Example:
+rem D:
+rem cd /Programme/Lisp
+\end{lstlisting}
+
+\chapter{Git configuration file ".gitconfig"}\label{AA3}
+
+The following is a model of the complete Git configuration file ".gitconfig" to be placed in C:/Users/<username>. See section \ref{EE3} for explanations.
+
+\begin{lstlisting}[style=smallblue]
+[filter "lfs"]
+   clean = git-lfs clean -- %f
+   smudge = git-lfs smudge -- %f
+   required = true
+[user]
+   name = Roland Salz
+[user]
+   email = maxima@roland-salz.de
+[core]
+   editor = 'c:/Program Files/Notepad++/Notepad++.exe' -multiInst -nosession
+   autocrlf = true
+   whitespace = cr-at-eol
+[alias]
+   st = 'status'
+   ch = 'checkout'
+   br = 'branch'
+   logol = log --pretty=format:'%h %cn %cd %s'
+[merge]
+   tool = kdiff3
+[mergetool "kdiff3"]
+   path = c:/Program Files/kdiff3/kdiff3.exe
+[diff]
+   tool = kdiff3
+   guitool = kdiff3
+[difftool "kdiff3"]
+   path = c:/Program Files/kdiff3/kdiff3.exe
+\end{lstlisting}
+
+\end{document}

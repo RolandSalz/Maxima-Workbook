@@ -1,0 +1,201 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Simplification}
+
+\section{Properties for simplification}
+
+\section{General simplification}
+
+\subsection{Conversion between (complex) exponentials and circular/hyperbolic functions}
+
+\lz \hyt{exponentialize}{\tcr{\emph{exponentialize (expr)}}} \hfill \tcr{[function]}\index{exponentialize} \\
+\hyt{exponentialize}{\tcr{\emph{exponentialize}}} \qquad \tcr{\emph{default: false}} \hfill \tcr{[option variable]}\index{exponentialize!flag}
+
+\lz The function \emph{exponentialize} converts circular and hyperbolic functions in \emph{expr} to equivalent (complex) exponentials. This is useful for instance to be able to apply \emph{solve} to \emph{expr}, see sect. \ref{SE1}.
+
+\lz If the option variable \emph{exponentialize} is \emph{true}, all circular and hyperbolic functions encountered in the course of the following computations will be converted to (complex) exponentials; so in this case it is not necessary any more to apply the function to any expression.  Flags \emph{exponentialize} and \emph{demoivre} cannot both be true at the same time.
+
+\lz \hyt{demoivre}{\tcr{\emph{demoivre (expr)}}} \hfill \tcr{[function]}\index{demoivre} \\
+\hyt{exponentialize}{\tcr{\emph{demoivre}}} \qquad \tcr{\emph{default: false}} \hfill \tcr{[option variable]}\index{demoivre!flag}
+
+\lz The function \emph{demoivre} converts (complex) exponentials in \emph{expr} to equivalent circular functions. Note that while exponentialize is also capable of converting hyperbolic functions to their exponential equivalents, demoivre is not capable of the inverse.
+
+\lz If the option variable \emph{demoivre} is \emph{true}, Maxima will try to convert all (complex) exponentials encountered in the course of the following computations to circular functions; so in this case it is not necessary any more to apply the function to any expression. Flags \emph{demoivre} and \emph{exponentialize} cannot both be true at the same time.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@  exponentialize(2*cos(s)+sin(s/2));
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} {{\% e}^{\% i s}}-\frac{\% i \left( {{\% e}^{\frac{\% i s}{2}}}-{{\% e}^{-\frac{\% i s}{2}}}\right) }{2}+{{\% e}^{-\% i s}} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   demoivre(%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} 2 \cos{(s)}+\sin{\left( \frac{s}{2}\right) } \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   exponentialize(tanh(s));
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{{{\% e}^{s}}-{{\% e}^{-s}}}{{{\% e}^{s}}+{{\% e}^{-s}}} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   demoivre(%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \frac{{{\% e}^{s}}-{{\% e}^{-s}}}{{{\% e}^{s}}+{{\% e}^{-s}}} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz See sect. \ref{SE1} for an application of \emph{exponentialize}.
+
+\section{Trigonometric simplification}
+
+\emph{trigsimp} kann nicht mit Komma nachgestellt werden.
+
+\section{Own simplification functions}
+
+\subsection{Apply2Part}
+
+\lz \hyt{Apply2Part}{\tcr{\emph{Apply2Part ($ \gpal $ 'function() $ \gbar '\lam $-expr() $ \gpar $, expr $ \glangle ,i_1,\dots,i_n \glangle, \gpal [j_1,\dots,j_l] \gbar allbut(j_1,\dots,j_l) \gpar \grangle \grangle $)}}} \\
+. \hfill \tcr{[function of \emph{rs\_simplification}]}\index{Apply2Part}
+
+\lz Selectively applies \emph{function}, which must be quoted\footnote{\emph{ratexpand} for instance is also a flag which by default evaluates to \emph{false}.} and followed by parentheses (either empty or with additional arguments to \emph{function}\footnote{E.g. \emph{partfrac} needs a second argument.}), to the part of \emph{expr}, which is specified by the following arguments in the way of the arguments of function \emph{part}. As in \emph{part}, a list of selected terms can be specified as the last argument, or the construction with \emph{allbut} can be used. The complete \emph{expr} with the substitution accomplished is returned. 
+
+\lz A lamba expression can be specified instead of a symbol for \emph{function}. Again it must be quoted and followed by parentheses (either empty or with additional arguments).
+
+\lz \emph{Apply2Part} can be used e.g. with functions \emph{factor}, \emph{expand}, \emph{ratexpand} (which brings terms to a common denominator), or \emph{trigsimp}. Note that \emph{PullFactorOut} has this functionality already built in, so its combination with Apply2Part is unnecessary.
+
+\lz As an example, \emph{function} being set to \emph{factor} allows to selectively factor a part (or even specific terms from a sum) anywhere in an expression. This constructs and evaluates an expression of the form \emph{substpart(factor(part(expr, indices)),expr, indices)}, where the last index can be a list of the terms of a sum to be factored. The factor itself is specified only implicitely by this selection.
+
+\lzz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   expr: f(t)=a*x+b*y+c*x*y+d*y;
+<@\tcr{(\%o1)}@			 f(t)=cxy+dy+by+ax
+<@\tcr{(\%i2)}@   Apply2Part('factor(),expr,2,[1,2,3]);
+<@\tcr{(\%o2)}@			 f(t)=(cx+d+b)y+ax   
+<@\tcr{(\%i3)}@   Apply2Part('factor(),expr,2,[1,4]);
+<@\tcr{(\%o3)}@			 f(t)=x(cy+a)+dy+by
+<@\tcr{(\%i4)}@   Apply2Part('factor(),%,2,[2,3]);
+<@\tcr{(\%o4)}@			 f(t)=x(cy+a)+(d+b)y  
+<@\tcr{(\%i5)}@   Apply2Part('lambda([x],x^2)(),%,2,1,1);
+<@\tcr{(\%o5)}@			 f(t)=x^2(cy+a)+(d+b)y  
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\subsection{ChangeSign}
+
+\lz \hyt{ChangeSign}{\tcr{\emph{ChangeSign ($ expr \glangle ,i_1,\dots,i_n \grangle $)}}} \hfill \tcr{[function of \emph{rs\_simplification}]}\index{ChangeSign}
+
+\lz Changes the sign of \emph{expr} or the subexpression $ expr, i_1,\dots,i_n $ specified as in function \hyl{part}{\emph{part}}. By applying this function to an expression twice, the minus sign can be switched between two places, e.g. two factors, between numerator and denominator of a fraction, or between a product as a whole and one of its factors. The inner function call should be tested alone before being wrapped by the second call, because the canonical order may be changed by the inner call. Note that the operator of the sum $ a-b $ is "+", with the operator of $ -b $ being "$ - $" (b can be a subexpression). 
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   expr:-((a-b)/(c-d));
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} -\frac{a-b}{c-d} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   ChangeSign(ChangeSign(expr,1,1),1,2);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} -\frac{b-a}{d-c} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   expr:f=('diff(a,x)+((a+b)/(c-d)))/(h+j+log(d));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} f=\frac{\frac{b+a}{c-d}+\frac{d}{d x} a}{j+h+\log{(d)}} \]
+\vspace{-5mm} 
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   ChangeSign(ChangeSign(expr,2,1,1,1),2,1,1);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} f=\frac{\frac{d}{d x} a-\frac{-b-a}{c-d}}{j+h+\log{(d)}} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i5)}@   expr:-s*(-a+b)*(-c+d);
+<@\tcr{(\%o5)}@			 -(-a+b)*(-c+d)*s
+<@\tcr{(\%i6)}@   ChangeSign(ChangeSign(expr),2);
+<@\tcr{(\%o6)}@			 (-a+b)*(c-d)*s
+\end{lstlisting} 
+\color{black} \reqn
+\end{small}
+
+\subsection{FactorTerms}
+
+\lz \hyt{FactorTerms}{\tcr{\emph{FactorTerms ($ [fac_1,\dots,fac_m] $, expr $ \glangle ,i_1,\dots,i_n \grangle $)}}} \hfill \tcr{[function of \emph{rs\_simplification}]}\index{FactorTerms}
+
+\lz Factors out the factors $ fac_1,\dots,fac_n $ from the terms where they appear in the subexpression specified by $ expr, i_1,\dots,i_n $. This function uses \emph{ratcoeff}. Not every term of the specified subexpression needs to contain one of the given factors. But \emph{FactorTerms} can't work properly, if a term of the subexpression contains more than one of the given factors. In this case, the result will equal the given subexpression, which can be shown by expanding it again, but the desired factoring is impossible. So in this case \emph{Apply2Part(factor)} has to be used instead, which allows selecting terms individually; here the specific factor to be factored out of the multi-factor term is specified implicitely.
+
+\lz The complete \emph{expr} with the substitution accomplished is returned.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   expr: y=a*3+b*4+b*c+d*a+e$
+<@\tcr{(\%i2)}@   FactorTerms([a,b],expr,2);
+<@\tcr{(\%o2)}@			 y=e+a*(d+3)+b*(c+4)
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\subsection{PullFactorOut}
+
+\lz \hyt{PullFactorOut}{\tcr{\emph{PullFactorOut ($ \gpal expr \gbar 'part \, (expr,i_1,\dots,i_n \glangle, \gpal [j_1,\dots,j_l] \gbar allbut(j_1,\dots,j_l) \gpar \grangle) \gpar \glangle , factor \grangle $)}}} \\ . \hfill \tcr{[function of \emph{rs\_simplification}]}\index{PullFactorOut} \\
+\hyt{PullFactorOut2}{\tcr{\emph{PullFactorOut2 (expr $ \glangle , factor \grangle $)}}} \hfill \tcr{[function of \emph{rs\_simplification}]}\index{PullFactorOut2}
+
+\lz Pulls \emph{factor} out of \emph{expr} and wraps it in a box which normally preceeds the remainder. \emph{expr} can be a product, fraction, sum, list, vector or matrix. If the remainder is a fraction, a list or a matrix, it is placed in a second box in order for the first box not to be pulled into the numerator or each element of the list or matrix. If no factor is specified, the gcd is determined and pulled out. However, this does not make sense and does not work for products or fractions.
+
+\lz If part of an \emph{expr} is specified as in function \emph{part} (note that this has to be quoted here), only this part will be factored, but the whole \emph{expr} will be returned. Thus, combination of \emph{PullFactorOut} with \emph{Apply2Part} is not necessary. Giving the last parameter as a list of selected terms or using \emph{allbut} to exclude selected terms as in function \emph{part} is also possible, see \emph{"`Kugel rollte im Hohlkegel.wxm"'}.
+
+\lz \emph{PullFactorOut2} is an experimental version with the same functionality, but not requiring to put a box around the pulled out factor, unless -1 is pulled out of a matrix. 
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   v:r*CVect(cos(t),sin(t));
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \begin{pmatrix}
+r \cos(t) \\ r \sin(t)
+\end{pmatrix} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   PullFactorOut(v,r);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} (\tcr{r})\, \begin{pmatrix}\cos{(t)}\\
+\sin{(t)}\end{pmatrix} \]
+\vspace{-2mm} 
+\color{black} \reqn
+\end{small}
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   g1:-3*a*b/2;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} -\frac{3 a b}{2} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   PullFactorOut('part(g1,2),3/2);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} -\left( \tcr{\frac{3}{2}} \right)  a b \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   g2:Fn=p+(a-(3*a*b/(2*c*d)))/(d+g);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \mathit{Fn}=p+\frac{a-\frac{3 a b}{2 c d}}{g+d} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   PullFactorOut('part(g2,2,2,1,2),-3*a/2);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \mathit{Fn}=p+\frac{\left( \tcr{-\frac{3 a}{2}} \right) \, \left( \tcr{\frac{b}{c d}} \right) +a}{g+d} \]
+\vspace{-2mm} 
+\color{black} \reqn
+\end{small}
+
+\lzz \hyt{ElimCommon}{\tcr{\emph{ElimCommon (equ)}}} \hfill \tcr{[function of \emph{rs\_simplification}]}\index{ElimCommon}
+
+\lz On a recursive basis this function eliminates common factors and/or common terms from both sides of the equation \emph{equ}.
+
+\lz This function was written by Stavros Macrakis, 2016. It employs the global function ElimCommonTerms.
+
+\end{document}

@@ -1,0 +1,35 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{List, matrix, structure}
+
+\section{List}\label{DS1}
+
+\subsection{makelist}
+
+\lz \hyt{makelist}{\tcr{\emph{makelist ($ \glangle expr \glangle, n \grangle \grangle \, $) $ \; \gbar $}}} \hfill \tcr{[function]}\index{makelist} \\
+\hyt{makelist}{\tcr{\emph{makelist ($ expr, i \, \glangle, i_0 \grangle i_{max} \glangle, step \grangle \, $) $ \; \gbar $}}} \\
+\hyt{makelist}{\tcr{\emph{makelist ($ \gpal expr \, \gbar \, [expr_1,\dots,expr_n] \gpar, x, list \, $)}}}
+
+\lz This is a very powerful function to create lists from expressions and/or other lists. There are three general forms, each of them with some possible variations.
+
+\lz The first form ...
+
+\lz The second form ...
+
+\lz For an example see the example to the discrete plot of \emph{plot2d}.
+
+\lz The third form returns a list whose elements are evaluations of \emph{expr} or sublists being evaluations of $ expr_1,\dots,expr_n $. These expressions are functions of variable x, which takes its values running through \emph{list}. \emph{makelist}'s return value has as many elements as \emph{list} has, i.e. \emph{length(list)} elements. For \emph{j} running from 1 through \emph{length(list)}, the $ j^{th} $ element of the list returned is given by \emph{ev(expr,x=list[j])} or \emph{ev($ [expr_1,\dots,expr_n] $,x=list[j])}. 
+
+\lz For an example see the second example to the function \emph{rk} implementing the Runge-Kutta method for numerically solving a first order ODE.
+
+\subsection{create\_list}
+
+\section{Matrix}
+
+
+\section{Structure}
+
+
+\end{document}

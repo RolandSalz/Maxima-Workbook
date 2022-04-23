@@ -1,0 +1,174 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Lisp Development}
+
+\section{MaximaL and Lisp interaction}
+
+\subsection{History of Maxima and Lisp}
+
+Maxima is written in Lisp, and much of the terminology used within MaximaL is based on the terminology used within Lisp. Since Maxima was, in the early phase of the 1960s and 1970s, as part of MIT's project MAC, developed in parallel to Lisp, Maxima's basic design decisions were based on the state of the art of the contemporary Lisp's available. The early parts of Maxima were written in MACLisp, which was also developed as part of MIT's project MAC. When Common Lisp had been established as a standard, most of Maxima's source code was translated to it. However, some parts remained in MACLisp, having been wrapped into Common Lisp user functions, so that they could be understood by the Common Lisp interpreter or compiler. While these relics have stayed in Maxima until today, Common Lisp itself has been refined and enhanced over the years up to the present ANSI standard. While new Lisp development within Maxima can make use of the entire functionality of this advanced standard, which most of today's Comon Lisp systems understand, the major part of Maxima makes use only of the basic language elements from the early days of Common Lisp.
+
+\subsection{Accessing Maxima and Lisp functions and variables}
+
+Maxima is written in Lisp, and it is easy to access Lisp functions and variables from MaximaL and vice versa. 
+
+The correspondence between MaximaL and Lisp identifiers is described in section \ref{LD2}.
+
+Then we show how the user can use Lisp forms within his Maxima session or inside of his MaximaL code in order to visualize and interact with data and program structures on Maxima's Lisp level.
+
+FInally it is decribed how MaximaL expressions can be used from within Lisp code.
+
+\subsubsection{Executing Lisp code under MaximaL}
+
+\paragraph{Switch to an interactive Lisp session temporarily} \mbox{}
+
+\lz The MaximaL function \emph{to\_lisp} opens an interactive Lisp session. Entering the Lisp form \emph{(to-maxima)} closes the Lisp session and returns to MaximaL. 
+
+\paragraph{Single-line Lisp mode} \mbox{}
+
+\lz Lisp code may be executed from within a MaximaL session. A single line of Lisp (containing one or more forms) may be executed with the MaximaL \hyperlink{break command}{break command} \emph{:lisp}. E.g.
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   :lisp (foo $x $y)
+\end{lstlisting}
+
+calls the Lisp function \emph{foo} with MaximaL variables x and y as arguments. The \emph{:lisp} construct can appear at the interactive Maxima or debugger prompt or in a file processed by \emph{batch} or \emph{demo}, but not in a file processed by \emph{load}, \emph{batchload}, \emph{translate\_file}, or \emph{compile\_file}.
+
+\lz Further examples: Use primitive (i.e. standard CL function) "+" to add the values of MaximaL variables x and y:
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   x:10$ y:5$
+<@\tcr{(\%i3)}@   :lisp (+ $x $y)
+15
+\end{lstlisting}
+
+\lz Use Maxima Lisp function \emph{add} to symbolically add MaximaL variables a and b, and assign the result to c:
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   :lisp (setq $c (add '$a '$b))
+((MPLUS SIMP) $A $B)
+<@\tcr{(\%i1)}@   c;
+<@\tcr{(\%o1)}@ 			   b + a
+\end{lstlisting}
+
+\lz Show the Lisp properties of MaximaL variable d:
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   context;
+<@\tcr{(\%o1)}@ 			  initial
+<@\tcr{(\%i2)}@   supcontext(d);
+<@\tcr{(\%o2)}@ 			     d
+<@\tcr{(\%i3)}@   :lisp (symbol-plist '$d)
+(subc ($initial))
+\end{lstlisting}
+
+\paragraph{Using Lisp forms directly in MaximaL} \mbox{}
+
+% My mail to the list from 22.7.2017. Keywords: documentation, print, ?print
+
+\lz There is yet another way to execute Lisp code from within a MaximaL session. Lisp forms can - with some syntactical adaptation - be included directly into MaximaL code. This mechanism works with the help of the ? escape to access Lisp identifiers from MaximaL described in section \ref{LD2}. 
+
+\lz In order to synchronize the different syntax of MaximaL and Lisp, Lisp forms here are notated in a way which resembles MaximaL: instead of the Lisp function being the first element of a list and the arguments the remaining elements, the function name is set in front of the list which then includes only the arguments, separated by commas. E.g. the Lisp form
+
+\begin{lstlisting}
+(foo a b c)
+\end{lstlisting}
+
+with some Lisp function foo is written when called from MaximaL as
+
+\begin{lstlisting}
+?foo (a, b, c);
+\end{lstlisting}
+
+For example, if the internal structure of some MaximaL variable a is to be displayed, we can make use of the Lisp \emph{print} function by 
+
+\begin{lstlisting}
+?print ($a);
+\end{lstlisting}
+
+Note that this mechanism does not work for all Lisp functions.
+
+\lz In particular, some Lisp functions are shadowed in Maxima, namely the following:
+
+\emph{complement, continue, "//", float, functionp, array, exp, listen, signum, atan, asin, acos, asinh, acosh, atanh, tanh, cosh, sinh, tan, break, gcd}.
+
+\subsubsection{Using MaximaL expressions within Lisp code}
+
+\paragraph{Reading MaximaL expressions into Lisp} \mbox{}
+
+\lz The \emph{\#\$} Lisp macro allows the use of Maxima expressions in Lisp code. \emph{\#\$expr\$} expands
+to a Lisp expression equivalent to the Maxima expression \emph{expr}. E.g.
+
+\begin{lstlisting}
+(msetq $foo #$[x, y]$)
+\end{lstlisting}
+
+in Lisp has the same effect as has in MaximaL
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   foo: [x, y];
+\end{lstlisting}
+\vspace{-2mm} 
+
+\paragraph{Printing MaximaL expressions from Lisp} \mbox{}
+
+\lz The Lisp function \emph{displa} prints an expression in Maxima format.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   :lisp #$[x, y, z]$
+((MLIST SIMP) $X $Y $Z)
+<@\tcr{(\%i1)}@   :lisp (displa '((MLIST SIMP) $X $Y $Z))
+[x, y, z]
+NIL
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\paragraph{Calling MaximaL functions from within Lisp} \mbox{}
+
+\lz Functions defined in Maxima are not ordinary Lisp functions. The Lisp function
+\emph{mfuncall} calls a Maxima function. For example:
+
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   foo(x,y) := x*y$
+<@\tcr{(\%i1)}@   :lisp (mfuncall '$foo 'a 'b)
+((MTIMES SIMP) A B)
+\end{lstlisting}
+\vspace{-2mm} 
+
+
+\section{Using the Emacs IDE}
+
+\section{Debugging}
+
+\subsection{Breaks}
+
+\subsection{Tracing}
+
+\subsection{Analyzing data structures}
+
+\section{Lisp compilation}
+
+\section{Providing and loading Lisp code}\label{LD1}
+
+There are basically two ways how to incorporate changes and amendments to the Lisp code of Maxima. The easy way is to just load it into a Maxima session. Often this method will be sufficient, in particular if we want to load whole new packages written in Lisp. But this method has drawbacks when modifying system code. To overcome them, the new or modified Lisp code has to be committed with Git, and then Maxima has to be rebuilt from the modified source code base.
+
+\subsection{Loading Lisp code}
+
+\subsubsection{Loading whole Lisp packages}
+
+\subsubsection{Modifying and loading individual system functions or files}
+
+The user can, at the start or at any later point within a running Maxima session, modify the code of Maxima itself. This is done by reloading files containing Maxima system or application Lisp code, or even by reloading only individual functions from them. All function definitions, system variables, etc., of a reloaded file or only the individually reloaded functions will overwrite the existing system function definitions and variables of the same name. This is independent of whether the existing file or function was compiled or not.  Depending on the Lisp used and on the setting of Lisp system variables, the system may issue a warning concerning the redefinition of each function or variable, but it will not decline to do so. From the moment on where it has been successfully loaded, the new function definition will be used whenever the function is called. So any Maxima system function can easily be changed by just reloading a modified version of its definition. It is not necessary to reload the whole system file which contains it, and it is not necessary for the file that contains the modified function to have the same name as the original system file. Only the name of the function has to be identical. Of course, new functions can be added this way, too.
+
+\lz This method is so easy that most people will want to try it out and see whether it is sufficient for their needs. 
+
+\lz The substitution or adding of function definitions can be automated by incorporating the reload procedure in the \emph{maxima-init.lisp} or \emph{maxima-init.mac} files to be executed at Maxima startup time. Even after a new Maxima release, the procedure does not have to be changed. So in some kind, we can apply our changes on top of the latest Maxima release.
+
+\subsection{Committing Lisp code and rebuilding Maxima}
+
+The method described above, however, as nice as it might seem in the beginning, will be more and more complicated with a growing number of modifications we make and files that are affected. Furthermore, we cannot easily incorporate modifications that the Maxima team might issue in the meantime at precisely the same files or functions that we have changed ourselves. To prevent such conflicts, at a certain point the user will have no other choice but to use \emph{Git} to manage his local repository, commit and merge his modifications with the ones from Sourceforge, or rebase them on top. This method will be described in detail in chapter \ref{RM1}.
+
+\end{document}

@@ -1,0 +1,319 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\part{Basic Operation}
+
+\chapter{Basics}
+
+\section{Introduction}
+
+\subsection{REPL: The read-evaluate-print loop}
+
+Maxima is written in the programming language \emph{Lisp}. \index{Lisp}Originally, before this language was standardized, \emph{MacLisp}, \index{MacLisp}a dialect developed at MIT, was used, later the Maxima source code was translated to \emph{Common Lisp}, \index{Common Lisp}\index{Lisp!Common} the Lisp standard still valid today. One of the key features of Lisp is the so-called \emph{REPL}, \index{REPL}the \emph{read-evaluate-print loop}. When launching Lisp, the user sees a \emph{prompt} \index{prompt}where he can enter a Lisp \emph{form}. The Lisp system reads the form, evaluates it and displays the result. After having done this, Lisp outputs the prompt again, giving back the initiative to the user to start a new cycle of operation by entering his next form. The Lisp system primarily works as an interpreter. Nevertheless, functions and packages can also be compiled.
+
+\lz The same basic principle of operation has been employed to the Maxima language, which in this book we will abbreviate \emph{MaximaL}. \index{MaximaL}Maxima also works with a REPL, as being the cycle of interpretation of some expression entered by the user. (Later we will see that Maxima program code can be compiled, too.) This design principle for the user interface was easy to implement and therefore the natural choice in the early times. With one exception, all Maxima front ends still use this principle today. It may seem simple and out of date, but it offers a number of significant advantages which the user will quickly learn to appreciate. The successive loops, as they are operated sequentially and recorded chronologically on the screen, provide a natural log which the user can scroll back at any time to see what he has done and what results he has obtained so far. By simply copying and pasting, the user can take both input and output from previous loops and insert it again at the input prompt. Previous commands can be modified and reentered, and intermediate results can be used for further computation. 
+
+\lz But the benefits of this way of working reach even further: when programming in MaximaL, the user can test out every bit of code in the REPL first, before integrating it into his program. Bottom up, step by step, he builds the program, from the most detailed routines to the most abstract layers, always basing every new part on the direct experience in the test environment of his Maxima REPL. This way of programming had proved to be very efficient in Lisp, and with good reason the same could be expected for Maxima.
+
+\lz This basic principle of operation has been adopted by almost all other computer algebra systems as well. By the way: most CAS' are implemented in Lisp or a Lisp-like language.
+
+\lz Thus, with regard to this general procedure of the REPL, MaximaL and Lisp have a certain similarity. The user who takes the effort to learn Lisp will soon find out that similarities reach much further. However, there are also significant differences. While Lisp is a strictly and visibly list based language working with a non-intuitive, but highly efficient prefix notation, MaximaL is much closer to traditional languages of the Algol-type, more intuitive, more \emph{natural} to the human user, with a structure and notation closer to the mathematical one.
+
+\subsection{Command line oriented vs. graphical user interfaces}
+
+User interfaces in the early days were command line oriented, not graphical. They worked in text mode, centered around a specific spot on the screen, called the \emph{prompt}. \index{prompt}Input was done with the keyboard. On hitting \emph{enter}, the input line was executed, creating the output to be display after a simple line-feed. The REPL makes very intelligent use of this initial situation, and many even very experienced CAS users still work with no other interface today. In Maxima this interface is called \emph{command line Maxima}, sect. \ref{UI1}, or simply the \emph{console}.
+
+\lz Nowadays, however, most people are used to employ the full screen of the computer, and the mouse has become even more important as an input medium than the keyboard. CAS interfaces have been developed that take this evolution into account. \emph{wxMaxima}, sect. \ref{UI1a}, \index{wxMaxima}has been designed in a way similar to the \emph{Mathematica notebook}, and just as the latter one is most important for Mathematica, wxMaxima is now the predominant Maxima front-end. The basic structural element of this interface is the \emph{cell}, \index{cell!wxMaxima}which is a kind of a \emph{local} command line interface. Multiple cells can be created in a Maxima session, allowing the user to work with multiple command line interfaces in parallel. This shows that the basic structure of working with the CAS does not significantly change when moving from the console to wxMaxima. However, the output is no longer displayed in one-dimensional text mode, but in two-dimensional graphical mode, allowing mathematical formulas to be represented in a much more readable way. 
+
+\lz We should mention here already that wxMaxima, being based on \emph{wxWidgets}, \index{wxWidgets}has significant drawbacks if it comes to error handling, sometimes making it less efficient for sophisticated MaximaL programming and debugging compared to the other front-ends. Between the original console and wxMaxima are a number of Maxima user interfaces which keep the singular REPL, but integrate it in some kind of more graphical environment. Examples are \emph{XMaxima} and \emph{iMaxima}.
+
+\lz Since \emph{Gnuplot} \index{Gnuplot}has been integrated into Maxima, output of functions can be done in a fully graphical way with 2D- and 3D-plots in separate windows. 2D-plots can be scrolled in four directions, while 3D-plots can even be turned around easily and freely, with surfaces of adaptable transparency, to be viewed from all perspectives, inside and out, like objects in a CAD program.
+
+\section{Basic operation}
+
+\subsection{Executing an input line or cell}
+
+In \emph{command line Maxima}, sect. \ref{UI1}, use \emph{enter} to execute an input line. In \emph{wxMaxima}, sect. \ref{UI1a}, use \emph{shift+enter}.
+
+\section{Basic notation}
+
+\subsection{Output description and numbering conventions}
+
+In this manual we use certain conventions to facilitate the description of Maxima's output and the interactive dialogue with Maxima. Note, however, that we never change the input required by Maxima. 
+
+\lz We represent output formulas always in the usual mathematical 2D notation. In order to make output better readable, we usually omit the \%-character in front of Maxima system constants such as \%e, \%i, \%pi, etc. We write Re and Im instead of \emph{realpart} and \emph{imagpart}. And as wxMaxima does, we write $ \ov{z} $ instead of conjugate(z). 
+
+\lz Input and output tags, see section \ref{IO1}, are sometimes represented as they would be in wxMaxima with its cell-based structure. Other frontends therefore might number input and output differently.
+
+\subsection{Syntax description operators}
+
+In order to facilitate describing the MaximaL syntax, we use a number of \emph{syntax description operators}. \index{syntax description operator}These do not form part of MaximaL itself and thus cannot been entered in Maxima by the user. In order to distinguish them form the proper MaximaL syntax, throughout this manual they have green color and a slightly bigger size.
+
+\lzz \tcr{\emph{$ \glangle \dots \grangle $}} \hfill \tcr{[syntax description operator]}\index{$ \glangle \grangle $}
+
+\lz Optional elements, e.g. optional function parameters, are enclosed in angle brackets. Example: see \hyl{genmatrix}{\emph{genmatrix}}.
+
+\lzz \tcr{\emph{$ \gpal \dots \gbar \dots \gpar $}} \hfill \tcr{[syntax description operator]}\index{$ \gpal \gbar \gpar $}
+%\index{$ entry| $} führt zu schlimmer Fehlermeldung. \index{\|} nimmt das Zeichen auch nicht in den Index auf. Daher weglassen.
+
+\lz Alternatives are separated by $ \gbar $ and enclosed in $ \gpal \gpar $. More than two alternatives can be represented by repeating the $ \gbar $ operator inside of the green parentheses. Exactly one of the alternative has to be selected. Example: see \hyl{to-poly-solve}{\emph{to\_poly\_solve}}.
+
+\subsection{Compound and separation operators}
+
+\lz \tcr{\emph{($ \dots , \dots , \dots $)}} \hfill \tcr{[matchfix  operator]}\index{()}
+
+\lz While in Lisp any kind of \emph{list} \index{list}is enclosed in \emph{parentheses}, \index{parentheses} in Maxima these are reserved for specific lists, e.g. the list of parameters of an ordinary function definition, the list of arguments of a function call, or a list of statements in a simple sequential compound statement. The elements are separated by commas.
+
+\lzz \tcr{\emph{[$ \dots , \dots , \dots $]}} \hfill \tcr{[matchfix  operator]}\index{[]}
+
+\lz \emph{Square bracketes} \index{square brackets}enclose data lists, e.g. the elements of a one-dimensional list, or the the rows of a matrix. They also enclose the subscripts of a variable, array, hash array, or array function. They are also used to enclose the local variable definitions of a block. The elements are separated by commas.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   x: [a,b,c];
+<@\tcr{(\%o1)}@			     [a,b,c]   
+<@\tcr{(\%i2)}@   x[3];
+<@\tcr{(\%o2)}@				c
+<@\tcr{(\%i3)}@   array(y,fixnum,3);
+<@\tcr{(\%o3)}@				y
+<@\tcr{(\%i4)}@   y[2]: %pi;
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o4)}} \pi \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   y[2];
+\end{lstlisting}
+\vspace{-5.5mm} \[ \tag*{\tcr{\ttfamily (\%o5)}} \pi \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   z[a]:b;
+<@\tcr{(\%o6)}@				b	
+<@\tcr{(\%i7)}@   z[a];
+<@\tcr{(\%o7)}@				b
+<@\tcr{(\%i8)}@   g[k] := 1/(k^2+1);
+\end{lstlisting}
+\vspace{-5mm} \[ \tag*{\tcr{\ttfamily (\%o8)}} \frac{1}{k^2+1} \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i9)}@   g[10];
+\end{lstlisting}
+\vspace{-5mm} \[ \tag*{\tcr{\ttfamily (\%o9)}} \frac{1}{101} \]
+\color{black} \reqn
+\end{small}
+
+\lzz \tcr{\emph{\{$ \dots, \dots, \dots $\}}} \hfill \tcr{[matchfix  operator]}\index{\{\}}
+
+\lz \emph{Braces} \index{braces} enclose sets. The elements are separated by commas. Note that the elements of a set, unlike a list, are not ordered. 
+
+\lzz \tcr{\emph{,}} \hfill \tcr{[infix  operator]}\index{, comma}
+
+\lz Separator of elements of a list or set. Note that in Lisp, instead, the separation character of a list is the blank. 
+
+\subsection{Assignment operators}
+
+\subsubsection{Basic :}
+
+\hyt{:}{\tcr{\emph{:}}} \hfill \tcr{[infix  operator]}\index{:}
+
+\lz This is the basic \hyl{assignment}{\emph{assignment}} \emph{operator}. \index{assignment operator}When the lhs (lhs) is a simple variable (not subscripted), : evaluates its rhs (rhs), unless quoted, and associates that value with the symbol on the lhs. 
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   a:3;
+<@\tcr{(\%o1)}@			        3
+<@\tcr{(\%i2)}@   b:a;	      /* The rhs is evaluated before assigning. */
+<@\tcr{(\%o2)}@			        3
+<@\tcr{(\%i3)}@   c:'a;		   /* The rhs is not evaluated. */
+<@\tcr{(\%o3)}@			        a
+<@\tcr{(\%i4)}@   ev(c);					/* Evaluation of c. */
+<@\tcr{(\%o4)}@			        3
+
+<@\tcr{(\%i1)}@   b:a;			/* The rhs evaluates to itself. */
+<@\tcr{(\%o1)}@			        a
+<@\tcr{(\%i2)}@   a:c$ c:3;
+<@\tcr{(\%o3)}@			        3
+<@\tcr{(\%i4)}@   b;					/* Simple evaluation of b. */
+<@\tcr{(\%o4)}@			        a
+<@\tcr{(\%i5)}@   ev(b);			        /* Double evaluation of b. */
+<@\tcr{(\%o5)}@			        c
+<@\tcr{(\%i6)}@   ev(ev(b));			        /* Triple evaluation of b. */
+<@\tcr{(\%o6)}@			        3
+\end{lstlisting}
+
+\lz Chain constructions are allowed; in this case all positions but the right-most one are considered lhs.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   x : y : 3;
+<@\tcr{(\%o1)}@			        3
+<@\tcr{(\%i2)}@   x;
+<@\tcr{(\%o2)}@			        3
+<@\tcr{(\%i3)}@   y;
+<@\tcr{(\%o3)}@			        3
+\end{lstlisting}
+
+\lz When the lhs is a subscripted element of a list, matrix, declared Maxima array, or Lisp array, the rhs is assigned to that element. The subscript must name an existing element; such objects cannot be extended by naming nonexistent elements.
+
+\lz When the lhs is a subscripted element of an undeclared Maxima array, the rhs is assigned to that element, if it already exists, or a new element is allocated, if it does not already exist.
+
+\lz When the lhs is a list of simple and/or subscripted variables, the rhs must evaluate to a list, and the elements of the rhs are assigned to the elements of the lhs, element by element, in parallel (not in serial; thus evaluation of an element may not depend on the evaluation of a preceding one).
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   [a, b, c] : [4, 7, 10];
+<@\tcr{(\%o1)}@			       [4, 7, 10]
+<@\tcr{(\%i2)}@   a;
+<@\tcr{(\%o2)}@			        4
+\end{lstlisting}
+
+\subsubsection{Indirect ::}
+
+\lz \hyt{::}{\tcr{\emph{::}}} \hfill \tcr{[infix  operator]}\index{::}
+
+\lz This is the \hyl{indirect assignment}{\emph{indirect assignment}} \emph{operator}. \index{assignment operator!indirect}:: is the same as :, except that :: evaluates its lhs as well as its rhs. Thus, the evaluated rhs is assigned not to the symbol on the lhs, but to the \emph{value} of the variable on the lhs, which itself has to be a symbol.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   x : 'y;
+<@\tcr{(\%o1)}@			        y
+<@\tcr{(\%i2)}@   x :: 123;
+<@\tcr{(\%o2)}@			       123
+<@\tcr{(\%i3)}@   x;
+<@\tcr{(\%o3)}@			        y
+<@\tcr{(\%i4)}@   y;
+<@\tcr{(\%o4)}@			       123
+<@\tcr{(\%i5)}@   x : '[a, b, c];
+<@\tcr{(\%o5)}@			    [a, b, c]
+<@\tcr{(\%i6)}@   x :: [1, 2, 3];
+<@\tcr{(\%o6)}@			    [1, 2, 3]
+<@\tcr{(\%i7)}@   a;
+<@\tcr{(\%o7)}@				1
+<@\tcr{(\%i8)}@   b;
+<@\tcr{(\%o8)}@				2
+<@\tcr{(\%i9)}@   c;
+<@\tcr{(\%o9)}@				3
+\end{lstlisting}
+
+\lz A value (and other bindings) can be removed from a variable by functions \emph{kill} and \emph{remvalue}. These \emph{unassignment functions} are more important than they might seem. Unbinding variables from values no longer needed should be made a habit by the user, because forgetting about assigned values is a frequent cause of mistakes in following computations which use the same variables in other contexts.
+
+\subsection{Miscellaneous operators}
+
+\subsubsection{Comment}
+
+\hyt{/*}{\tcr{\emph{/* ... */}}} \hfill \tcr{[matchfix  operator]}\index{/* ... */}
+
+\lz This is the \emph{comment operator}. \index{comment operator} Any input in-between will be ignored.
+
+\subsubsection{Documentation reference}
+
+\lzz \hyt{?}{\tcr{\emph{?}}} \hfill \tcr{[prefix  operator]}\index{?} \\
+\hyt{?}{\tcr{\emph{?}}} \hfill \tcr{[prefix  operator]}\index{?}
+
+\lz These are the \emph{documentation operators}. \index{documentation operator}? placed before a system function name f (and separated from it by a blank) is a synonym for \emph{describe (f)}. This will cause the online documentation about system function f to be displayed on the screen.
+
+\lz ?? placed before a system function name f (and separated from it by a blank) is a synonym for \emph{describe (f, inexact)}. This will cause the online documentation about function f and all other system functions having a name which starts with "f" to be displayed on the screen.
+
+\section{Naming of identifiers}
+
+\subsection{MaximaL naming specifications}\index{identifier!naming specifications}\index{symbol!naming specifications}\index{Names!specifications}
+
+\subsubsection{Case sensitivity}
+
+Symbols (identifiers) in Maxima are \emph{case-sensitive}, \index{case-sensitivity}i.e. Maxima distinguishes between upper-case (capital) and lower-case letters. Thus, \emph{NAME}, \emph{Name} and \emph{name} are all different symbols and may denote different variables.
+
+\subsubsection{ASCII standard}\index{ASCII}
+
+Maxima identifiers may comprise \emph{alphabetic characters}, \index{character!alphabetic}the \emph{digits} 0 through 9, the underscore \_, the percent sign \%, and any \emph{special character} \index{character!special}preceded by the backslash \ character. A digit may be the first character of an identifier, if it is preceded by a backslash. Digits which are the second or later characters need not be preceded by a backslash.
+
+\lzz \hyt{alphabetic}{\tcr{\emph{alphabetic}}} \hfill \tcr{[property]}\index{alphabetic}
+
+\lz Special characters may be declared \emph{alphabetic} using the \hyl{declare}{\emph{declare}} function. If so declared, they need not be preceded by a backslash in an identifier. The special characters declared \emph{alphabetic} are initially \%, and \_. The list of all characters presently declared \emph{alphabetic} can be seen as the Lisp variable \emph{*alphabet*}. 
+
+\lz Since almost all special characters from the ASCII code set are in use for other purposes in Maxima, often as operators for which the parser pays special attention, it makes little sense to declare them alphabetic. Thus, we have taken an example with non-ASCII characters (which does not make much more sense, as we will soon see).
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   declare("äöüÄÖÜß",alphabetic);
+<@\tcr{(\%o1)}@			       done
+<@\tcr{(\%i2)}@   Größe : 123;
+<@\tcr{(\%o2)}@			       123
+<@\tcr{(\%i3)}@   :lisp *alphabet*
+(_ % ä ö ü Ä Ö Ü ß)
+<@\tcr{(\%i4)}@   featurep("ä",alphabetic);
+<@\tcr{(\%o4)}@			       true
+\end{lstlisting}
+
+All characters in the string passed to \emph{declare} as the first argument are declared to be \emph{alphabetic}. Function \hyl{featurep}{\emph{featurep}} returns true, if all characters in the string passed to it as the first argument have been declared \emph{alphabetic} by the user or are the \_ or \% characters.
+
+\subsubsection{Unicode support}\index{Unicode}
+
+Recently, efforts have been made to include Unicode support in Maxima. It has to be stated, however, that Unicode support is not a universal feature of Maxima, but depends to some extend on the operating system, on the Lisp and on the front-end used. Given that our actual system supports it, almost any Unicode character can nowadays be used within a Maxima identifier, including in the first position. Thus, we do not need to declare German Umlaute as \emph{alphabetic}, we can just use them. We can use Greek letters, too, or even Chinese.
+
+\lz Special attention has to be payed, though, when using non-ASCII characters. If things work well on one system, this does not guarantee it will work without problems on another one. Besides, there might still be issues in some situations and circumstances that have not been solved in a satisfactory way yet.
+
+\lz As a general statement we can say that Linux gives better and more consistent Unicode support than Windows. Concerning the Lisp, we find that SBCL is always a good choice, combining most efficient behavior with least problems. From the point of view of the front-ends, wxMaxima takes most efforts to provide comprehensive Unicode support.
+
+\paragraph{Implementation notes} \mbox{}
+
+\lz Maxima uses Lisp function \emph{alphabetp} to determine whether a character is allowed as an alphabetic character in an identifier. This function refers to CL system function \emph{alpha-char-p}. In a working UTF8 environment, this will allow almost any Unicode character except for punctuation and digits. In addition, \emph{alphabetp} checks the global variable \emph{*alphabet*} for characters declared \emph{alphabetic} by the user.
+
+\subsection{MaximaL naming conventions}\index{naming conventions}
+
+\subsubsection{System functions and variables}
+
+In general, Maxima's system functions and variables use lower-case letters only and use the underscore character to separate words within a symbol, e.g. \emph{cartesian\_product}. 
+
+\lz In order to clearly distinguish them from system functions, our own additional functions and variables start with capital letters and use capital letters to separate words within a symbol, e.g. \emph{ExtractEquations}.
+
+\subsubsection{System constants}\index{constant}\label{B1}
+
+\lz System constants like the imaginary unit i, the Euler's number e, or the constants $ \pi $ and $ \gamma $ are preceded by \% in Maxima (i.e. \%i, \%e, \%pi, \%gamma) \index{\%gamma}to make them better distinguishable from ordinary letters or identifiers. One has to keep this in mind in order not to be confused. Note in the following example that \emph{log} denotes the natural logarithm with base e. Maxima and its system functions return the input expression, if they cannot evaluate it.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   %e^log(x);
+<@\tcr{(\%o1)}@			        x
+<@\tcr{(\%i2)}@   e^log(x);
+\end{lstlisting}
+\vspace{-5mm} \[ \tag*{\tcr{\ttfamily (\%o2)}} e^{\log (x)} \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   %pi;
+<@\tcr{(\%o3)}@			       %pi
+<@\tcr{(\%i4)}@   float(%pi);
+<@\tcr{(\%o4)}@			 2.128231705849268
+<@\tcr{(\%i5)}@   float(pi);
+<@\tcr{(\%o6)}@			 	pi
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz wxMaxima will return $ \pi $ both in number 3 and 6. In 3 it denotes the constant, in 6 the lower-case Greek letter.
+
+\subsection{Correpondence of MaximaL and Lisp identifiers}\label{LD2}
+
+\begin{table}[h!]
+\begin{tabular}{l l}
+	\underline{MaximaL} & \underline{Lisp} \\
+	var & \big( \$VAR, \en \$var, \en \$Var \big) $ \rightarrow $ \$VAR; \quad |\$VAR| \\
+	VAR & |\$var| \\
+	Var & |\$Var| \\
+	?var & \big( VAR, \en var, \en Var \big) $ \rightarrow $ VAR \\
+	$ ? \backslash \hspace{-1mm} *var \backslash - 1 \backslash* $ & *VAR$ - $1*
+\end{tabular}
+\caption{Correspondence of MaximaL and Lisp identifiers}\label{Tab-B1}
+\end{table}
+
+MaximaL and Lisp symbols are distinguished by a naming convention. A Lisp symbol which begins with a dollar sign \$ corresponds to a MaximaL symbol without the dollar sign. For example, the MaximaL symbol \emph{foo} corresponds to the Lisp symbol \emph{\$FOO}. Lisp functions and variables which are to be visible in Maxima as functions and variables with ordinary names (no special punctuation) must have Lisp names beginning with the dollar sign \$.
+
+\lz On the other hand, a MaximaL symbol which begins with a question mark ? corresponds to a Lisp symbol without the question mark. For example, the  MaximaL symbol \emph{?foo} corresponds to the Lisp symbol \emph{FOO}. Note that \emph{?foo} is written without a space between \emph{?} and \emph{foo}; otherwise it might be mistaken for the Maxima function \emph{describe("foo")} which can also be written as \emph{? foo}.
+
+\lz Hyphen -, asterisk *, or other special characters in Lisp symbols must be escaped by backslash $ \backslash $ where they appear in MaximaL code. For example, the Lisp identifier *foo-bar* is written $ \en ? \backslash \hspace{-1mm} *foo \backslash -bar \backslash * \en $ in MaximaL. 
+
+\lz While Maxima is case-sensitive, distinguishing between lowercase and uppercase letters in identifiers, Lisp does not make this distinction. \$foo, \$FOO and \$Foo are all converted by the Lisp reader by default to the Lisp symbol \$FOO.
+
+This discrepancy requires some rules governing the translation of names between Lisp and Maxima.
+
+\lz 1. A Lisp identifier not enclosed in vertical bars $ || $ corresponds to a Maxima identifier in lowercase. Whether a Lisp identifier is uppercase, lowercase, or mixed case, is ignored, e.g., Lisp \$foo, \$FOO, and \$Foo all correspond to Maxima foo. This is because \$foo, \$FOO and \$Foo are converted by the Lisp reader to the Lisp symbol \$FOO, since Lisp is not case-sensitive.
+
+\lz 2. A Lisp identifier enclosed in vertical bars and
+
+\lz 2.1. which is all uppercase or all lowercase corresponds to a Maxima identifier with case reversed. That is, uppercase is changed to lowercase and lowercase to uppercase. E.g., Lisp |\$FOO| and |\$foo| correspond to Maxima foo and FOO, respectively.
+
+\lz 2.2. which is mixed uppercase and lowercase corresponds to a Maxima identifier with the same case. E.g., Lisp |\$Foo| corresponds to Maxima Foo.
+
+\end{document}

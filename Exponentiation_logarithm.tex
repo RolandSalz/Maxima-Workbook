@@ -1,0 +1,167 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Roots, exponential and logarithmic functions}
+
+\section{Roots}
+
+\lz \tcr{\emph{sqrt(expr)}} \hfill \tcr{[function]}\index{sqrt}
+
+\lz Returns the square root of \emph{expr}.
+
+\subsection{Internal representation}
+
+Square roots, as well as n-th roots in general, are represented internally as expressions with the exponentiation operator to a rational exponent. So \emph{sqrt(x)} is represented by $ x^{(1/2)} $.
+
+
+\subsection{Simplification}
+
+\hyt{radexpand}{\tcr{\emph{radexpand}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{radexpand}
+
+\lz \hyt{domain}{\tcr{\emph{domain}}} \qquad \tcr{default: \emph{real}} \hfill \tcr{[option variable]}\index{domain}
+
+\lz When \emph{radexpand} is set to its default value \emph{true} and \emph{domain} to its default value \emph{real}, sqrt(x\^\ 2) is simplified to abs(x). 
+
+\lz When \emph{radexpand} is \emph{all} or assume(x>0) has been executed, nth roots of factors which are powers of n are pulled outside of the root. E.g. $ sqrt (16*x^2) $ is simplified to $ 4x $, and $ sqrt(x^2) $ to x.
+
+\lz When \emph{radexpand} is \emph{false} or (\emph{radexpand} is \emph{true} and \emph{domain} is set to \emph{complex}), $ sqrt(x^2) $ will not be simplified.
+
+\lzz \hyt{rootscontract}{\tcr{\emph{rootscontract (expr)}}} \hfill \tcr{[function]}\index{rootscontract}
+
+\lz \hyt{rootsconmode}{\tcr{\emph{rootsconmode}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{rootsconmode}
+
+\lz \emph{rootscontract} converts products (or quotients) of roots into roots of products (or quotients). For example, \emph{rootscontract $ (sqrt(x)*y^{(3/2)}) $} yields \emph{sqrt($ x \, y^3 $)}.
+
+\lz \emph{rootsconmode} controls, how \emph{rootscontract} is applied.
+
+\subsection{Roots of negative real or of complex numbers}
+
+Maxima allows negative real numbers, and more generally, complex numbers as arguments of any n-th root. If a real root exists, it is returned, otherwise Maxima computes the principal complex root. This, however, in certain cases will not be accomplished by a single command. Maxima does not automatically simplify complex numbers, so it may be that the expression is simplified only partially and will be returned containing a noun form. Further simplification can be achieved with \hyl{rectform}{rectform}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   (-8)^(1/3)
+<@\tcr{(\%o1)}@			        -2
+<@\tcr{(\%i2)}@   sqrt(-4)
+<@\tcr{(\%o2)}@			        2i
+<@\tcr{(\%i3)}@   (-8)^(1/4);
+\end{lstlisting}
+\vspace{-7mm} \[\tag*{\tcr{\ttfamily (\%o3)}} {{\left( -1\right) }^{\frac{1}{4}}}\, {{8}^{\frac{1}{4}}} \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   float(%);
+\end{lstlisting}
+\vspace{-7mm} \[\tag*{\tcr{\ttfamily (\%o4)}} 1.681792830507429 \; {{\left( -1\right) }^{\frac{1}{4}}} \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   (-1)^(1/4)
+\end{lstlisting}
+\vspace{-7mm} \[\tag*{\tcr{\ttfamily (\%o5)}} {{\left( -1\right) }^{\frac{1}{4}}} \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   rectform(%);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \frac{\% i}{\sqrt{2}}+\frac{1}{\sqrt{2}} \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   float(%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o7)}} 0.7071067811865475i+0.7071067811865475 \]
+\color{black} \reqn
+\end{small} \vspace{-7mm}
+
+\subsubsection{Computing all n complex roots}
+
+In the preceeding section we saw that Maxima computes only the principal root with the exponentiation operator to a rational exponent. If we want to compute all n (pairwise different) complex roots, we can use function \hyl{solve}{solve}. The principal root will usually be the last one in the list returned. As an example, we want to compute all three cubic roots of $ 110+74i $.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   float(rectform(solve(z^3=110+74*%i,z)));
+<@\tcr{(\%o1)}@     [z=3.830127018922193i-3.366025403784439, z=-4.830127018922193i-1.633974596215562, z=0.9999999999999999i+5.000000000000001]
+<@\tcr{(\%i2)}@   expand((5+%i)^3);
+<@\tcr{(\%o2)}@			     74i+110
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz Comparing this with
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   float(rectform((110+74*%i)^(1/3)));
+<@\tcr{(\%o2)}@		     0.9999999999999997i+5.0
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lz we notice that the expressions for the principal root differ slightly, apparantly due to the internal use of different algorithms.
+
+\section{Exponential function}
+
+\lz \hyt{exp}{\tcr{\emph{rexp (expr)}}} \hfill \tcr{[function]}\index{exp}
+
+\lz \emph{exp} ist die natürliche Exponentialfunktion. Maxima vereinfacht \verb|exp(x)|sofort zu $ e^x $.
+
+\subsection{Simplification}
+
+\lz \hyt{radcan}{\tcr{\emph{radcan (expr)}}} \hfill \tcr{[function]}\index{radcan}
+
+\lz Die Funktion \emph{radcan} vereinfacht Ausdrücke, die die Exponentialfunktion, den Logarithmus und Wurzeln enthalten.
+
+\lz \begin{small}
+	\color{blue} \leqn
+\lz \begin{lstlisting}
+<@\tcr{(\%i2)}@   (%e^x-1)/(1+%e^(x/2));
+	radcan(%);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{e^x-1}{e^{\frac{x}{2}+1}} \]
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} e^{\frac{x}{2}-1} \]
+\color{black} \reqn
+\end{small}
+
+\lz \hyt{logsimp}{\tcr{\emph{logsimp}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{logsimp}
+
+\lz Ist die Optionsvariable \emph{logsimp} gesetzt, wird eine Exponentialform \verb|%e^(r*log(x))| $ \equiv \enskip e^{r \, ln(x)} $ zu \verb|x^r| vereinfacht, falls $ r \in \Z $.
+
+\lzz \hyt{\%e\_to\_numlog}{\tcr{\emph{e\_to\_numlog}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{\%e\_to\_numlog}
+
+\lz Ist die Optionsvariable \emph{\%e\_to\_numlog} gesetzt, wird eine Exponentialform der Art \verb|%e^(r*log(x))| $ \equiv \enskip e^{r \, ln(x)} $ zu \verb|x^r| vereinfacht, falls $ r \in \Q $.
+
+\lzz \hyt{demoivre}{\tcr{\emph{demoivre}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{demoivre}
+
+\lz Ist die Optionsvariable \emph{demoivre} gesetzt, wird eine Exponentialform \verb|%e^(a+%i*b)| $ \equiv \enskip e^{a+i \, b} $ mit $ a, b \in \R $, also mit komplexem Exponenten in Standardform, mit der Euler'schen Formel zu \verb|%e^a*(cos(b)+%i*sin(b))| $ \equiv \enskip e^a \, (\cos b + i \, \sin b) $, also zu einem äquivalenten Ausdruck mit Kreisfunktionen, umgeformt.
+
+\lz Die Optionsvariable \emph{exponentialize} führt die gegenteilige Umformung durch. Es können also nicht beide Optionsvariablen gleichzeitig gesetzt sein. Beide Umformungen können auch durch Funktionen gleichen Namens bewirkt werden, ohne daß die Optionsvariablen gesetzt sind.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   %e^(a+ %i*b);
+	%e^(a+ %i*b), demoivre:true;
+	%, exponentialize:true;
+	radcan(%);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} e^{a+i \, b} \]
+\vspace{-8mm} \[\tag*{\tcr{\ttfamily (\%o2)}} e^a \, (\cos b + i \, \sin b) \]
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o3)}} e^a \left( \frac{e^{i \, b} - e^{-i \, b}}{2} + \frac{e^{i \, b} + e^{-i \, b}}{2} \right) \]
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} e^{a+i \, b} \]
+\color{black} \reqn
+\end{small}
+
+\lzz \hyt{\%emode}{\tcr{\emph{\%emode}}} \qquad \tcr{default: \emph{true}} \hfill \tcr{[option variable]}\index{\%emode}
+
+\lz Ist die Optionsvariable \emph{\%emode} gesetzt, wird eine Exponentialform \verb|%e^(%i*%pi*x)| $ \equiv \enskip e^{i \, \pi \, x} $ vereinfacht 
+
+\lz - falls x eine ganze Zahl, ein ganzzahliges Vielfaches von 1/2, 1/3, 1/4 oder 1/6 oder eine Gleitkommazahl ist, die einer ganzen oder halbganzzahligen Zahl entspricht: nach der Euler'schen Formel zu einer komplexen Zahl in der Standardform \verb|cos(%pi*x)+%i*sin(%pi*x)| und dann wenn möglich weiter vereinfacht,
+
+\lz - für andere rationale x zu einer Exponentialform \verb|%e^(%i*%pi*y)|, mit $ y = x-2k $ für ein $ k \in \N $, sodaß $ |y| < 1 $ ist.
+
+\lz Eine Exponentialform \verb|%e^(%i*%pi*(x+y))| $ \equiv \enskip e^{i \, \pi \, (x+y)} $ wird zu $ e^{i \, \pi \, x} e^{i \, \pi \, y} $ umgeformt und dann der erste Faktor entsprechend vereinfacht, wenn y ein Polynom oder etwa eine trigonometrische Funktion ist, nicht jedoch, wenn y eine rationale Funktion ist.
+
+\lz Wenn mit komplexen Zahlen in Polarkoordinatenform gerechnet werden soll, kann es hilfreich sein, \emph{\%emode} auf den Wert \emph{false} zu setzen.
+
+\lzz \hyt{\%enumer}{\tcr{\emph{\%enumer}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{\%enumer}
+
+\lz In an exponential form with floating point exponent, \%e is always evaluated to floating point, and therefore the whole form. If both \emph{\%enumer} and \emph{numer} are true, \%e is evaluated to floating point in any expression.
+
+\end{document}

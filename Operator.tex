@@ -1,0 +1,175 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Operators}
+
+\section{Defining and using operators}
+
+\subsection{Function notation of an operator}
+
+Infix operator function definition, example tensor product:
+
+infix("tp");
+
+a tp b := transpose(vlist(a)).transpose(transpose(vlist(b)));
+
+This can alternatively be defined by
+
+"TP"(a,b) := transpose(vlist(a)).transpose(transpose(vlist(b)));
+"="(a,b) is a functional notation equivalent to a=b.
+
+\subsection{Miscellaneous}
+
+Any prefix operator can be used with or without parentheses:
+not a <=> not(a)
+-a <=> -(a)
+
+\section{System defined operators}
+
+\subsection{Identity operators and functions}
+
+\begin{remark}
+	\hyl{:}{\emph{:}} and \hyl{::}{\emph{::}} are the assignment operators.
+\end{remark}
+
+\subsubsection{Equation operator}
+
+\lz \hyt{=}{\tcr{\emph{=}}} \hfill \tcr{[infix  operator]}\index{=}
+
+\lz This is the \hyl{equation}{\emph{equation}} \emph{operator}. Chains like a = b = c are not allowed. See sect. \ref{Ex1} for the exceptional case where the equation operator can be omitted.
+
+\lz When Maxima encounters an equation, its arguments, which means the lhs and the rhs, are evaluated and simplified separately. The operator = by itself does nothing more. It does not compare the two sides at all and the two sides are not simplified against each other. An expression like a = b represents an \emph{unevaluated equation}, which might or might not hold. Unevaluated equations may be passed as arguments to \hyl{solve}{\emph{solve}}, \emph{algsys} or some other functions.
+
+\lz Only \hyl{is}{is}\emph{(a = b)} and some other functions, namely \emph{if}, \emph{while}, \emph{unless}, \emph{and}, \emph{or}, and \emph{not}, will evaluate the equation \emph{a = b} to \emph{true} or \emph{false}.
+
+\lz Assumptions of equality cannot be specified with the = operator, only with function \emph{equal}.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   c:3$ d:3$
+<@\tcr{(\%i3)}@   a+a=c+d;
+<@\tcr{(\%o3)}@			      2a=6
+<@\tcr{(\%i4)}@   a+b=a+e;
+<@\tcr{(\%o4)}@			     b+a=e+a;
+\end{lstlisting}
+
+\lz Any desired simplification across the = operator has to be carried out manually. For example, functions \emph{rhs(eq)} and \emph{lhs(eq)} return the rhs and lhs, respectively, of an equation or inequation. Using them, we can indirectly achieve some basic simplification of an unevaluated equation by subtracting one side from the other, thus, bringing them both to one side. Of course, the user may write his own simplification routines to handle specific situations, as for example to subtract equal terms on both sides, to divide both sides by a common factor, etc.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   c:3$ d:3$
+<@\tcr{(\%i3)}@   eq: a+a=c+d;
+<@\tcr{(\%o3)}@			      2a=6
+<@\tcr{(\%i4)}@   eq/2;
+<@\tcr{(\%o4)}@			      a=3
+
+<@\tcr{(\%i5)}@   eq: a+b=a+e;
+<@\tcr{(\%o5)}@			     b+a=e+a;
+<@\tcr{(\%i6)}@   lhs(eq)-rhs(eq)=0;
+<@\tcr{(\%o6)}@			      b-e=0;
+\end{lstlisting}
+
+\subsubsection{Inequation operator}
+
+\lz \hyt{\#}{\tcr{\emph{\#}}} \hfill \tcr{[infix  operator]}\index{\#}
+
+\lz The negation of = is represented by \#, which is the \emph{inequation operator}. Just like for an equation, only the lhs and rhs will be evaluated separately, the returned expression constitutes an \emph{unevaluated inequation}. 
+
+\lz Only \emph{is(a \# b)} and the other functions mentioned above will evaluate the inequation \emph{a \# b} to \emph{true} or \emph{false}. Note that because of the rules for evaluation of predicate expressions (in particular because \emph{not expr} causes evaluation of expr), \emph{not a = b} is equivalent to \emph{is(a \# b)}, and not to \emph{a \# b}. 
+
+\lz Assumptions of inequality cannot be specified with the \# operator, only with function \emph{notequal}.
+
+\subsubsection{equal, notequal}
+
+\lz \tcr{\emph{equal (a,b)}} \hfill \tcr{[function]}\index{equal} \\
+\lz \tcr{\emph{notequal (a,b)}} \hfill \tcr{[function]}\index{notequal}
+
+\lz These functions by themselves, like = and \#, do nothing more than evaluate both arguments separately. Unlike a = b, however, \emph{equal(a,b)} is not an \emph{unevaluated equation} which can be passed as an argument to \emph{solve}, \emph{algsys} or some other functions. Instead, Functions \emph{equal} and \emph{notequal} can be used to specify assumptions with \hyl{assume}{\emph{assume}}.
+
+\lz Function \emph{is} tries to evaluate \emph{equal(a,b)} to a Boolean value. \emph{is(equal(a,b))} evaluates \emph{equal(a,b)} to \emph{true}, if a and b are \emph{mathematically equivalent expressions}. This means, they are mathematically equal for all possible values of their arguments. Comparison is carried out and equivalence established by checking the Maxima database for user-postulated assumptions, and by checking whether \emph{ratsimp(a-b)} returns zero.
+
+\lz When \emph{is} fails to reduce \emph{equal} to \emph{true} or \emph{false}, the result is governed by the global flag \emph{prederror}. When \emph{prederror} is \emph{true}, \emph{is} returns an error message. Otherwise (default), it returns \emph{unknown}.
+
+\lz \emph{notequal (a,b)} represents the negation of \emph{equal(a,b)}. Because \emph{not expr} causes evaluation of \emph{expr}, \emph{not equal(a,b)} is equivalent to \emph{is(notequal(a,b))}.
+
+\lz Assumptions are stored as Maxima properties of the variables concerned. Thus, comparison can be carried out and equivalence established between variables which are unbound, having no (numerical or symbolical) values assigned. But comparison can also be carried out and equivalence established by retrieving the variables' values (process of evaluation, dereferencing) and subsequent simplification. Of course, a combination of both methods is possible, too.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   c:3$ d:3$
+<@\tcr{(\%i3)}@   equal(a+a, c+d);
+<@\tcr{(\%o3)}@			      2a=6
+<@\tcr{(\%i4)}@   equal(a+b, a+e);
+<@\tcr{(\%o4)}@			     b+a=e+a;
+
+<@\tcr{(\%i5)}@   assume(equal(a,b))$ assume(e<f)$
+<@\tcr{(\%i6)}@   is(a=b);
+<@\tcr{(\%o6)}@			      false
+<@\tcr{(\%i7)}@   is(equal(a,b));
+<@\tcr{(\%o7)}@			      true
+<@\tcr{(\%i8)}@   is(equal(e,f));
+<@\tcr{(\%o8)}@			      false
+
+<@\tcr{(\%i9)}@   is(x^2-1 = (x+1)*(x-1));
+<@\tcr{(\%o9)}@			      false
+<@\tcr{(\%i10)}@  is(equal(x^2-1, (x+1)*(x-1)));
+<@\tcr{(\%o10)}@			     true
+
+<@\tcr{(\%i11)}@  is(equal((a-1)*a, b^2-b));
+<@\tcr{(\%o11)}@			     true
+
+<@\tcr{(\%i12)}@  is(equal(sinh(x), (%e^x-%e^-x)/2));
+<@\tcr{(\%o12)}@			    unknown
+<@\tcr{(\%i13)}@  exponentialize: true$
+<@\tcr{(\%i14)}@  is(equal(sinh(x), (%e^x-%e^-x)/2));
+<@\tcr{(\%o14)}@			     true
+\end{lstlisting}
+
+\subsubsection{is, is(a=b), is(equal(a,b))}
+
+\lz \hyt{is}{\tcr{\emph{is (expr)}}} \hfill \tcr{[function]}\index{is}
+
+\lz Function \emph{is} evaluates an (in)equation, a relation, or a function call of equal or nonequal to a Boolean value. \emph{is(a = b)} evaluates \emph{a = b} to \emph{true} if a and b, after each having been evaluated and simplified separately, which includes bringing them into canonical form, are \emph{syntactically equal}. This means, string(a) is identical to string(b). This is the case if a and b are atoms which are identical, or they are not atoms and their operators are all identical and their arguments are all identical. Otherwise, \emph{is(a = b)} evaluates to \emph{false}; \emph{is} never evaluates to \emph{unknown}. 
+
+\lz Note that in contrast to function \emph{equal}, \emph{is(a=b)} does not check assumptions in Maxima's database. Thus, Maxima properties of a and b are not considered, only their values. Assumptions of equality cannot be specified with the = operator, only with function \emph{equal}.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   assume(a=b);	
+Error!
+<@\tcr{(\%i2)}@   assume(equal(a,b))$
+<@\tcr{(\%i3)}@   is(a=b);
+<@\tcr{(\%o3)}@			      false
+<@\tcr{(\%i4)}@   is(equal(a,b));
+<@\tcr{(\%o4)}@			      true
+\end{lstlisting}
+
+\subsection{Relational operators}
+
+\lzz \tcr{\emph{<}} \hfill \tcr{[infix operator]}\index{<} \\
+\tcr{\emph{>}} \hfill \tcr{[infix operator]}\index{>} \\
+\tcr{\emph{<=}} \hfill \tcr{[infix operator]}\index{<=} \\
+\lz \tcr{\emph{>=}} \hfill \tcr{[infix operator]}\index{>=}
+
+\lz These are the \emph{relational operators}. \index{operator!relational}They are binary operators. Chains like \emph{a<b<c} are not allowed. Just like = and \#, relational operators do nothing more than evaluate and simplify their arguments separately. An expression like $ a<b $ is an \emph{unevaluated relational expression}, which might or might not hold. Any desired simplification across the relational operator has to be carried out manually. Function \emph{solve} does not accept relational expressions. 
+
+\lz Relational operators can be used to specify assumptions with \emph{assume}.
+
+\lz Function \emph{is} tries to evaluate a relational expression like \emph{a<b} to a Boolean value. Comparison is carried out by checking Maxima's database for user-postulated assumptions, and by checking what \emph{ratsimp(a-b)} returns. Thus, as for functions \emph{equal} and \emph{notequal}, both Maxima properties of the variables concerned and their values are considered.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   assume(-1<x, x<0)$	
+<@\tcr{(\%i2)}@   is(diff((x-t)/(1+t),t)<0);
+<@\tcr{(\%o2)}@			       true
+<@\tcr{(\%i3)}@   factor(diff((x-t)/(1+t),t));
+\end{lstlisting}
+\vspace{-5mm} 	\[ \tag*{\tcr{\ttfamily (\%o3)}} -\frac{x+1}{(t+1)^2} \]
+\color{black} \reqn
+\end{small}
+
+\vspace{-2mm} When \emph{is} fails to reduce a relational expression to \emph{true} or \emph{false}, the result is governed by the global flag \emph{prederror}. When \emph{prederror} is \emph{true}, \emph{is} returns an error message. Otherwise (default), it returns \emph{unknown}.
+
+\lz In addition to function \emph{is}, some other operators evaluate relational expressions to \emph{true} or \emph{false}, namely \emph{if}, \emph{while}, \emph{unless}, \emph{and}, \emph{or}, and \emph{not}.
+
+\subsection{Logical (Boolean) operators}
+
+\end{document}

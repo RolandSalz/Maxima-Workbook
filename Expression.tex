@@ -1,0 +1,306 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Expression}
+
+\section{General definitions}
+
+Any meaningful combination of operators, symbols and numbers is called an \emph{expression}. An expression can be a mathematical expression (numerical, symbolical, or a combination of both), but also a function call, a function definition, any other program statement (in Lisp called a \emph{form}) or even a whole program. 
+
+\lz An \emph{expression} is built up of elements, which are the operators, symbols and numbers. An expression consisting of only one element is called an \emph{atom} or \emph{atomic expression}. 
+
+\lz Expressions are structured, so that they can be subdivided into \emph{subexpressions}. A subexpression is itself an expression, which can again be subdiveded. Thus, an expression can have different \emph{levels} of subdivision and can be viewed as having a tree structure.
+
+\lz A non-atomic subexpression is called \emph{complete}, if it is an operand together with all of its arguments. For example, $ x+y+z $ is a complete subexpression of $ 2*(x+y+z)/w $ while $ x+y $ is not. Note that \emph{part} can select an incomplete subexpression when given a list as the last argument.
+
+\section{Forms of representation}
+
+There are three different forms of representing expressions in Maxima: the \emph{user visible form} (UVF), the \emph{general internal form} (GIF) and another, specific internal representation called \emph{canonical rational expression} (CRE). There are fundamental differences between these representations which the user has to be aware of.
+
+\subsection{User visible form (UVF)}\index{form!user visible (UVF)} \index{UVF, user visible representation}
+
+The \emph{user visible representation} (UVF) is the way Maxima displays an expression to the user. Most often, the user will also use this representation to enter an expression. For example, a fraction like $ 1/\sqrt{(x)} $ is entered and displayed as a fraction. If,  instead, it is entered in exponention form $ x^{-1/2} $, which is possible, it will still be displayed as a fraction, not in exponential form.
+
+\lz Within the UVF we have different appearances of the expression, depending on the user interface we work with (e.g. wxMaxima, iMaxima or the console), or depending on whether \emph{display2d} is set or not. However, in this chapter we are not concerned about these differences in appearance, they belong into the chapter on input and output or the chapter on different user interfaces. We don't distinguish between these appearances here, because the abstract UVF representation is the same for all of them.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   1/sqrt(x);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{1}{\sqrt{(x)}} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   x^(-1/2);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{1}{\sqrt{(x)}}  \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   display2d
+<@\tcr{(\%o3)}@			        true
+<@\tcr{(\%i4)}@   display2d:false$
+<@\tcr{(\%i5)}@   1/sqrt(x);
+<@\tcr{(\%o5)}@			        1/sqrt(x)
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\subsection{General internal form (GIF)}\index{representation!general internal (UVF)} \index{GIF, general internal representation}
+
+The \emph{general internal representation} (GIF) is the way Maxima stores and handles an expression internally. This is done on the Lisp level. But again, here we are not concerned about how actually expressions are stored internally as lists, but in the abstract representation of the expression. There are fundamental differences in comparison to the UVF. Nevertheless, to make visible these differences of the abstract format, we have to go down into the Lisp level and look at the lists.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   expr: x^(-1);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{1}{x} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   :lisp $expr
+((MEXPT SIMP) $X -1 )
+<@\tcr{(\%i2)}@   1/x;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{1}{x} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   :lisp $%
+((MEXPT SIMP) $X -1 )
+<@\tcr{(\%i3)}@   x^(-1/2);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{1}{\sqrt{(x)}} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   :lisp $%
+((MEXPT SIMP) $X ((RAT SIMP) -1 2))
+<@\tcr{(\%i4)}@   1/sqrt(x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \frac{1}{\sqrt{(x)}} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   :lisp $%
+((MEXPT SIMP) $X ((RAT SIMP) -1 2))
+<@\tcr{(\%i5)}@   -x/2;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \frac{-x}{2} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   :lisp $%
+((MTIMES SIMP) ((RAT SIMP) -1 2) $X)
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz What we see is that internally our top level fraction having a variable in the denominator is always represented as an exponential form of the variable having a negative exponent. Only if the denominator is a numerical value, a fraction will be represented internally as such. This happens for example in the exponent of $ x^{-1/2} $. The expression $ -x/2 $ is internally represented as the product $ -1/2 * x $, and $ -x $ is represented as the product $ -1 * x $. 
+
+\lz In these examples we have seen some of the major differences between the UVF and the GIF representation. A more comprehensive explanation of Maxima's internal representation of expressions can be found in \cite{FatemMGS}.
+
+\lz We also saw in the above examples, that the different levels of subexpressions, that is: the tree structure of the overall expression, are nicely represented in Lisp by nested lists.
+
+\subsection{Canonical rational expression (CRE)}\label{Ex3} \index{canonical rational expression (CRE)} \index{CRE, canonical rational expression}
+
+The \emph{canonical rational expression} (CRE) is an additional, special internal representation of expressions which Maxima uses in certain cases. It is explained in section 7.1 of \cite[11-12]{FatemMGS}.
+
+\section{Canonical order}\label{Ex2}
+
+When an expression is entered, Maxima orders its elements in a specifc way before storing the expression. Maxima uses what is called the \emph{canonical order} \index{order, canonical}in any representation (UVF, GIF, CTE). This helps Maxima (and, by the way, the user, too) to determine, whether two expressions are literally equal or not. For example, the terms of a sum of powers of the same variable are internally stored in the order of increasing powers.
+
+\lz \begin{small}
+	\color{blue}
+	\begin{lstlisting}
+	<@\tcr{(\%i1)}@   powerdisp:true$
+	<@\tcr{(\%i2)}@   x+x^3+x^2;
+	<@\tcr{(\%o2)}@			        x+x^2+x^3;
+	<@\tcr{(\%i2)}@   :lisp$%
+	((MPLUS SIMP) $X ((MEXPT SIMP) $X 2) ((MEXPT SIMP) $X 3))
+	\end{lstlisting}
+	\color{black}
+\end{small}
+
+\lz Note, however, that the order in which an expression is displayed in UVF depends on whether the flag \hyl{powerdisp}{\emph{powerdisp}} is set to \emph{true} or \emph{false} (default). If it is \emph{false}, display is in the reverse canonical order. GIF is not affected by \emph{powerdisp}.
+
+\section{Noun and verb}
+
+\section{Equation}\label{Ex1}
+
+\lz \tcr{\emph{lhs = rhs}} \hfill \tcr{[equation]}\index{=} \\
+\tcr{\emph{expr}} \hfill \tcr{[equation]}
+
+\lz An \emph{equation} \index{equation} in Maxima usually has the form \emph{lhs = rhs}, where \emph{lhs} and \emph{rhs} are expressions and \hyl{=}{\emph{=}} is the \emph{equation operator}. However, if a function requires an equation as its argument, one side of it can be omitted if it is zero, and only the other side \emph{expr} be provided. In this case, Maxima assumes the equation $ expr=0 $. So for example $ a*x^2+b*x+c=0 $ can be represented simply by $ a*x^2+b*x+c $.
+
+\section{Reference to subexpression}
+
+\subsection{Identify and pick out subexpression}
+
+Internally, a Maxima expression is represented as a tree structure. The root, each node and each leaf of this tree can be identified by a finite sequence of indices, which are natural numbers including zero. In general, the main operator of the expression is its root and carries the number zero, while its main operands are numbered from left to right in the displayed form of the expression using natural numbers starting from one. These indices, assigned to the root and the upmost level of nodes, constitute level one of the identification scheme of the expression. Within each of the main operands, a level two numbering is obtained in the same way: zero is assigned to the main operand's main operator, while its operands are numbered from left to right starting with one. This numbering scheme is repeated from level to level descending into the tree structure of the expression, until finally an atom is reached, which is now uniquely identified by a finite sequence of indices. We demonstrate this scheme with the help of the following function, which can pick any node or leaf (or even a number of them from the same level) of the expression's tree structure. 
+
+\lzz \hyt{part}{\tcr{\emph{part (expr, $ n_1,\dots,n_{k-1},\gpal n_k \gbar [n_{k1},\dots,n_{kl}] \gpar $)}}} \hfill \tcr{[function]}\index{part}
+
+\lz Returns the root (main operator), a node (subexpression), or a leaf (atom) of the displayed form of the expression \emph{expr}. The part obtained from expr corresponds to the finite sequence of indices $ n_1, \dots, n_k$. At first, part $ n_1 $ of expr is obtained, then part $ n_2 $ of that, etc. The value return is part $ n_k $ of part $ n_{k-1}$ of $\dots$ part $ n_2 $ of part $ n_1 $ of \emph{expr}. If no indices are specified, \emph{expr} is returned.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   eq:'diff(2*y,x) = a*y + (2+b)/x;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{d}{d x} \left( 2 y\right) =a y+\frac{b+2}{x}\]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   part(eq,0); part(eq,1); part(eq,2);
+<@\tcr{(\%o2)}@			       =
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{d}{d x} \left( 2 y\right) \]
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o4)}} a y+\frac{b+2}{x} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%i9)}@   part(eq,1,0); part(eq,1,1); part(eq,1,2); part(eq,1,1,0); part(eq,1,1,1);
+<@\tcr{(\%o5)}@			    derivative
+<@\tcr{(\%o6)}@			        2y
+<@\tcr{(\%o7)}@			        x
+<@\tcr{(\%o8)}@			        *
+<@\tcr{(\%o9)}@			        2
+<@\tcr{(\%i14)}@   part(eq,2,0); part(eq,2,1); part(eq,2,2); part(eq,2,2,0); part(eq,2,2,1);
+<@\tcr{(\%o10)}@			       +
+<@\tcr{(\%o11)}@			       ay
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o12)}} \frac{b+2}{x} \]
+\vspace{-6mm} 
+\begin{lstlisting}
+<@\tcr{(\%o13)}@			       /
+<@\tcr{(\%o14)}@			      b+2
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz If the last index is a list of indices, then a subexpression is returned which is made up of multiple operands (subexpressions or atoms) of the last operator, each index in the list standing for one. These operands are combined by their operator in the expression.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   part(2*(x+y+z),2,[1,3]);
+<@\tcr{(\%o1)}@			       x+z
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lz Function \emph{part} can also be used to obtain an element of a list, a row of a matrix, etc.
+
+\subsection{Substitute subexpression}
+
+\lz \hyt{substpart}{\tcr{\emph{substpart (repl, expr, $ n_1,\dots,n_{k-1},\gpal n_k \gbar [n_{k1},\dots,n_{kl}] \gpar $)}}} \hfill \tcr{[function]}\index{substpart}
+
+\lz In \emph{expr} the replacement \emph{repl} is substituted for the subexpression 
+\begin{center}
+	\hyl{part}{\emph{part}} \emph{(expr, $ n_1,\dots,n_{k-1},\gpal n_k \gbar [n_{k1},\dots,n_{kl}] \gpar $)},
+\end{center}
+and the new value of \emph{expr} is returned. \emph{repl} may be some operator to be substituted for an operator of \emph{expr}. In some cases \emph{repl} needs to be enclosed in double-quotes " (e.g.
+substpart ("+", a*b, 0) yields b + a).
+
+\section{Manipulate expression}
+
+\subsection{Substitute pattern}
+
+\subsubsection{subst: substitute explicite pattern}
+
+\lz\hyt{subst}{\emph{\tcr{subst (new, old, expr)}}} \hfill \tcr{[function]}\index{subst} \\
+\emph{\tcr{subst (old=new, expr)}} \\
+\emph{\tcr{subst ([eq\_1,\dots,eq\_k], expr)}}
+
+\lz This function substitutes \emph{new} for \emph{old} everywhere in \emph{expr}. \emph{old} must be an atom or a complete subexpression of \emph{expr}. \emph{subst(old=new, expr)} is equivalent to \emph{subst(new, old, expr)}. \emph{eq\_i} are equations of the form \emph{old=new} indicating multiple substitutions to be done in \emph{expr}, carried out in serial. See example after \emph{sublis}. 
+
+\lz As usual, all arguments are evaluated and can be quoted or, if necessary to enforce evaluation, even double quoted, see example. This function allows for substituting values (numbers or symbolic expressions) for symbols or vice versa.
+
+\lz If \emph{old} or \emph{new} are to be single-character operators, they must be enclosed in double-quotes. Note, however, that, due to the differences between UVF and GIF, replacing operators in an expression often does not yield the expected result and should be avoided. 
+
+\lz In any case, if the result of \emph{subst} is not what was expected, one should take a look at the GIF of the expression in order to find an explanation. Although \emph{subst} is implemented on the basis of Maxima's rules and patterns mechanism, which itself works strictly on the basis of GIF, some concessions have been made to the UVF in \emph{subst}. In general, any subexpression which can be selected by \emph{part} and which is complete can be replaced. For instance, in $ 1/\sqrt{(x)} $ the subexpression $ \sqrt{(x)} $ can be replaced, although in GIF this subexpression does not exist. See sect. \ref{RP3} for an alternative to \emph{subst} working directly with rules and patterns, and therefore strictly on the basis of GIF. You will see that this alternative is more powerful than \emph{subst}. The most powerful tool for substituting mathematical patterns, however, is \hyl{ratsubst}{\emph{ratsubst}}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   expr:x*a+(x*b)/2;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{b x}{2}+a x \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   e:c+d$
+<@\tcr{(\%i3)}@   x:'e$
+<@\tcr{(\%i4)}@   expr;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \frac{b x}{2}+a x \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   ev(expr);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \frac{b e}{2}+a e \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   ev(expr,eval);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \frac{b\, \left( d+c\right) }{2}+a\, \left( d+c\right) \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i8)}@   subst(''x,'x,expr);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o8)}} \frac{b\, \left( d+c\right) }{2}+a\, \left( d+c\right) \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i9)}@   subst(x,''x,%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o9)}} \frac{b e}{2}+a e \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   subst('x,x,%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o7)}} \frac{b x}{2}+a x \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lzz \hyt{sublis}{\emph{\tcr{sublis ([eq\_1,\dots,eq\_k], expr)}}} \hfill \tcr{[function]}\index{sublis}
+
+\lz This is the same as the corresponding form of \emph{subst}, but the substitutions are done in parallel. As opposed to \emph{subst}, the left side of the equation must be an atom; a complete subexpression of \emph{expr} is not allowed. The form with a single equation as the first argument is not allowed, either. 
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   subst([a=b, b=c], a+b);
+<@\tcr{(\%o1)}@			       2 c
+<@\tcr{(\%i2)}@   sublis([a=b, b=c], a+b);
+<@\tcr{(\%o2)}@			       c+b
+\end{lstlisting}
+
+\subsubsection{ratsubst: substitute implicit mathematical pattern}
+
+\lz\hyt{ratsubst}{\emph{\tcr{ratsubst (new, old, expr)}}} \hfill \tcr{[function]}\index{ratsubst}
+
+\lz Just like \hyl{subst}{\emph{subst}} this function substitutes \emph{new} for \emph{old} everywhere in \emph{expr}. But in contrast to \emph{subst}, all three arguments have to be mathematical expressions. \emph{old} does not have to be an atom or a complete subexpression of \emph{expr}, it does not even have to be a subexpression explicitely visible in \emph{expr}. In general, \emph{ratsubst} can substitute any subexpression which could be made explicit by any kind of equivalence transformation of \emph{expr}.
+
+\lz For instance, \emph{old} can be a subexpression visible only in \emph{expand(expr)} or, vice versa, only in \emph{factor(expr)}. If \hyl{radsubstflag}{\emph{radsubstflag}} is \emph{true}, \emph{old} can be a root, which is not explicit in \emph{expr}, but which could be made explicit by an equivalence transformation. To illustrate this, we give an easy alternative to the example given in sect. \ref{RP3}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   radsubstflag:true$
+<@\tcr{(\%i2)}@   ratsubst(b,sqrt(x),x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} {{b}^{2}} \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   ratsubst(b,sqrt(x),x^(-3/2));
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{1}{{{b}^{3}}} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lzz\hyt{radsubstflag}{\tcr{\emph{radsubstflag}}} \qquad \tcr{default: \emph{false}} \hfill \tcr{[option variable]}\index{radsubstflag}
+
+\lz When \emph{true}, this flag allows \hyl{ratsubst}{\emph{ratsubst}} to substitute roots, which are not explicit in \emph{expr}, see example above.
+
+\subsection{Box and rembox}
+
+\lz \hyt{box}{\tcr{\emph{box (expr)}}} \hfill \tcr{[function]}\index{box} \\
+\hyt{rembox}{\tcr{\emph{rembox (expr)}}} \hfill \tcr{[function]}\index{rembox}
+
+\lz If an expression \emph{expr} is the argument of function \emph{box}, it is called a \emph{boxed} expression. A boxed expression does not evaluate to its content, so it is effectively excluded from computations. However, \emph{box} evaluates its argument. The return value is an expression with \emph{box} as the operator and expr as the argument. \emph{rembox} removes all boxes within its argument, so any boxed expressions it contains are evaluated. Thus, the box-rembox mechanism is useful for temporarily excluding parts of an expression from being evaluated. See function \hyl{PullFactorOut}{PullFactorOut} for an example.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   a:2$  box(a);
+<@\tcr{(\%o1)}@				<@\tcr{2}@
+<@\tcr{(\%i2)}@   box(a)*3;
+<@\tcr{(\%o2)}@			       3(<@\tcr{2}@)
+<@\tcr{(\%i3)}@   part(box(a),0);
+<@\tcr{(\%o3)}@			       box
+<@\tcr{(\%i4)}@   part(box(a),1);
+<@\tcr{(\%o4)}@				2
+<@\tcr{(\%i5)}@   %*3;
+<@\tcr{(\%o5)}@				6
+<@\tcr{(\%i6)}@   rembox(a*box(a)*box(4));
+<@\tcr{(\%o6)}@				16
+\end{lstlisting}
+
+
+\end{document}

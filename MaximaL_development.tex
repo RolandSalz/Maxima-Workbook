@@ -1,0 +1,81 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\part{Maxima development}
+
+\chapter{MaximaL development}
+
+\section{Introduction}
+
+This chapter describes from the practical viewpoint how larger programs to be written in MaximaL can be developed and how they are made available to be used for the practical work with Maxima. The next chapter will describe the same for developments done in Lisp. 
+
+\lz In general, we will want to use MaximaL whenever possible for solving mathematical problems. This language is much easier to learn and to use than Lisp. MaximaL is Maxima's primary user interface. This language has some limitations, though. Since it is not lexically but dynamically scoped, there might be problems with name spaces for variables and functions, if large user packages are to be used. We will focus on these problems later and show what can be do to limit them as much as possible when programming the package and when using it.
+
+\lz Lisp has to be used whenever system features of Maxima shall be changed or amended. In addition, it might be considerable to use Lisp instead of MaximaL if scoping is an issue. Contrary to MaximaL, Lisp comprises strong concepts of lexical scoping.
+
+\lz It is also possible to call Lisp functions from MaximaL and to call MaximaL functions from Lisp. So we can combine both languages in order to find the most efficient programming solution for our problem.
+
+\lz Both MaximaL and Lisp programs can be compiled instead of just interpreted (as Maxima and Lisp usually do). This may be useful for reasons of speed. We will show when this is advisable and how it is done.
+
+\lz Let's start with MaximaL now. To summarize, there are two major issues. The first one is how to support programming packages in the Maxima language. There is no particular IDE available for MaximaL programming, so we have to invent our own development environment.
+
+\lz The second issue is how MaximaL packages we have written can be made available efficiently for our practical computational work with Maxima and possibly for other Maxima users, too.
+
+\lz The source code for MaximaL programs is generally stored in .mac files and can be loaded into a running Maxima session from the command line or from within other programs. This is possible with all Maxima interfaces. Another option when working with wxMaxima is to store work in .wxm or .wxmx files. But these file types can only be read by this interface. However, a feature to export them to the .mac format is available in wxMaxima, too. 
+
+\lz Due to its concept of input cells instead of the purely linear input and output stream of the usual Maxima REPL (read evaluate print loop) that all other interfaces provide, we feel that wxMaxima is most apt as a MaximaL development platform. However, a major drawback is that it suppresses most of MaximaL's debugging facilities and that it has almost no error handling. 
+
+\section{Development with wxMaxima}
+
+\subsection{File management}
+
+\section{Error handling and debugging facilities in MaximaL}
+
+\subsection{Break commands}\index{break command}
+
+\hypertarget{break command}{\emph{Break commands}} are special MaximaL commands which are not interpreted as Maxima expressions. A break command can be entered at the Maxima prompt or the debugger prompt (but not at the break prompt). Break commands start with a colon, ":". 
+
+\lz For example,
+to evaluate a Lisp form you may type :lisp followed by the form to be evaluated.
+(%i1) :lisp (+ 2 3)
+Chapter 38: Debugging 635
+5
+The number of arguments taken depends on the particular command. Also, you need
+not type the whole command, just enough to be unique among the break keywords. Thus
+:br would suffice for :break.
+The keyword commands are listed below.
+:break F n
+Set a breakpoint in function F at line offset n from the beginning of the function.
+If F is given as a string, then it is assumed to be a file, and n is the offset from
+the beginning of the file. The offset is optional. If not given, it is assumed to
+be zero (first line of the function or file).
+:bt Print a backtrace of the stack frames
+:continue
+Continue the computation
+:delete Delete the specified breakpoints, or all if none are specified
+:disable Disable the specified breakpoints, or all if none are specified
+:enable Enable the specified breakpoints, or all if none are specified
+:frame n Print stack frame n, or the current frame if none is specified
+:help Print help on a debugger command, or all commands if none is specified
+:info Print information about item
+:lisp some-form
+Evaluate some-form as a Lisp form
+:lisp-quiet some-form
+Evaluate Lisp form some-form without any output
+:next Like :step, except :next steps over function calls
+:quit Quit the current debugger level without completing the computation
+:resume Continue the computation
+:step Continue the computation until it reaches a new source line
+:top Return to the Maxima prompt (from any debugger level) without completing
+the computation
+
+\subsection{Tracing}
+
+\subsection{Analyzing data structures}
+
+\section{MaximaL compilaton}
+
+\section{Providing and loading MaximaL packages}
+
+\end{document}

@@ -1,0 +1,149 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Evaluation}
+
+\section{Introduction to evaluation}
+
+For \citem{FatemEv}{} \citem{FatemEvR}{}a general overview of the role and philosophy of the evaluator in a CAS system and for a comparison of its implementation in various existing CAS systems see Richard Fateman's paper from 1996, which can also be found on his homepage in a revised version from 1999.
+
+\lz \emph{Evaluation} in Maxima means dereferencing. If a symbol is bound, i.e. if it has a value, or as we say \emph{refers} to a value, then evaluation of a symbol means retrieving this value. Evaluation is not to be confused with \emph{simplification}.
+
+\lz A symbol which is not bound evaluates to itself.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a;
+<@\tcr{(\%o1)}@				a
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lz Consider the following example where a symbol a is bound to another symbol b which itself has a value c. Usually Maxima will evaluate a only once, retrieving b. In order to retrieve the value of b from a, we have to explicitly make Maxima evaluate a again. To achieve such multiple evaluation, a function like \emph{ev} has to be called. Of course, we can also assign to a the value obtained from ev(a). Then a refers directly to c without the detour over b.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   a:b;
+<@\tcr{(\%o1)}@				b
+<@\tcr{(\%i2)}@   b:c;
+<@\tcr{(\%o2)}@				c
+<@\tcr{(\%i3)}@   a;
+<@\tcr{(\%o3)}@				b
+<@\tcr{(\%i4)}@   ev(a);
+<@\tcr{(\%o4)}@				c
+<@\tcr{(\%i5)}@   a:ev(a);
+<@\tcr{(\%o5)}@				c
+<@\tcr{(\%i6)}@   a;
+<@\tcr{(\%o6)}@				c
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\subsection{Stavros' warning note about \emph{ev} and quote-quote}
+
+Mail from 3.11.2017 to maxima-discuss: NO NO NO NO NO
+
+\lz Double-quote does not "force evaluation" $ - $ it substitutes a value at \emph{read time}. It is a handy shortcut in interactive use, but I urge you to avoid it in general. For one thing, you can't prototype a calculation interactively and then package it up as a function if you use ' '(...).
+
+\lz \emph{ev} is another convenience function with some surprising behavior. In particular, $ ev(...,x=1) $ is \emph{not} equivalent to $ block([x:1],...) $. For example, $ ev(diff(x,'x),x=1) $ gives an error, while $ block([x:1],diff(x,'x)) $ gives 0. Since it performs an evaluation, it also risks free-variable capture in programs (again, a problem when you package up an interactive prototype). I always urge people to avoid ev as much as possible. It is always cleaner and clearer to use subst rather than ev.
+
+\lz Trying to get \emph{ev} to do what you want by clever use of '(...) or ' '(...) is a fool's errand: you may get it to work in one case, but you will quickly find cases where it isn't quite right.
+
+\lz To recap:
+
+\lz \emph{ev}(...) and ' '(...) are handy hacks, but have \emph{peculiar semantics} and are best to avoid.
+
+\section{Function ev}
+
+\lz \hyt{ev}{\tcr{\emph{ev (expr $ \glangle,arg_1,\dots,arg_n \grangle $) \gbar}}} \hfill \tcr{[function]}\index{ev}
+
+\tcr{\emph{expr, $ arg_1 \glangle ,arg_2,\dots,arg_n \grangle $}} 
+
+\lz Function \emph{ev} evaluates the expression \emph{expr} in the environment specified by the arguments $ arg_1, \dots,arg_n $. These arguments are switches (Boolean flags), assignments, equations, and functions from the list given below. \emph{ev} returns the result (another expression) of the evaluation. 
+
+\lz An alternate top level syntax has been provided for \emph{ev}, whereby one may just type in the expression and its arguments separated by commas. This is not permitted as part of another expression, e.g., in functions, blocks, etc. For an example see sect. \ref{DE1}.
+
+\lz The evaluation is carried out in steps, as follows.
+
+\lz 1. First the environment is set up by scanning the arguments which may be any or all of the following.
+
+\begin{itemize}
+	\item \hyt{simp}{\emph{simp}} causes \emph{expr} to be simplified regardless of the setting of the switch \emph{simp} which inhibits simplification if \emph{false}.
+	\item \hyt{noeval}{\emph{noeval}} suppresses the evaluation phase of \emph{ev} (see step (4) below). This is useful in conjunction with the other switches and in causing \emph{expr} to be resimplified without being reevaluated.
+	\item \hyt{nouns}{\emph{nouns}} causes the evaluation of noun forms (e.g. unevaluated user-defined function calls, functions such as \emph{'integrate} or \emph{'diff}, functions previously used undeclared which now have been declared) in \emph{expr}.
+	
+	\lz See the example to \hyl{gradef}{\emph{gradef}}.
+	
+	\item \emph{expand} causes expansion.
+	\item \emph{expand (m, n)} causes expansion, setting the values of \emph{maxposex} and \emph{maxnegex} to m and n respectively.
+	\item \emph{detout} causes any matrix inverses computed in \emph{expr} to have their determinant kept outside of the inverse rather than dividing through each element.
+	\item \emph{diff} causes all differentiations indicated in \emph{expr} to be performed.
+	\item \emph{derivlist ($ x,y,z,\dots $)} causes only differentiations with respect to the indicated variables.
+	\item \emph{risch} causes integrals in \emph{expr} to be evaluated using the Risch algorithm. The standard integration routine is invoked when using the special symbol \emph{nouns}.
+	\item \emph{float} causes non-integral rational numbers to be converted to floating point.
+	\item \emph{numer} causes some mathematical functions (including exponentiation) with numerical arguments to be evaluated in floating point. It causes variables in \emph{expr} which have been given \emph{numervals} to be replaced by their values. It also sets the \emph{float} switch on.
+	\item \emph{pred} causes predicates (expressions which evaluate to \emph{true} or \emph{false}) to be evaluated.
+	\item \emph{eval} causes an extra post-evaluation of \emph{expr} to occur. (See step (5) below.) \emph{eval} may occur multiple times. For each instance of \emph{eval}, the expression is evaluated again.
+	\item A where A is an atom declared to be an evaluation flag. \emph{evflag} causes A to be bound to true during the evaluation of \emph{expr}.
+	\item \emph{V: expression}, or alternately \emph{V=expression} causes V to be bound to the value of expression during the evaluation of expr. Note that if V is a Maxima option, then expression is used for its value during the evaluation of \emph{expr}. If more than one argument to \emph{ev} is of this type, then the binding is done in parallel. If V is a non-atomic expression, then a substitution rather than a binding is performed.
+	\item F where F, a function name, has been declared to be an evaluation function. \emph{evfun} causes F to be applied to \emph{expr}.
+	\item Any other function names, e.g. \emph{sum}, cause evaluation of occurrences of those names in \emph{expr} as though they were verbs.
+	
+	\lz See example of \hyl{gradef}{\emph{gradef}}.
+
+	\item In addition, a function occurring in \emph{expr}, e.g. F(x), may be defined locally for the purpose of this evaluation of \emph{expr} by giving \emph{F(x) := expression} as an argument to \emph{ev}.
+	\item If an atom not mentioned above or a subscripted variable or subscripted expression is given as an argument, it is evaluated and if the result is an equation or assignment, then the indicated binding or substitution is performed. If the result is a list, then the elements of the list are treated as though they were additional arguments given to \emph{ev}. This permits a list of equations to be given (e.g. [X=1, Y=A**2]), or a list of names of equations (e.g., [\%t1, \%t2] where \%t1 and \%t2 are equations) such as returned by solve.
+\end{itemize}
+
+The arguments of \emph{ev} may be given in any order with the exception of substitution equations which are handled in sequence, left to right, and evaluation functions which are composed, e.g., \emph{ev (expr, ratsimp, realpart)} is handled as \emph{realpart (ratsimp (expr))}. The \emph{simp}, \emph{numer}, and \emph{float} switches may also be set locally in a block, or globally in Maxima so that they will remain in effect until being reset. If \emph{expr} is a canonical rational expression (CRE), then the expression returned by \emph{ev} is also a CRE, provided the numer and float switches are not both true.
+
+\lz 2. During step (1), a list is made of the non-subscripted variables appearing on the left side of equations in the arguments or in the value of some arguments if the value is an equation. The variables (subscripted variables which do not have associated array functions as well as non-subscripted variables) in the expression expr are replaced by their global values, except for those appearing in this list. Usually, expr is just a label or \% (as in \%i2 in the example below), so this step simply retrieves the expression named by the label, so that \emph{ev} may work on it.
+
+\lz 3. If any substitutions are indicated by the arguments, they are carried out now.
+
+\lz 4. The resulting expression is then re-evaluated (unless one of the arguments was \emph{noeval}) and simplified according to the arguments. Note that any function calls in expr will be carried out after the variables in it are evaluated and that \emph{ev(F(x))} thus may behave like \emph{F(ev(x))}.
+
+\lz 5. For each instance of \emph{eval} in the arguments, steps (3) and (4) are repeated.
+
+\section{Quote-quote operator $ ' \,' $}
+
+\lz \hyt{''}{\tcr{\emph{$ ' \, ' $expr}}} \hfill \tcr{[prefix operator]}\index{'\ ', quote-quote}
+
+\lz The quote-quote operator $ '\, ' $ (two single quote marks) modifies evaluation in input
+expressions. Applied to a general expression \emph{expr}, quote-quote causes the value of expr to be substituted for \emph{expr} in the input expression. Applied to the operator of an expression, quote-quote changes the operator from a noun to a verb (if it is not already a verb). The quote-quote operator is applied by the input parser; it is not stored as part of a parsed input expression. The quote-quote operator is always applied as soon as it is parsed, and cannot be quoted. Thus quote-quote causes evaluation when evaluation is otherwise suppressed, such as in function definitions, lambda expressions, and expressions quoted by single quote '. 
+
+\lz Quote-quote is recognized by batch and load.
+
+\section{Substitution}
+
+Maxima has three different functions which carry out substitutions: \hyl{ev}{\emph{ev}}, \hyl{at}{\emph{at}}, and \hyl{substeq}{\emph{subst}}.
+
+\subsection{Substituting values for variables}
+
+\lz \hyt{at}{\tcr{\emph{at ($ \gpal expr \, \gbar \, [expr_1,\dots,expr_n] \gpar, \gpal eqn \, \gbar \, [eqn_1,\dots,eqn_n] \gpar $)}}} \hfill \tcr{[function]}\index{at}
+
+\lz Evaluates \emph{expr} or the expressions in the list with variables assuming values as specified in \emph{eqn} or the list of equations. \emph{at} carries out multiple substitutions in parallel. Depending on the first argument, \emph{at} returns a single expression or a list of expressions. 
+
+\lz Note that values do not necessarily mean numerical values. Symbols and even expressions can also be substituted for symbols. (Substituting expressions for expressions sometimes is possible, sometimes not. Anyway, this use of \emph{at} is discouraged.)
+
+\lz In particular, \emph{at} allows to indicate that the derivative of an unspecified function is to be evaluated at a certain point.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   at(x^2,x=x0);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} x0^2 \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   at(f(x),x=x0);
+<@\tcr{(\%o2)}@			      f(x0)
+<@\tcr{(\%i3)}@   at(diff(f(x),x),x=x0);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \left. \frac{d}{d x} \operatorname{f}(x)\right|_{x=\mathit{x0}} \]
+\color{black} \reqn
+\end{small}
+
+\end{document}

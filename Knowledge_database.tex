@@ -1,0 +1,466 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Knowledge database system}
+
+In Maxima, variables and user-defined functions can be associated not only with values, but also with \emph{properties} and with \emph{assumptions}. Properties contain information about the \emph{type} of value the respective variable or function is supposed to take, while assumptions limit the \emph{numerical range} of their allowed values. Both categories of information can be used by Maxima or by user-written functions for computation and simplification of expressions comprising these variables.
+
+\lz Maxima's mathematical knowledge database system was written by Michael Genesereth while studying at MIT in the early $1970^s$. Today he is professor of computer science at Stanford University.
+
+\lz Before looking closer at the information it contains, namely properties and assumptions, we will focus on general features of this database system. We describe its user interface first, then some aspects of the implementation.
+
+\section{Facts and contexts: The general system}
+
+\subsection{User interface}
+
+\subsubsection{Introduction}
+
+Properties and assumptions associated with a Maxima symbol are called \emph{facts}. There are certain facts already provided by the system, for instance about general and predefined mathematical constants such as e, i or $ \pi $. In addition, the user may assign one or more of a number of system-defined properties to any of his variables or user functions. He can also define his own new property types, called \emph{features}, and assign them to symbols just like the system-defined properties. Finally, using assumptions, he can impose restrictions on the numerical range of values to be taken by a symbol denoting a variable or function.
+
+\lz Some, but not all Maxima functions recognize facts. For example, \emph{solve} does not consider assumptions (it was written before the knowledge database was introduced into Maxima), whereas \emph{to\_poly\_solve}, a more recent and sometimes more powerful solver, does. User-written functions, of course, may also take facts into account.
+
+\lz If they need certain information about user variables in order to proceed operating on them, some Maxima functions will ask the user interactively at the time they are called. This is a useful procedure in order to reach computational results, since the user may not be aware of any such necessity in advance. He can, however, declare the corresponding properties or assumptions prior to calling the function in order to avoid these questions.
+
+\lz Maxima's mathematical knowledge database system organizes facts in a hierarchical structure of \emph{contexts}. The context named \emph{global} forms the root of this hierarchy, the parent of all other contexts. It contains information for instance about predefined constants, e.g. \%e, \%i or \%pi, and their respective values. When a Maxima session is started, the user sees a child context of \emph{global} named \emph{initial}. If he does not specify any other context, all facts, that means all properties created by \emph{declare} and all assumptions created by \emph{assume}, will be stored in this context. The context which presently accomodates newly declared assumptions is called the \emph{current context}. Function \hyl{facts}{\emph{facts}} may be used to list all facts contained in a certain context, or all facts defined for a particular symbol and kept within the current context.
+
+\lz The user may create child contexts to any existing context, including \emph{global}. The facts that are visible and are used for deductions at any moment are those of the current context \emph{plus all of its parent contexts}. In addition, the user may activate any other context freely at will with function \hyl{activate}{\emph{activate}}. This context \emph{plus all of its parent contexts} will then also be visible in addition to the current context and its parents. The user can deactivate any explicitely activated context with \hyl{deactivate}{\emph{deactivate}}. A list of all activated contexts is kept in \hyl{activecontexts}{\emph{activecontexts}}.
+
+\lz Function \hyl{context}{\emph{context}} can be used to show the current context or to change it. New contexts are defined by either \hyl{newcontext}{\emph{newcontext}} or \hyl{supcontext}{\emph{supcontext}}. \hyl{contexts}{\emph{contexts}} gives a list of all contexts presently defined.
+
+\lz The context mechanism makes it possible for the user to bind together and name a collection of facts. Once this is done, he can activate or deactivate large numbers of previously defined facts merely by activating or deactivating the respective context. Facts contained in a context will be retained in storage until destroyed one by one by calling \hyl{forget}{\emph{forget}}, or as a whole by calling \hyl{killcontext}{\emph{killcontext}} to destroy the context to which they belong.
+
+\lz The terms "subcontext" and "sup(er)context" are used in Maxima, but they have some inherent ambiguity. A child context is always bigger than its parent context as a collection of facts, because the facts a child context contains are added to the facts already active in the line of its parent contexts. (It is not possible to deactivate parent contexts to the current context or any other explicitly active context). The child context therefore is a superset of the parent context. Thus, function \emph{supcontext} creates a child context to the current context. Parent contexts are called subcontexts. This terminology, however, contradicts the normal description of a tree structure, where one would naturally tend to name a leave a sub-element to its parent. There is another interpretation contradicting the terminology used in Maxima. If a context is bigger because it contains more facts, on the other hand it is smaller, because every additional fact narrows and constrains the possibilities for the corresponding variable or function to take values. Due to this ambiguity we stay with the parent-child terminology.
+
+\lz Facts and contexts are global in Maxima, even if the corresponding variables are local. However, it is possible to make facts associated with a local variable local, too, by declaring (inside of the local environment) the respective local variable or function a with the system function \emph{local(a)}.
+
+\lz Killing a variable or function $ a $ with \emph{kill(a)} will not delete facts associated with $a $. Only \emph{kill(all)} will delete everything, including the defined facts and contexts. 
+
+\subsubsection{Functions and system variables}
+
+\hypertarget{facts}{\tcr{\emph{facts (item)}}} \hfill \tcr{[function]}\index{facts}
+
+\tcr{\emph{facts ()}}
+
+\lz If \emph{item} is the name of a context, which is either the current context, a parent of it, a context on the list \emph{activecontexts}, or a parent of it, \emph{facts (item)} returns a list of the facts in the specified context. In the case of all other contexts, it returns an empty list. If \emph{item} is not the name of a context, \emph{facts (item)} returns a list of the facts known about variable or function \emph{item} in the current context. 
+
+\lz \emph{facts ()} returns a list of the facts in the current context.
+
+\lzz \hypertarget{context}{\tcr{\emph{context}}} \qquad \tcr{default: \emph{initial} \hfill [system variable and function]}\index{context}
+
+\lz The value of \emph{context} indicates the current context. Binding \emph{context} to a symbol \emph{name} will change the current context to \emph{name}. If a context with this name does not yet exist, it is created as a direct child to \emph{global} (as done with function \emph{newcontext}) and then made to be the current context.
+
+\lzz \hypertarget{contexts}{\tcr{\emph{contexts}}} \qquad \tcr{default: [\emph{initial}, \emph{global}] \hfill [system variable]}\index{contexts}
+
+\lz This is a list of all contexts which are currently defined.
+
+\lzz \hypertarget{newcontext}{\emph{\tcr{newcontext (name)}}} \hfill \tcr{[function]}\index{newcontext}
+
+\lz Creates a new context as a direct child to \emph{global} and makes it the current context. If \emph{name} is not specified, a pair of empty parenthses has to remain. In this case, a new name is created at random by the \emph{gensym} function. \emph{newcontext} evaluates its argument. \emph{newcontext} returns name (if specified) or the
+newly created context name.
+
+\lzz \hypertarget{supcontext}{\tcr{\emph{supcontext (name, cont)}}} \hfill \tcr{[function]}\index{supcontext}
+
+\lz Creates a new context \emph{name} as a direct child to \emph{cont} and makes it the current context. If \emph{context} is not specified, the current context will be the parent. If \emph{name} is not specified, a pair of empty parenthses has to remain. In this case, a new name is created at random by the \emph{gensym} function and the current context is used as parent. \emph{supcontext} evaluates its arguments. \emph{supcontext} returns name (if specified) or the newly created context name.
+
+\lzz \hypertarget{activate}{\tcr{\emph{activate ($context_1, . . . , context_n$)}}} \hfill \tcr{[function]}\index{activate}
+
+\lz Adds the contexts $context_1, . . . , context_n$ to the list \emph{activecontexts}. The facts in these contexts are then available to make deductions. \emph{activate} returns \emph{done} if the contexts exist, otherwise an error message.
+
+Note that by activating a context, the facts of all its parent contexts also become available for deductions, although these parent contexts are not added to the list \emph{activecontexts}.
+
+\lzz \hypertarget{deactivate}{\tcr{\emph{deactivate ($context_1, . . . , context_n$)}}} \hfill \tcr{[function]}\index{deactivate}
+
+\lz Removes the contexts $context_1, . . . , context_n$ from the list \emph{activecontexts}. The facts in these contexts are then no longer available to make deductions. \emph{deactivate} returns \emph{done} if the contexts \emph{exist} (even if any one of them cannot be deactivated), otherwise an error message.
+
+\lz Note that it is only possible to deactivate contexts that have previously been activated by \emph{activate}. Facts within parent contexts of a context removed from the list \emph{activecontexts} are also no longer available for deductions, unless these contexts are the current context or a parent of it, or any other context remaining on the list \emph{activecontexts} or any parent of it.
+
+\lzz \hypertarget{activecontexts}{\tcr{\emph{activecontexts}}} \hfill \tcr{[system variable]}\index{activecontexts}
+
+\lz This is a list of all contexts explicitely activated with function \emph{activate}. Note that this list does not include the (active) parent contexts of an activated context, nor the current context or any of its parents.
+
+\lzz \hypertarget{killcontext}{\tcr{\emph{killcontext ($context_1, . . . , context_n$)}}} \hfill \tcr{[function]}\index{killcontext}
+
+\lz Kills the contexts $context_1, . . . , context_n$. \emph{killcontext} evaluates its arguments. \emph{killcontext} returns done. If one of the killed contexts is the current context, its next available direct parent context will become the new current context. If context \emph{initial} is killed, a new, empty \emph{initial} context is created. If a killed context has childs, they will be connected to the next available parent of the killed context. \emph{killcontext}, however, refuses (by returning a corresponding message) to kill a context which is on the list \emph{activecontexts} or to kill context \emph{global}.
+
+\subsection{Implementation}
+
+\subsubsection{Internal data structure}
+
+\subsubsection{Notes on the program code}
+
+\section{Values, properties and assumptions}
+
+Values, properties and assumptions are independant of one another. They are not cross-checked.
+
+\lz General statements on values in Lisp and MaximaL.
+
+\lz Predicates sometimes check properties, sometimes values.
+
+\lz Functions on assumptions don't take actual values into consideration.
+
+\lz etc.
+
+
+\section{MaximaL Properties}
+
+\subsection{Introduction}
+
+In Maxima, variables and user-defined functions can be associated not only with values, but also with \emph{properties}. Properties contain information about the \emph{kind} of variable or function which the respective symbol is to represent, or the \emph{type} of value which the respective variable or function is supposed to take. 
+
+\lz The concept of properties is inherent in Lisp. In order to distinguish both types, we will henceforth use the terms \emph{Lisp property} to refer to the properties on the Lisp level, and \emph{MaximaL property} (sometimes also called: \emph{mathematical property}) to refer to the properties on the MaximaL level. 
+
+\lz There are three types of MaximaL properties:
+
+\begin{itemize}
+	\item \hyperref[Db1]{\emph{System-declared}} properties can be declared for a symbol only by the system (but they can be removed by the user),
+	\item  \hyperref[Db3]{\emph{User-declared}} (sometimes also called: \emph{system-defined} or \emph{predefined}) properties are predefined properties which the user can declare for a symbol or remove from it,
+	\item \hyperref[Db4]{\emph{User-defined}}
+	properties can be defined by the user and then be declared for a symbol or removed from it.
+\end{itemize}
+
+\lz Unlike values, properties (except for the property \emph{value}) are global in Maxima. Thus, a property assigned to a local variable inside of a local environment (like a block or a function) will remain associated with this symbol outside of the block or function (after it has been called). This holds in particular for function definitions: a function defined inside of a block will be global (once the block has been evaluated). In order to prevent properties of a local variable $a$ to become global, the variable has to be declared \emph{local (a)} inside of the local environment.
+
+\lz \emph{kill (a)} not only unbinds the symbol $a$, but also removes all associated properties.
+
+\subsection{System-declared properties}\label{Db1}
+
+These are properties declared by Maxima that cannot be declared by the user, e.g. \emph{value}, \emph{function}, \emph{macro}, or \emph{mode\_declare}. System-declared properties, however, can be removed by the user.
+
+\lz For instance, \emph{value} itself is a system-declared property of a symbol, indicating that it has been bound to a value. If a user defines a function f, the symbol f is declared the property \emph{function} by the system. Nevertheless, the user may bind f to a value, too, and thus is declared the property \emph{value} by the system in addition. f will now behave as a variable or as a function, depending on the context. If the user removes the property \emph{function} from f, its function declaration will be lost and it will behave solely as a variable. If the user removes \emph{value}, too, the symbol f will be unbound again and have no properties at all.
+
+\subsection{User-declared properties}\label{Db3}
+
+These are pre-defined properties, which the user can assign to a variable or user-defined function or remove from it. Properties are recognized by the simplifier and other Maxima functions. There are general (\hyl{featurep}{\emph{featurep}}) and specific (e.g. \emph{constantp}) predicate functions which can test a certain symbol for having a specific user-declared or user-defined property or not. 
+
+\subsubsection{Declaration, information, removal}
+
+\lz \hyt{declare}{\tcr{\emph{declare ($ \gpal a_1 \gbar [a_{11},\dots,a_{1k}] \gpar , \gpal p_1\gbar [a_{11},\dots,a_{1l}] \gpar ,\dots,\gpal a_n \gbar [\dots] \gpar,\gpal p_n \gbar [\dots] \gpar $)}}}
+
+\hfill \tcr{[function]}\index{declare}
+
+\lz Assigns property (or list of properties) $ p_j $ to symbol (or list of symbols) $ a_j, \; j=1,\dots,n $. Symbols may be variables, functions, operators, etc. Arguments are not evaluated. \emph{declare} always returns \emph{done}. To test whether an atom has a specific (user-declared or user-defined) property, see \hyperlink{featurep}{featurep}. For the use of \emph{declare} to create user-defined properties, see \hyperlink{declare-feature}{declare ($ p_u $, feature)}.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   declare(a,outative,b,additive)$
+<@\tcr{(\%i2)}@   declare([r,s,t],real)$
+<@\tcr{(\%i3)}@   declare(c,[constant,complex])$
+\end{lstlisting}
+
+\lz \hyt{properties}{\tcr{\emph{properties ($a$)}}} \hfill \tcr{[function]}\index{properties}
+
+\lz Returns a list of all properties associated with symbol \emph{a}. This includes system properties and properties having been previously defined by the user.
+
+\lzz \hyt{props}{\tcr{\emph{props}}} \hfill \tcr{[system variable]}\index{props}
+
+\lz The system variable contains a list of all symbols that have been assigned any user-declared or user-defined property.
+
+\lzz \hyt{propvars}{\tcr{\emph{propvars (p)}}} \hfill \tcr{[function]}\index{propvars}
+
+\lz Returns a list of all symbols on the system list \emph{props} which have property \emph{p}.
+
+\lzz \hyt{remove}{\tcr{\emph{remove ($ \gpal a_1 \gbar [a_{11},\dots,a_{1k}] \gpar , \gpal p_1\gbar [a_{11},\dots,a_{1l}] \gpar ,\dots,\gpal a_n \gbar [\dots] \gpar,\gpal p_n \gbar [\dots] \gpar $) $ \gbar $}}} \\
+\hyt{remove}{\tcr{\emph{remove (all,p)}}} \hfill \tcr{[function]}\index{remove}
+
+\lz Removes property (or list of properties) $ p_j $ from symbol (or list of symbols) $ a_j, \; j=1,\dots,n $. \emph{remove (all, p)} removes property \emph{p} from all atoms which have it. The removed properties may be system-declared properties such as \emph{function}, \emph{macro}, or \emph{mode\_declare}. Arguments are not evaluated. \emph{remove} always returns \emph{done}.
+
+\subsubsection{Properties of variables}
+
+\lz \hyt{integer}{\tcr{\emph{integer}}} \hfill \tcr{[property]}\index{integer}
+
+\hyt{integer}{\tcr{\emph{noninteger}}} \hfill \tcr{[property]}\index{noninteger}
+
+\lz Tells Maxima to recognize $ a_j $ as an integer or noninteger variable. Function \emph{askinteger} recognize this property, but \emph{integerp} does not.
+
+\lzz \hyt{even}{\tcr{\emph{even}}} \hfill \tcr{[property]}\index{even}
+
+\hyt{odd}{\tcr{\emph{odd}}} \hfill \tcr{[property]}\index{odd}
+
+\lz Tells Maxima to recognize $ a_j $ as an even or odd integer variable. The properties even and odd are recognized by function \emph{askinteger}, but not by the predicate functions \emph{evenp}, \emph{oddp}, and \emph{integerp}.
+
+\lz \begin{lstlisting}[basicstyle=\small]
+(%i1) 	declare(n, even);
+(%o1) 				    done
+(%i2) 	askinteger(n, even);
+(%o2) 				    yes
+(%i3) 	askinteger(n);
+(%o3) 				    yes
+(%i4) 	evenp(n);
+(%o4) 				   false
+\end{lstlisting}
+
+\lzz \hyt{rational}{\tcr{\emph{rational}}} \hfill \tcr{[property]}\index{rational}
+
+\hyt{irrational}{\tcr{\emph{irrational}}} \hfill \tcr{[property]}\index{irrational}
+
+\lz Tells Maxima to recognize $ a_j $ as a rational variable or an irrational real variable.
+
+\lzz \hyt{real}{\tcr{\emph{real}}} \hfill \tcr{[property]}\index{real}
+
+\hyt{complex}{\tcr{\emph{complex}}} \hfill \tcr{[property]}\index{complex}
+
+\hyt{imaginary}{\tcr{\emph{imaginary}}} \hfill \tcr{[property]}\index{imaginary}
+
+\lz Tells Maxima to recognize $ a_j $ as a real, complex or pure imaginary variable.
+
+\lzz \hyt{constant}{\tcr{\emph{constant}}} \hfill \tcr{[property]}\index{constant}
+
+\lz The declaration of $ a_j $ to be \emph{constant} does not prevent the assignment of a nonconstant value to $ a_j $. Such an assignment, on the other hand, does not remove the property \emph{constant} from $ a_j $. The following predicate function \emph{constantp} not only tests for a variable declared \emph{constant}, but for a constant expression in general.
+
+\lzz \hyt{constantp}{\tcr{\emph{constantp (expr)}}} \hfill \tcr{[predicate function]}\index{constantp}
+
+\lz Returns \emph{true}, if expr is a constant expression, otherwise \emph{false}. An expression is considered a constant expression, if its arguments are numbers (including rational numbers as displayed with /R/), symbolic constants such as \%pi, \%e, or \%i, variables bound to a constant or declared \emph{constant} by declare, or functions whose arguments are constant. \emph{constantp} evaluates its arguments. See the property \emph{constant} which declares a symbol to be constant.
+
+\lzz \hyt{scalar}{\tcr{\emph{scalar}}} \hfill \tcr{[property]}\index{scalar}
+
+\hyt{nonscalar}{\tcr{\emph{nonscalar}}} \hfill \tcr{[property]}\index{nonscalar}
+
+\lz Tells Maxima to recognize $ a_j $ as a scalar or nonscalar variable. The usual application is to declare a variable as a symbolic vector or matrix. Makes $ a_j $ behave as does a list or matrix with respect to the dot operator. The following predicate functions \emph{scalarp} and \emph{nonscalarp} not only test variables declared scalar or nonscalar.
+
+\lzz \hyt{scalarp}{\tcr{\emph{scalarp (expr)}}} \hfill \tcr{[predicate function]}\index{scalarp}
+
+\hyt{nonscalarp}{\tcr{\emph{nonscalarp (expr)}}} \hfill \tcr{[predicate function]}\index{nonscalarp}
+
+\lz \emph{scalarp} returns \emph{true}, if \emph{expr} is a number, a constant, or a variable declared \hyperlink{scalar}{\emph{scalar}}, or composed entirely of numbers, constants, and such declared variables, but not containing matrices or lists. \hyperlink{nonscalar}{\emph{nonscalar}} returns \emph{true} if \emph{expr} contains atoms declared \emph{nonscalar}, or lists, or matrices.
+
+\lzz \hyt{nonarray}{\tcr{\emph{nonarray}}} \hfill \tcr{[property]}\index{nonarray}
+
+\lz Tells Maxima to consider $ a_j $ not to be an array. This prevents multiple evaluation of a subscripted variable.
+
+\subsubsection{Properties of functions}
+
+\lz \hyt{integervalued}{\tcr{\emph{integervalued}}} \hfill \tcr{[property]}\index{integervalued}
+
+\lz Tells Maxima to recognize $ a_j $ as an integer-valued function.
+
+\lzz \hyt{increasing}{\tcr{\emph{increasing}}} \hfill \tcr{[property]}\index{increasing}
+
+\hyt{decreasing}{\tcr{\emph{decreasing}}} \hfill \tcr{[property]}\index{decreasing}
+
+\lz Tells Maxima to recognize $ a_j $ as an increasing or decreasing function.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   assume(a > b);
+<@\tcr{(\%o1)}@   			     [a > b]
+<@\tcr{(\%i2)}@   is(f(a) > f(b));
+<@\tcr{(\%o2)}@   			     unknown
+<@\tcr{(\%i3)}@   declare(f, increasing);
+<@\tcr{(\%o3)}@   			      done
+<@\tcr{(\%i4)}@   is(f(a) > f(b));
+<@\tcr{(\%o4)}@   			      true
+\end{lstlisting}
+
+\lzz \hyt{posfun}{\tcr{\emph{posfun}}} \hfill \tcr{[property]}\index{posfun}
+
+\lz Tells Maxima to recognize $ a_j $ as a positive function.
+
+\lzz \hyt{evenfun}{\tcr{\emph{evenfun}}} \hfill \tcr{[property]}\index{evenfun}
+
+\lz A function with this property is recognized as an even function. $ f(-x) $ will be simplified to $ f(x) $.
+
+\lzz \hyt{oddfun}{\tcr{\emph{oddfun}}} \hfill \tcr{[property]}\index{oddfun}
+
+\lz A function with this property is recognized as an odd function. $ f(-x) $ will be simplified to $ -f(x) $.
+
+\lzz \hyt{outative}{\tcr{\emph{outative}}} \hfill \tcr{[property]}\index{outative}
+
+\lz If a function has this property and it is applied to an argument forming a product, constant factors are pulled out on simplification. Constants in this sense are numbers, standard Maxima constants such as \%e, \%i or \%pi, and variables that have been declared \emph{constant}.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   declare(f,outative)$
+<@\tcr{(\%i2)}@   f((r-2+%e^%i)*x);
+\end{lstlisting} 
+\vspace{-6mm} \begin{small}
+\color{blue} \leqn
+\[ \tag*{\tcr{\ttfamily (\%o2)}} f \, ((r+e^{i}-2) \; x) \]
+\vspace{-10.5mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   declare(r,constant)$
+<@\tcr{(\%i4)}@   f((r-2+%e^%i)*x);
+\end{lstlisting} 
+\vspace{-4mm} \[ \tag*{\tcr{\ttfamily (\%o4)}} (r+e^{i}-2) \; f(x) \]
+\color{black}  \reqn
+\end{small}
+\vspace{-4mm}
+
+The standard functions \emph{sum}, \emph{integrate} and \emph{limit} are by default \emph{outative}. However, this property can be removed from them by the user.
+
+\lzz \hyt{additive}{\tcr{\emph{additive}}} \hfill \tcr{[property]}\index{additive}
+
+\lz If a function has this property and it is applied to an argument forming a sum, the function is distributed over this sum, i.e. f(y+x) will simplify to f(y)+f(x). 
+
+\lzz \hyt{linear}{\tcr{\emph{linear}}} \hfill \tcr{[property]}\index{linear}
+
+\lz Equivalent to declaring $ a_j $ both outative and additive.
+
+\lzz \hyt{multiplicative}{\tcr{\emph{multiplicative}}} \hfill \tcr{[property]}\index{multiplicative}
+
+\lz If a function has this property and it is applied to an argument forming a product, the function is distributed over this product, i.e. f(y*x) will simplify to f(y)*f(x). 
+
+\lzz \hyt{commutative}{\tcr{\emph{commutative}}} \hfill \tcr{[property]}\index{commutative}
+
+\hyt{symmetric}{\tcr{\emph{symmetric}}} \hfill \tcr{[property]}\index{symmetric}
+
+\lz These two properties are synonyms. If assigned to a function $f(x,z,y)$, it will be simplified to $ f(x,y,z) $. 
+
+\lzz \hyt{antsymmetric}{\tcr{\emph{antisymmetric}}} \hfill \tcr{[property]}\index{antisymmetric}
+
+\lz If assigned to a function $f(x,y,z)$, it will be simplified to $ -f(x,y,z) $. That is, it will give $ (-1)^n $ times the result given by \emph{symmetric} or \emph{commutative}, where n is the number of interchanges of wo arguments necessary to convert it to that form.
+
+\lzz \hyt{lassociative}{\tcr{\emph{lassociative}}} \hfill \tcr{[property]}\index{lassociative}
+
+\hyt{rassociative}{\tcr{\emph{rassociative}}} \hfill \tcr{[property]}\index{rassociative}
+
+\lz A function with this property is recognized as being left-associative or right-associa-tive.
+
+
+\subsection{User-defined properties}\label{Db4}
+
+The user may define new properties and assign them to variables or user-defined functions with \hyl{declare}{\emph{declare}} in the same way it is done for predefined, user-declared properties. User-defined properties are kept in the system list \hyl{features}{\emph{features}} together with some (but not all) of the predefined, user-declared properties. The predicate function \hyl{featurep}{\emph{featurep}} may be used to test a variable or function for having a user-defined (or a predefined, user-declared) property or not.
+
+\lzz \hyt{declare-feature}{\tcr{\emph{declare ($ p_u, feature $)}}} \hfill \tcr{[function]}\index{declare ($ p_u $, feature)}
+
+\lz Declares $ p_u $ to be a new property. It can then be assigned to variables or user-defined functions, tested for, view in lists, or removed. User-written functions can consider this property.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   declare(new_property, feature)$
+<@\tcr{(\%i2)}@   declare(a, new_property)%
+<@\tcr{(\%i3)}@   properties(a);
+<@\tcr{(\%o3)}@		[database info,kind(a,new_property)]
+<@\tcr{(\%i4)}@   featurep(a,new_property);
+<@\tcr{(\%o4)}@			       true
+<@\tcr{(\%i5)}@   a:b;
+<@\tcr{(\%o5)}@			        b
+<@\tcr{(\%i6)}@   featurep(a,new_property);
+<@\tcr{(\%o6)}@			       false
+<@\tcr{(\%i7)}@   featurep('a,new_property);
+<@\tcr{(\%o7)}@			       true
+<@\tcr{(\%i8)}@   c:new_property;
+<@\tcr{(\%o8)}@			   new_property
+<@\tcr{(\%i9)}@   featurep(a,c);
+<@\tcr{(\%o9)}@			       true
+\end{lstlisting}
+
+\lzz \hyt{featurep}{\tcr{\emph{featurep (a, p)}}} \hfill \tcr{[predicate function]}\index{featurep}
+
+\lz Tries to determine whether atom a has property p. Note that featurep returns \emph{false} also in the case where it cannot determine whether atom a has property p or not. Only user-declared and user-defined properties can be tested with \emph{featurep}, but not system-declared properties.
+
+\lz Note that \emph{featurep} evaluates both its arguments! Thus, if a has a value that is itself a variable or function, and if p has a value that is itself a property, then it is the variable or function which is the value of a that is tested for the property which is the value of p.
+
+\lzz \hypertarget{features}{\tcr{\emph{features}}} \hfill \tcr{[system variable]}\index{features}
+
+\lz This list contains some (but not all) of the predefined, user-declared properties plus all user-defined properties.
+
+\subsection{Implementation}
+
+\section{Assumptions}\label{Db2}
+
+\subsection{User interface}
+
+\subsubsection{Introduction}
+
+In Maxima, variables and user-defined functions can be associated with so-called assumptions. Assumptions limit the range of values these variables or functions are supposed to take. It is sometimes useful or even necessary to impose such restrictions in order to obtain usable results from symbolic computation. Assumptions can be statements comprising the relational operators "<", "<=", equal, notequal, ">=" und ">" and some combinations of them with the boolean operators AND and NOT (but not OR). Facts are declared by using function \hyl{assume}{\emph{assume}}. See there for details on the assumptions that can be made. Assumptions are remove with \hyl{forget}{\emph{forget}}. 
+
+\subsubsection{Functions and system variables for assumptions}
+
+\lz \hypertarget{assume}{\tcr{\emph{assume ($ pred_1, pred_2, \dots, pred_n $)}}} \hfill \tcr{[function]}\index{assume}
+
+\lz Adds predicates $ pred_1, pred_2, \dots, pred_n $ to the current context. If a predicate is redundant or inconsistent with the predicates in the current context, it is not added. \emph{assume} returns a list whose elements are the predicates added to the context, or \emph{redundant}, \emph{inconsistent} or \emph{meaningless} where applicable. \emph{assume} evaluates its arguments. The context accumulates predicates from each call to \emph{assume}. \emph{assume} does not accept a Maxima list of predicates as does \emph{forget}. 
+
+\lz The predicates defined may only be expressions with the relational operators $ <, \leq $ (<=), equal $ (a,b) $, notequal $ (a,b) $, $ \geq $ (>=) and >. Predicates cannot be literal equality (=) or literal inequality (\#) expressions, nor can they be predicate functions such as \emph{integerp}. \emph{assume} does not allow predicates with complex numbers, either.
+
+\lz Boolean compound predicates of the form "$ pred_1 $ AND $\dots$ AND $pred_n $" are recognized, but not "$ pred_1$ OR $\dots$ OR $pred_n$". "NOT $pred_k$" is recognized, if $pred_k$ is a relational predicate. Expressions of the form "NOT ($pred_1$ AND $pred_2$)" and "NOT ($pred_1$ OR $pred_2$)" are not recognized.
+
+\lz Maxima’s deduction mechanism is not very strong; there are many obvious consequences
+which cannot be determined by \hyl{is}{\emph{is}}. This is a known weakness.
+
+\lzz \begin{lstlisting}
+<@\tcr{(\%i1)}@   assume (x > 0, y < -1, z >= 0);
+<@\tcr{(\%o1)}@		     [x > 0, y < - 1, z >= 0]
+<@\tcr{(\%i2)}@   assume (a < b and b < c);
+<@\tcr{(\%o2)}@			  [b > a, c > b]
+<@\tcr{(\%i3)}@   assume (2*b < 2*c);
+<@\tcr{(\%o3)}@			    redundant
+<@\tcr{(\%i4)}@   assume (c < b);
+<@\tcr{(\%o4)}@			  inconsistant
+<@\tcr{(\%i5)}@   facts ();
+<@\tcr{(\%o5)}@		[x > 0, - 1 > y, z >= 0, b > a, c > b]
+<@\tcr{(\%i6)}@   is (x > y);
+<@\tcr{(\%o6)}@			      true
+<@\tcr{(\%i7)}@   is (y < -y);
+<@\tcr{(\%o7)}@			      true
+<@\tcr{(\%i8)}@   is (sinh (b - a) > 0);
+<@\tcr{(\%o8)}@			      true
+<@\tcr{(\%i9)}@   forget (b > a);
+<@\tcr{(\%o9)}@			     [b > a]
+<@\tcr{(\%i10)}@  is (sinh (b - a) > 0);
+<@\tcr{(\%o10)}@			    unknown
+<@\tcr{(\%i11)}@  is (b^2 < c^2);
+<@\tcr{(\%o11)}@			    unknown
+
+\end{lstlisting}
+
+\lzz \hypertarget{forget}{\tcr{\emph{forget ($ pred_1, pred_2, \dots, pred_n $)}}} \hfill \tcr{[function]}\index{forget}
+
+\tcr{\emph{forget (L)}}
+
+\lz Removes predicates from the current context. Alternatively, the arguments can be passed to \emph{forget} as a Maxima list L. \emph{forget} evaluates its arguments. In a very limited way, the predicates may  be equivalent (not necessarily identical) expressions to those previously assumed (e.g., b*2>4 eliminates b>2, but 2*a<2*b does not eliminate a<b).
+
+\lz \emph{forget} does not complain if a predicate to be forgotten does not exist. In any case, $ pred_1, pred_2, \dots, pred_n $ or L is returned.
+
+\lzz \hypertarget{is}{\tcr{\emph{is (expr)}}} \hfill \tcr{[function]}\index{is}
+
+\lz \emph{ev(expr, pred)}, which can be written \emph{ expr, pred } at the interactive prompt, is equivalent to \emph{is(expr)}.
+
+\lz \emph{is} attempts to determine whether the predicate \emph{expr} is provable from the facts in the database. If the predicate is provably \emph{true} or \emph{false}, \emph{is} returns this respectively. Otherwise, the return value is governed by the global flag \emph{prederror}. If it is not set (default), it returns \emph{unknown}. Otherwise, \emph{is} returns an error message. 
+
+\lz Note that \emph{is} can evaluate any other predicate, too,independently of the assumptions in the database. Special attention has to be paid for tests of equality. \emph{is(a=b)} tests a and b to be literally equal, that is identical. \emph{is(equal(a,b))} tests for equivalence, which does not necessarily imply literal identity. Different symbolic expressions, that can be simplified by Maxima to the same (canonical) expression, are considered equivalent.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   is (%pi > %e);
+<@\tcr{(\%o1)}@			       true
+<@\tcr{(\%i2)}@   is(integerp(d));
+<@\tcr{(\%o2)}@			       true
+<@\tcr{(\%i3)}@   c: (x - 1) * (x + 1) $
+<@\tcr{(\%i4)}@   d: x^2 - 1 $
+<@\tcr{(\%i5)}@   is(c = d);
+<@\tcr{(\%o5)}@			       false
+<@\tcr{(\%i6)}@   is(equal(c,d));
+<@\tcr{(\%o6)}@			       true
+\end{lstlisting}
+
+\lz \emph{is} attempts to derive predicates from the facts database. Note that assumptions cannot be tested for literal equality or inequality.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   assume (a > b, b > c);
+<@\tcr{(\%o1)}@			  [a > b, b > c]
+<@\tcr{(\%i2)}@   is (a + b > b + c);
+<@\tcr{(\%o2)}@			       true
+<@\tcr{(\%i3)}@   is (equal (a, c));
+<@\tcr{(\%o3)}@			       false
+<@\tcr{(\%i4)}@   is (2*a > 3*c);
+<@\tcr{(\%o4)}@			      unknown
+<@\tcr{(\%i5)}@   assume (equal(d,5));
+<@\tcr{(\%o5)}@			   [equal(d,5)]
+<@\tcr{(\%i6)}@   is (equal (d, 5));
+<@\tcr{(\%o6)}@			       true
+<@\tcr{(\%i7)}@   is (d=5);
+<@\tcr{(\%o7)}@			       false
+\end{lstlisting}
+
+\lz If \emph{is} can neither prove nor disprove a predicate by itself of from the facts database, the global flag \emph{prederror} governs the behavior of \emph{is}.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   assume (a > b);
+<@\tcr{(\%i1)}@			     [a > b]
+<@\tcr{(\%i2)}@   prederror: true$
+<@\tcr{(\%i3)}@   is (a > 0);
+Maxima was unable to evaluate the predicate: a > 0
+-- an error. Quitting. To debug this try debugmode(true);
+<@\tcr{(\%i4)}@   prederror: false$
+<@\tcr{(\%i5)}@   is (a > 0);
+<@\tcr{(\%i1)}@			     unknown
+\end{lstlisting}
+
+\subsection{Implementation}
+
+\end{document}

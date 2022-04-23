@@ -1,0 +1,46 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Building Maxima under Windows}\label{BW1}
+
+\section{Introduction}
+
+In this section we show how Maxima can be built on the local computer under the Windows operating system. Maxima is primarily designed for Unix-based operating systems, especially Linux. Sophisticated system definition and build tools are employed to automate as much as possible the complicated build process. Since these tools (in particular \emph{GNU autotools}) are not available under Windows, there are two ways how Maxima can be built here. The first one makes use of the Unix-based tools and thus needs an environment which supports them. Such an environment is Cygwin, a Unix-like shell running under Windows and in which Windows executables can be produced. The second one does not use the Unix-based build tools at all, but an (almost) purely Lisp-based method. It can be accomplished under the plain Windows command line shell. All we need is a Lisp system installed. Since this is the simpler and easier method, we demonstrate it first. Note however, that not all Maxima user interfaces and features are supported with this build.
+
+\section{Lisp-only build}
+
+\subsection{Limitations of the official and enhanced version}
+
+The official Lisp-only build process is described in the text file \emph{INSTALL.lisp} which can be found in the main folder of any release tarball or the repository. This procedure has the following limitations: \\
+- XMaxima cannot be built. \\
+- wxMaxima is not included. \\
+- GNUplot is not included. \\
+- the documentation cannot be built.
+ 
+\lz We have made some enhancements to this procedure. In the following we give a complete description of the revised procedure. Now the documentation can be built with the exception of the PDF version.
+
+\lz We can build Maxima from a release source code tarball or from the latest repository snapshot. The following recipe comprises both alternatives.
+
+\subsection{Recipe}
+
+1. Install the Windows installer of the latest release in \emph{C:/Maxima/maxima-5.41.0}. Download the source code file \emph{maxima-5.41.0.tar.gz} of the latest Maxima release from \href{https://sourceforge.net/projects/maxima/files/Maxima-source/5.41.0-source/}{https://sourceforge.net/projects/maxima/files/Maxima-source/5.41.0-source/} and extract the tarball with 7zip in the folder \emph{D:/Maxima/Tarballs/}.
+
+\lz 2. Create the directory of the new build and name it appropriately, e.g. \emph{D:/Maxima/ Builds/<lob-2017-12-09-lb>}, now called the \emph{build directory}.
+
+\lz 3. Depending on what to build from, \\
+3a. either copy the extracted source code from the release tarball into the build directory; or \\
+3b. select the branch of the local repository \emph{D:Maxima/Repos/rMaxima} from which to build. Pull master and rebase this branch on master first in order to have our changes rebased on the latest Git snapshot from Sourceforge. Copy the selected branch into the build directory. \\
+3c. In both cases, copy the PDF version of the documentation, the file \emph{maxima.pdf}, from the subfolder \emph{share/doc} of the Windows installer into the subfolder \emph{doc/info} of the build directory.
+
+\lz 4. The tarball contains the complete documentation of the latest release with the exception of the PDF version. In case the documentation shall not be built (also if we build from a repository snapshot), it can be simply be copied from the tarball into the build directory: \\
+4a. For the online help system: From \emph{doc/info} take \emph{maxima-index.lisp} and all files \emph{*.info*} and copy them into \emph{doc/info} of the build directory. \\
+4b. For the html version: From \emph{doc/info} take all files \emph{*.html} and copy them into \emph{doc/info} of the build directory.
+
+\lz 5. Now we use Lisp. The following steps can be executed either using SBCL form a Windows command line shell or under Emacs/Slime (Note, however, that dumping can be done only from the Windows command line!):
+5a. Open a Windows command shell and cd to the top-level of the build directory (i.e., the directory which contains src/, tests/, share/, and other directories). Then launch SBCL. Alternatively, \\
+5b. 
+
+\section{Building Maxima with Cygwin}
+
+\end{document}

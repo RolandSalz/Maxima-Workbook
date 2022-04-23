@@ -1,0 +1,36 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+
+\part{Advanced Mathematical Computation}
+
+\chapter{Tensors}
+
+\section{Kronecker delta}
+
+\lz \hyt{kron\_delta}{\tcr{\emph{kron\_delta ($ \gpal i,j \gbar i_1,j_1,\dots,i_p,j_p\gpar $)}}} \hfill \tcr{[function]}\index{kron\_delta}
+
+\lz Computes according to Def. M-\ref{M-LA46} the Kronecker delta of arguments i and j, which can be arbitrary expressions and are evaluated in the process of being compared for identity by \emph{is(equal(i,j))}. In the second option, $ p $ pairs $ i_a,j_a $ will be compared, and only in case that all of them match, 1 will be returned.
+
+\subsection{Generalized Kronecker delta}
+
+\lz \hyt{kdelta}{\tcr{\emph{kdelta ($ [j_1,\dots,j_p],[i_1,\dots,i_p] $)}}} \hfill \tcr{[function of \emph{itensor}]}\index{kdelta}
+
+\lz Computes according to Def. M-\ref{M-LA46a} and Satz M-\ref{M-LA46c} the generalized Kronecker delta
+\begin{equation*}
+	\delta^{i_1 \dots i_p}_{j_1 \dots j_p}.
+\end{equation*}
+The first list in the contains the covariant and the second one the contravariant indices. The number of elements in both lists has to be identical.
+
+\subsection{Levi-Civita symbol}
+
+\section{Elementary second order tensor decomposition}
+
+\lz \hyt{ElemTensorDecomp}{\tcr{\emph{ElemTensorDecomp (M)}}} \hfill \tcr{[function of \emph{rs\_tensor}]}\index{ElemTensorDecomp}
+
+\lz Decomposes according to Satz M-\ref{M-TA42b} a second order tensor, given as an $ n x n $-matrix M, into a sum of r elementary tensors, i.e. of tensor (or outer) products of $ n x n $-vectors $ a^i, \, b_i $, where r is the rank of the original tensor, i.e. the matrix M
+\begin{equation*}
+	M = \sum_{i=1}^{r} a^i \gotimes b_i.
+\end{equation*}
+The contravariant vectors $ a^i $ are derived from the columns of M, while the covariant vectors $ b_i $ are computed accordingly. The function returns a matrix A containing the $ a^i $ als columns and a matrix B with the respective $ b_i $ as rows. The function then checks, whether the sum of the products equals M.
+\end{document}

@@ -1,0 +1,235 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Using the Maxima REPL at the interactive prompt}
+
+\section{Input and output}
+
+\subsection{Input and output tags}\label{IO1}
+
+In order to make backward references easier, the cycles of operation of the Maxima REPL are numbered consecutively. On launching a Maxima session at the Maxima console, the user sees the first \emph{input tag}. \index{input tag}
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@
+\end{lstlisting}
+
+\lz Now he can input a MaximaL expression to be evaluated. We call this a \emph{statement} or \emph{form}. \emph{Enter} starts evaluation. The result (the value returned) is shown with an \emph{output tag} \index{output tag}having the same number as the input tag. Then a new input tag appears, introducing the next cycle of operation.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   2+3;
+<@\tcr{(\%o1)}@				5
+<@\tcr{(\%i2)}@
+\end{lstlisting}
+
+\lz wxMaxima shows a slightly different behavior. The input tag appears only at evaluation time. \emph{Enter} will only cause a line-feed, having no other effect on evaluation than a blank, while \emph{shift-enter} or \emph{ctrl-enter} starts evaluation. When an input expression is an assignment, the corresponding output expression displays no numbered output tag, but instead the symbol to the left of the assignment in parentheses. If the input expression is only a symbol, the normal output tag is displayed.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   temp:-30.5;
+<@\tcr{(temp)}@			     -30.5
+<@\tcr{(\%i2)}@   temp;
+<@\tcr{(\%o2)}@			      -30.5
+\end{lstlisting}
+
+\lzz \hyt{linenum}{\tcr{\emph{linenum}}} \hfill \tcr{[variable]}\index{linenum}
+
+\lz Maxima keeps the current tag number in the global variable \emph{linenum}. Entering \emph{linenum:0} or \emph{kill(all)} resets the input and output tag number to 1.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i17)}@  linenum:0;
+<@\tcr{(\%o0)}@				0
+<@\tcr{(\%i1)}@   a;
+<@\tcr{(\%o1)}@				a
+\end{lstlisting}
+
+\lzz \hyt{inchar}{\tcr{\emph{inchar}}} \qquad \tcr{\ \ default: \emph{"\%i"}} \hfill \tcr{[variable]}\index{inchar} \\
+\hyt{outchar}{\tcr{\emph{outchar}}} \qquad \tcr{default: \emph{"\%o"}} \hfill \tcr{[variable]}\index{outchar}
+
+\lz These global variables contain the symbols used in input and output tags. They can be changed by the user.
+
+\subsection{Multiplication operator}
+
+\lz The * (asterisk) operator for multiplication cannot be omitted in input; a blank does not mean multiplication. 
+
+\lzz \hyt{stardisp}{\tcr{\emph{stardisp}}} \qquad \tcr{\ \ default: \emph{false}} \hfill \tcr{[variable]}\index{\%}
+
+\lz In output, * normally is not displayed, here blank means multiplication. When \emph{stardisp} is set to \emph{true}, however, the * is displayed.
+
+\subsection{Special characters}
+
+The standard Maxima console does not allow for input and display of special characters. iMaxima displays in Latex output form, thus allowing for the display of special characters. Only wxMaxima allows input of special characters from palettes and also displays them.
+
+
+\section{Input}
+
+\subsubsection{One-dimensional form}
+
+Maxima and all of its front-ends allow input of mathematical expressions only in one-dimensional form. Parentheses have to be used to group subexpressions, e.g. the numerator and denominator of a fraction. 
+
+\subsection{Statement termination operators}
+
+\hyt{;}{\tcr{\emph{;}}} \hfill \tcr{[postfix operator]}\index{;} \\
+\hyt{\$}{\tcr{\emph{\$}}} \hfill \tcr{[postfix operator]}\index{\$} \\
+\hyt{,}{\tcr{\emph{,}}} \hfill \tcr{[infix operator]}\index{, comma}
+
+\lz After entering an input expression, either a semicolon or a dollar sign is expected as a \emph{statement termination operator}. In both cases the next output tag is assigned the result from evaluation of the input expression, but in the latter case, output is not displayed on the screen. Multiple expressions can be entered in the same line, but each of them needs a termination character. They are also expected at the end of every input expression to be processed from a file. Inside of a compound statement, however, the individual statements are not separated by a colon or dollar sign, but by a comma.
+
+\subsection{System variables for backward references}
+
+\lz \hyt{\_}{\tcr{\emph{\_ } (underscore)}} \hfill \tcr{[variable]}\index{\_}
+
+\lz This system variable contains the most recently evaluated input expression, i.e. the expression with input tag (\%i\emph{n}), $ n \in \N $ being the most recent cycle having been evaluated. \_ is assigned the input expression before the input is simplified or evaluated. However, the value of \_ is simplified (but not evaluated) when it is displayed. 
+
+\lz \_ is recognized by batch and load. In a file processed by batch, \_ has the same meaning as at the interactive prompt. In a file processed by load, \_ is bound to the input expression most recently evaluated at the interactive prompt or in a batch file. \_ is not bound to the input expressions in the file being processed.
+
+\lz Note that a :lisp command is not associated with an input tag and cannot be referenced by \_.
+
+\lz \begin{lstlisting}
+<@\tcr{(\%i1)}@   13 + 29;
+<@\tcr{(\%o1)}@				42
+<@\tcr{(\%i2)}@   :lisp $_
+((MPLUS) 13 29)
+<@\tcr{(\%i2)}@   _;
+<@\tcr{(\%o2)}@				42
+<@\tcr{(\%i3)}@   sin (%pi/2);
+<@\tcr{(\%o3)}@				1
+<@\tcr{(\%i4)}@   :lisp $_
+((%SIN) ((MQUOTIENT) $%PI 2))
+<@\tcr{(\%i4)}@   _;
+<@\tcr{(\%o4)}@				1
+<@\tcr{(\%i5)}@   a: 13$
+<@\tcr{(\%i6)}@   a + a;
+<@\tcr{(\%o6)}@				26
+<@\tcr{(\%i7)}@   :lisp $_
+((MPLUS) $A $A)
+<@\tcr{(\%i7)}@   _;
+<@\tcr{(\%o7)}@			        2 a
+<@\tcr{(\%i8)}@   a + a;
+<@\tcr{(\%o8)}@				26
+<@\tcr{(\%i9)}@   ev (_);
+<@\tcr{(\%o9)}@				26
+\end{lstlisting}
+
+\lz The above example not only illustrates the \_ operator, but also nicely demonstrates the difference between \emph{evaluation} and \emph{simplification}. Although in a broader sense we often talk about "evaluation" when we want to indicate that Maxima processes an input expression in order to compute an output, in the strict sense the meaning of evaluation is limited to \emph{dereferencing}. Everything else is simplification. In the example above, only at \%o6, \%o8 and \%o9 we see evaluation, as the symbol a is dereferenced, i.e. replaced by its value. After this replacement, the addition of the values constitutes another simplification.
+
+\lzz \hyt{\%in}{\tcr{\%i\emph{n}}} \hfill \tcr{[variable]}\index{\%in}
+
+\lz This system variable contains the input expression with input tag (\%i\emph{n}), $ n \in \N $. Its behavior corresponds exactly to \_.
+
+\lzz \hyt{\_\_}{\tcr{\emph{\_\_} (double underscore)}} \hfill \tcr{[variable]}\index{\_\_}
+
+\lz This system variable contains the input expression \emph{currently being evaluated}. Its behavior corresponds exactly to \_. In particular, when \emph{load (filename)} is called from the interactive prompt, \_\_ is bound to \emph{load (filename)} while the file is being processed.
+
+\subsection{General option variables}
+
+\section{Output}
+
+\subsubsection{One- and two-dimensional form}
+
+\lz \hyt{display2d}{\tcr{\emph{display2d}}} \qquad \tcr{\ \ default: \emph{true}} \hfill \tcr{[variable]}\index{\%}
+
+\lz Output will normally be displayed in two-dimensional form, including in the command-line mode of the console. If the option variable \emph{display2d} is set to \emph{false}, output will be displayed in one-dimensional form as in the input.
+
+\subsubsection{System variables for backward references}
+
+\lz \hyt{\%}{\tcr{\emph{\%}}} \hfill \tcr{[variable]}\index{\%}
+
+\lz This system variable contains the output expression most recently computed by Maxima, whether or not it was displayed, i.e. the expression with output tag (\%o\emph{n}), $ n \in \N $ being the most recent cycle having been evaluated. When the output was not displayed, this output tag is not visible on the screen either. 
+
+\lz \% is recognized by batch and load. In a file processed by batch, \% has the same meaning as at the interactive prompt. In a file processed by load, \% is bound to the output expression most recently computed at the interactive prompt or in a batch file; \% is not bound to output expressions in the file being processed.
+
+\lz Note that a :lisp command does not create an output tag and therefore cannot be referenced by \%.
+
+\lzz \hyt{\%th}{\tcr{\emph{\%th(n)}}} \hfill \tcr{[function]}\index{\%th}
+
+\lz This system function returns the n-th previous output expression, $ n \in \N $. Its behavior corresponds to \%.
+
+\lzz \hyt{\%on}{\tcr{\%o\emph{n}}} \hfill \tcr{[variable]}\index{\%on}
+
+\lz This system variable contains the output expression with output tag (\%o\emph{n}), $ n \in \N $. Its behavior corresponds exactly to \%.
+
+\lzz \hyt{\%\%}{\tcr{\emph{\%\%}}} \hfill \tcr{[variable]}\index{\%\%}
+
+\lz In compound statements, namely ($ s_1, \dots, s_n $), block, or lambda, this system variable contains the value of the previous statement. At the first statement in a compound statement, or outside of a compound statement, \%\% is undefined. \%\% is recognized by batch and load, and it has the same meaning as at the interactive prompt. A compound statement may comprise other compound statements. Whether a statement be simple or compound, \%\% contains the value of the previous statement. Within a compound statement, the value of \%\% may be inspected at a break prompt, which is opened by executing the break function.
+
+\subsection{Functions for output}
+
+\lz \hyt{print}{\tcr{\emph{print ($ p_1,\dots,p_n $)}}} \hfill \tcr{[function]}\index{print}
+
+\hyt{print0}{\tcr{\emph{print0 ($ p_1,\dots,p_n $)}}} \hfill \tcr{[function of \emph{rs\_print0}]}\index{print0}
+
+\subsection{General option variables}
+
+\lz \hyt{powerdisp}{\tcr{\emph{powerdisp}} \qquad \tcr{default: \emph{false}}} \hfill \tcr{[option variable]}\index{powerdisp}
+
+\lz When \emph{powerdisp} is true, an expression is displayed in reverse canonical order, see sect. \ref{Ex2}.
+
+\lz \hyt{verbose}{\tcr{\emph{verbose}} \qquad \tcr{default: \emph{false}}} \hfill \tcr{[option variable]}\index{verbose}
+
+\lz This global variable controls the amount of output printed by various function, e.g. \hyl{powerseries}{\emph{powerseries}}.
+
+\subsection{Variables generated by Maxima}
+
+In certain situations Maxima functions may generate there own new variables. 
+
+\lz General variables are composed of a small g followed by a number, starting with $ g1, g2, \dots $ Summation indeces beginn with a small i instead and are numbered independently of the g-variables.
+
+\lz For instance, each time \hyl{powerseries}{\emph{powerseries}} returns a power series expansion, it generates a new summation index, starting with $ i1, i2, \dots $
+
+\subsection{Pretty print for wxMaxima}
+
+Package \emph{rs\_pretty\_print.mac} provides functions for pretty output. When placed at the end of an input form, they will add a comment and a noun form of the input at the beginning of Maxima's return value. These functions are particularly useful when employed within wxMaxima for evaluating large cells. With the additional information provided by functions \emph{Pr} and \emph{Pr0}, the output can be read fluently without constantly having to refer back to the input. 
+
+\lz This package uses function \emph{print0} instead of \emph{print}, and thus it requires package \emph{rs\_print0.lisp}. This also means that between the parameters of the leading comment, blanks have to be inserted manually.
+
+\lzz \hyt{Pr}{\tcr{\emph{expr\$ Pr($\glangle$"text"$\grangle$)\$}}} \hfill \tcr{[function of \emph{rs\_pretty\_print}]}\index{Pr}
+	
+\hyt{Pr0}{\tcr{\emph{expr\$ Pr0($\glangle$"text"$\grangle$)\$}}} \hfill \tcr{[function of \emph{rs\_pretty\_print}]}\index{Pr0}
+
+\hyt{Pr00}{\tcr{\emph{expr\$ Pr00($\glangle$"text"$\grangle$)\$}}} \hfill \tcr{[function of \emph{rs\_pretty\_print}]}\index{Pr00}
+
+\lz Function \emph{Pr} is used in the following way. Terminate the input expression with \$. Then continue on the same line with the function call of \emph{Pr}, also terminated with \$. If a parameter string "text" is supplied, Maxima's output will be preceeded by "text" as a comment to what follows, terminated with a colon. Then, if the return value is different from the input, a noun form of the input will preceed Maxima's return value, separated by either = or <=>, depending on whether the expression is an equation or not. In case of the input being an assignment, the variable assigned to will preceed the assigned value (again split into a noun form and the evaluated form, if different), separated by :=. 
+
+\lz Mathematical expressions evaluated by Maxima can be included in the leading comment. The comment can comprise a variable number of parameters (including zero), separated by commas.
+
+\lz \emph{Pr0} is the same as \emph{Pr}, but the noun form is not displayed. \emph{Pr0} is useful, when a number of consecutive transformations of an expression is performed and the leading comment is to replace the information given by the noun form of a step. \emph{Pr00} is the same as \emph{Pr0}, but the equal or equivalence sign is omitted as well.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   bg[x]: x[t]=v[ox]*t$ Pr("Bewegungsgleichung in x-Richtung")$
+<@\tcr{(\%i2)}@   bg[z]: z[t]=-g*t^2/2+v[oz]*t+h$ Pr("Bew.gl. in z.Richtung")$
+<@\tcr{(\%i3)}@   eliminate([bg[x],bg[z]],[t])[1]$ Pr00("t eliminieren")$
+<@\tcr{(\%i4)}@   expand(solve(%th(2),z[t]))[1]$ Pr00("Auflösen nach z")$
+<@\tcr{(\%i5)}@   z[x]: ev(rhs(%th(2)),x[t]=x)$ Pr00("Wurfparabel-Funktion")$
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \text{Bewegungsgleichung in x-Richtung:} \quad {{\mathit{bg}}_x} :=  \quad {x_t}={v_{\mathit{ox}}}\, t \]
+\vspace{-10mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \text{Bew.gl. in z-Richtung:} \quad bg_z := \quad  z_t=-(g*t^2)/2+v_{oz}*t+h \]
+\vspace{-10mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \text{t eliminieren:} \quad {{v}_{\mathit{ox}}^{2}}\, \left( 2 {z_t}-2 h\right) +g\, {{x}_{t}^{2}}-2 {v_{\mathit{ox}}}\, {v_{\mathit{oz}}}\, {x_t} \]
+\vspace{-9mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \text{Auflösen nach z:} \quad {z_t}=-\frac{g\, {{x}_{t}^{2}}}{2 {{v}_{\mathit{ox}}^{2}}}+\frac{{v_{\mathit{oz}}}\, {x_t}}{{v_{\mathit{ox}}}}+h \]
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \text{Wurfparabel-Funktion:} \quad {z_x} :=  -\frac{g\, {{x}^{2}}}{2 {{v}_{\mathit{ox}}^{2}}}+\frac{{v_{\mathit{oz}}} x}{{v_{\mathit{ox}}}}+h \]
+\color{black}
+\end{small} \reqn
+\vspace{-3mm} 
+
+\lz Note that when using one of the pretty print functions, \%th(2) has to be used instead of \% when refering to the last output expression. The next example shows that we can even display the most challenging tensor notations.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   goij<@$\rho$@:diff(goij,<@$\rho$@)$ Pr00('g[",<@$\rho$@"]^ij)$
+<@\tcr{(\%i2)}@   zeromatrix(3,3)$ Pr00('g[",<@$\vap$@"]^ij," = ",'g[",z"]^ij," ",'g[k]^".l")$
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} {{g}_{,\rho }^{\mathit{ij}}}: \quad \mathit{goij\rho } := \begin{pmatrix}0 & 0 & 0\\
+0 & -\frac{2}{{{\rho }^{3}}} & 0\\
+0 & 0 & 0\end{pmatrix} \]
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} {{g}_{,\vap }^{\mathit{ij}}} = {{g}_{,z}^{\mathit{ij}}} = {{g}_{k}^{\mathit{.l}}} : \quad \begin{pmatrix}0 & 0 & 0\\
+0 & 0 & 0\\
+0 & 0 & 0\end{pmatrix} \]
+\color{black}
+\end{small} \reqn
+\vspace{-7mm} 
+
+
+
+\end{document}

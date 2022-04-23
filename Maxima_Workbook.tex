@@ -1,0 +1,658 @@
+% There must be no blanks in filenames or paths. Filenames or paths cannot be quoted. Only normal slash may be used in paths. Filenames and paths are case-sensitive! Umlaute führen zumindest im Main file zu Fehlern.
+
+% !TeX spellcheck = en_US
+\documentclass[a4paper,11pt,oneside]{book}
+
+% Silence out Latex warnings and Tex bad boxes (overfull/underfull). h=horizontal; v=vertical has no effect. Infinite loop occurs if section headings contain \mathbb (\R) or \mathcal (\mc) not wrapped in \texorpdfstring. See StackExchange tex question 482426, 241343, 277783.
+\usepackage{silence}
+\WarningFilter{latex}{Marginpar on page}
+\WarningFilter{latex}{Label}
+\WarningFilter{hyperref}{Token not allowed}
+\hbadness=10000
+\newcount\hbadness
+\hfuzz=\maxdimen
+\newdimen\hfuzz
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xspace}
+\usepackage{preview}
+
+% Wenn man mehrere Sprachen angibt, zwischen denen man in einem Dokument umschalten kann, darf die Standardsprache nicht zusätzlich in der documentclass stehen. Die letzte Sprache in der Liste ist der Standard.
+\usepackage[french,italian,spanish,swedish,german,USenglish]{babel}
+
+% Set font:
+% Der Zeichensatz arev unterstützt keinen Fettdruck griechischer Buchstaben; ich kann hier mit MotschTM \ul{\gam} verwenden. Accent grave muß mit $ \grave $ dargestellt werden.
+\usepackage{arev}
+\usepackage{arevmath}
+
+%book verwendet standardmäßig graphicx. Ich in article graphics. Unterschied?
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage[rightcaption]{sidecap}
+\usepackage[font=footnotesize]{caption}
+
+% Set margins (left 2.5, right 2.5):
+\usepackage[left=2.50cm, right=2.50cm, top=2.50cm, bottom=2.50cm]{geometry}
+% Randnotizen auf beiden Rändern ermöglichen:
+\usepackage{marginnote}
+% Change margins per paragraph (Bsp: Bem (iii) zu Def DM9a):
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endchangemargin=\endlist 
+
+% Use package subfiles to be able to compile subfiles seperately:
+\usepackage{subfiles}
+
+% Bibliography:
+\usepackage[backend=biber,style=alphabetic,sorting=nyt]{biblatex}
+\usepackage[babel, german=quotes]{csquotes}
+\addbibresource{../../Bibliographie/Bibliographie.bib}
+
+% Index:
+\usepackage{makeidx}
+% Wenn die hyperlinks im Index verschwinden, alle Hilfsdateien bis auf .tex löschen. 
+% Den fehlenden toc Eintrag von Hand erzeugen, falsche Seitenzahl und Hyperlink unvermeidlich.
+\makeindex
+
+%Text in color:
+% dvipsnames allows for many color names:
+\usepackage[dvipsnames]{xcolor}
+\newcommand{\tc}[2]{\textcolor{#2}{#1}}
+\newcommand{\tcb}[1]{\textcolor{blue}{#1}}
+\newcommand{\tcr}[1]{\textcolor{red}{#1}}
+\newcommand{\tcg}[1]{\textcolor{OliveGreen}{#1}}
+
+% Maxima meta operators in green:
+\newcommand{\glangle}{\tcg{\big\langle}}
+\newcommand{\grangle}{\tcg{\big\rangle}}
+\newcommand{\gbar}{\, \tcg{\big|} \,}
+\newcommand{\gpal}{\tcg{\big(}}
+\newcommand{\gpar}{\tcg{\big)}}
+
+% Listings of program code:
+\usepackage{listings}
+% Define styles to be used as \begin{lstlisting}[style=name]. They overwrite the default:
+\lstdefinestyle{small}{
+	basicstyle=\small,
+	breaklines=true,
+}
+\lstdefinestyle{blue}{
+	basicstyle=\color{blue},
+	breaklines=true,
+}
+\lstdefinestyle{smallblue}{
+	basicstyle=\color{blue} \small,
+	breaklines=true,
+}
+\lstdefinestyle{lisp}{
+	basicstyle=\color{blue} \small,
+	language=Lisp,
+	breaklines=true,
+	keywordstyle=\color{blue},
+}
+\lstdefinestyle{red}{
+	basicstyle=\color{red},
+	breaklines=true,
+}
+\lstdefinestyle{smallred}{
+	basicstyle=\color{red} \small,
+	breaklines=true,
+}
+% Set defaults for lstlisting:
+\lstset{
+	inputencoding=utf8,
+	basicstyle=\color{blue} \small \ttfamily,
+	escapeinside={<@}{@},
+	breaklines=true,
+	literate={ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1 {ß}{{\ss}}1  
+}
+
+% Section title, toc and header customization:
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{titleps}
+% Setzt die Numerierung bis zur Ebene 5 (subparagraph) fort und nimmt dies auch ins toc auf. Ich muß hinter jede Überschrift von paragraph oder subparagraph ein \mbox{} setzen und den ersten Absatz mit \lz beginnen, damit diese Abschnitte genauso wie die der höheren Ebenen aussehen.
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+% Set paragraph indent to zero:
+\setlength{\parindent}{0ex}
+% Vergrößert den Zeilenabstand (default=1):
+\renewcommand{\baselinestretch}{1.1}
+% Setzt header und footer auf standard. Notwendig auch für oneside Dokument.
+\pagestyle{plain}
+% Matrizen und Vektoren vertikal auseinanderziehen, damit Brüche besser hineinpassen:
+\renewcommand\arraystretch{1.5}
+% Vergrößere Abstand zwischen Textkörper und Fußnoten:
+\setlength{\skip\footins}{0.7cm}
+
+% Needed to avoid overlap of numbers and titles in the toc:
+\usepackage{tocloft}
+\addtolength{\cftpartnumwidth}{10pt}
+\addtolength{\cftchapnumwidth}{10pt}
+\addtolength{\cftsecnumwidth}{10pt}
+\addtolength{\cftsubsecnumwidth}{10pt}
+\addtolength{\cftsubsubsecnumwidth}{10pt}
+\addtolength{\cftparanumwidth}{10pt}
+\addtolength{\cftsubparanumwidth}{10pt}
+
+% Packages for mathematics:
+% Option leqno sets tags to the left (vor allem für die Maxima-Output Nummerierung): 
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{amsbsy}
+\usepackage{mathtools}
+\usepackage{tensor}
+
+% Definiere Funktionen für das Umschalten zw. tags rechts und links: rechts für Formeln, links für Repl-Output. Quelle: https://tex.stackexchange.com/questions/212085/tag-placing-with-amsmath/212099#212099 und https://tex.stackexchange.com/questions/193535/switch-between-leqno-and-reqno-options-of-amsmath-in-the-same-document
+\makeatletter
+\newcommand{\leqn}{\tagsleft@true\let\veqno\@@leqno}
+\newcommand{\reqn}{\tagsleft@false\let\veqno\@@eqno}
+\makeatother
+
+% Formulas numbered per section:
+\numberwithin{equation}{chapter}
+% Number only a specific line in an align* environment:
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+% Axiom, theorem, lemma, corollary, definition, example, exercise, remark:
+\newtheorem{theorem}{Satz}[chapter] 
+% Numbered per chapter
+\newtheorem{definition}[theorem]{Definition} 
+% Same counter as theorem
+\newtheorem{lemma}[theorem]{Lemma} 
+% Same counter as theorem
+\newtheorem{axiom}[theorem]{Axiom} 
+% Same counter as theorem
+\newtheorem{algorithm}[theorem]{Algorithm} 
+% Same counter as theorem
+\newtheorem{procedure}[theorem]{Procedure} 
+% Same counter as theorem
+\newtheorem{discussion}[theorem]{Diskussion} 
+% Same counter as theorem
+\newtheorem{corollary}{corollary}[theorem] 
+% Numbered per theorem/definition/lemma/axiom/algorithm
+% Theoremstyle gilt jeweils für alle nachfolgenden classes:
+% Beispiele nicht kursiv:
+\theoremstyle{definition}
+% Mathe-Beispiel mit Korollar-Zähler:
+\newtheorem{example}[corollary]{Example}
+% Physik-Beispiel mit Satz-Zähler:
+\newtheorem{pexample}[theorem]{Example}
+% Aufgabe, nummeriert nach Kapitel:
+\newtheorem{exercise}{Exercise}[chapter]
+% Bemerkung, nicht nummeriert:
+\theoremstyle{remark}
+\newtheorem*{remark}{Note}
+
+% Command definitions:
+% Margin note on the right margin:
+\newcommand{\marnot}[1]{\marginpar{\scriptsize {#1}}}
+% Cite in the right margin:
+\newcommand{\citem}[2]{\marginpar{\scriptsize \cite[#2]{#1}}}
+% Href in the right margin:
+\newcommand{\hrefm}[2]{\marginpar{\scriptsize \href{#1}{#2}}}
+% Margin note on the left margin, float left:
+\renewcommand*{\raggedleftmarginnote}{\raggedright}
+\newcommand{\marnotl}[1]{\reversemarginpar 
+	\marginnote{\scriptsize {#1}} 
+	\normalmarginpar}
+
+% Abkürzungen für Zahlenbereiche:
+\newcommand{\A}{\mathbb{A}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\LL}{\mathbb{L}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\U}{\mathbb{U}}
+\newcommand{\V}{\mathbb{V}}
+\newcommand{\Z}{\mathbb{Z}}
+
+% Limit gegen unendlich:
+\newcommand{\li}[1]{\lim\limits_{#1 \to \infty}}
+% Operatoren definieren, unter die man Text schreiben kann:
+% Limit mit großem L:
+\DeclareMathOperator*{\Lim}{Lim}
+\newcommand{\Li}[1]{\Lim\limits_{#1 \to \infty}}
+% Lim inf Notation mit underline:
+\DeclareMathOperator*{\Lii}{\underline{lim}}
+\newcommand{\lii}[1]{\Lii\limits_{#1 \to \infty}}
+% Lim sup Notation mit overline:
+\DeclareMathOperator*{\Lis}{\ov{lim}}
+\newcommand{\lis}[1]{\Lis\limits_{#1 \to \infty}}
+
+% Geht gegen:
+\newcommand{\geg}[2]{\overop{\longrightarrow}{$ #1 \rightarrow #2 $}}
+% Geht gegen mit isby kombiniert:
+\newcommand{\gegby}[3]{\ovunop{\longrightarrow}{$ #1 \rightarrow #2 $}{\eqref{#3}}}
+% Geht gegen mit ovunop kombiniert:
+\newcommand{\gegun}[3]{\ovunop{\longrightarrow}{$ #1 \rightarrow #2 $}{#3}}
+% Für die gilt:
+\newcommand{\fdg}{\: \big| \:}
+
+% Integral mit Grenzen oberhalb und unterhalb des Integralzeichens und nicht daneben:
+\newcommand{\intt}[2]{\int\limits_{#1}^{#2}}
+% Stammfunktion in unt. u. ob. Grenzen:
+\newcommand{\intaw}[2]{\bigg|_{#1}^{#2}}
+
+% Exists, nexists und forall mit Abständen davor und danach (Achtung: \nexists ist nicht verfügbar für Arev!):
+\newcommand{\ex}{\enskip \exists \enskip}
+\newcommand{\nex}{\enskip \not \mspace{-5.0mu} \exists \enskip}
+\newcommand{\fa}{\enskip \forall \enskip}
+\newcommand{\faa}{\quad \forall \enskip}
+
+% Text in mathmode mit Abständen davor und danach:
+\newcommand{\te}[1]{\enskip \text{#1} \enskip}
+\newcommand{\tee}[1]{\quad \text{#1} \quad}
+\newcommand{\teee}[1]{\qquad \text{#1} \qquad}
+% Summe nur mit unterem Index:
+\newcommand{\sumi}[1]{\sum_{#1}}
+
+% Abkürzung für \overline:
+\newcommand{\ov}[1]{\overline{#1}}
+% Abkürzung für \boldsymbol (z.B. griech. Buchstaben):
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+% Abkürzung für mathbf:
+\newcommand{\mb}[1]{\mathbf{#1}}
+% Abkürzung für mathbf + italic (zB Nullvektor):
+% Hier sieht boldsymbol besser aus als pmb.
+\newcommand{\mbi}[1]{\boldsymbol{\mathit{#1}}}
+\newcommand{\mi}[1]{\mathit{#1}}
+% Abkürzung für mathcal:
+\newcommand{\mc}[1]{\mathcal{#1}}
+% Abkürzung für overline für konjugierte komplexe Zahlen:
+\newcommand{\ol}[1]{\overline{#1}}
+\newcommand{\ul}[1]{\underline{#1}}
+% Abkürzung für math bold + bar für Basiswechsel von Vektoren:
+\newcommand{\mbb}[1]{\bar{\mb{#1}}}
+
+% Abkürzung für mathfrak, etwas vergrößert:
+% Da aber keine Größenanpassung der math-sizes mehr stattfindet (text size, script size, script script size), ist es in Fällen, wo ich diese benötige, besser, das originale \mathfrak zu verwenden.
+\newcommand{\mf}[1]{\scalebox{1.1}{\ensuremath{\mathfrak{#1}}}}
+% Abkürzung für mathbf + mathfrak, etwas vergrößert:
+% Hier sieht pmb besser aus als boldsymbol.
+\newcommand{\mbf}[1]{\scalebox{1.1}{\ensuremath{\pmb{\mathfrak{#1}}}}}
+% Vergrößern von o-Symbolen:
+\newcommand{\godot}{\, \scalebox{1.2}{\ensuremath{\odot}} \,}
+\newcommand{\gotimes}{\, \scalebox{1.2}{\ensuremath{\otimes}} \,}
+\newcommand{\goslash}{\, \scalebox{1.2}{\ensuremath{\oslash}} \,}
+\newcommand{\goplus}{\, \scalebox{1.2}{\ensuremath{\oplus}} \,}
+\newcommand{\gominus}{\, \scalebox{1.2}{\ensuremath{\ominus}} \,}
+\newcommand{\goperp}{\perp \hspace{-12pt} \scalebox{0.7}{\ensuremath{\bigcirc}} \, \;}
+
+% Vertikaler Zeilenabstand ("Leerzeile"):
+\newcommand{\lz}{\vspace{2mm}}
+\newcommand{\lzz}{\vspace{4mm}}
+\newcommand{\lzzz}{\vspace{6mm}}
+
+% Abkürzung für enskip:
+\newcommand{\en}{\enskip}
+% Gleichheitszeichen mit Abstand davor und dahinter:
+\newcommand{\gl}{\enskip = \enskip}
+
+% ess für ess sup separat, damit ein Subscript unter das sup gesetzt wird:
+\newcommand{\ess}{ess \:}
+
+% Abkürzungen für Klammern. Ihnen kann \left, \big etc. unmittelbar vorangestellt werden:
+\newcommand{\ve}{\Vert}
+\newcommand{\la}{\langle}
+\newcommand{\ra}{\rangle}
+
+% Del-Operator:
+\newcommand{\del}{\partial}
+
+% Grad, div, rot, etc.:
+\DeclareMathOperator{\gr}{grad}
+\DeclareMathOperator{\di}{div}
+\DeclareMathOperator{\rot}{rot}
+\DeclareMathOperator{\ad}{ad}
+\DeclareMathOperator{\de}{det}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\gram}{gram}
+\DeclareMathOperator{\pr}{pr}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\spa}{span}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rg}{rg}
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\ke}{ker}
+\DeclareMathOperator{\Char}{char}
+\DeclareMathOperator{\imag}{imag}
+\DeclareMathOperator{\kodim}{kodim}
+
+% Re, Im mit Abstand dahinter:
+\DeclareMathOperator{\re}{Re}
+\DeclareMathOperator{\im}{Im}
+% Hauptwert des Arguments e. kompl. Zahl:
+\DeclareMathOperator{\Arg}{Arg}
+% Weitere Arkusfunktionen:
+\DeclareMathOperator{\arccot}{arccot}
+% Weitere Hyperbelfunktionen:
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\csch}{csch}
+% Hauptwert des kompl. nat. Logarithmus u. der Arkusfunktionen:
+\DeclareMathOperator{\Ln}{Ln}
+\DeclareMathOperator{\Arcsin}{Arcsin}
+\DeclareMathOperator{\Arccos}{Arccos}
+
+% Epsilon, Lambda, Varphi, Omega:
+\newcommand{\alp}{\alpha}
+\newcommand{\bet}{\beta}
+\newcommand{\gam}{\gamma}
+\newcommand{\Gam}{\Gamma}
+\newcommand{\eps}{\epsilon}
+\newcommand{\lam}{\lambda}
+\newcommand{\Lam}{\Lambda}
+\newcommand{\vap}{\varphi}
+\newcommand{\vat}{\vartheta}
+\newcommand{\vak}{\varkappa}
+\newcommand{\sig}{\sigma}
+\newcommand{\Sig}{\Sigma}
+\newcommand{\om}{\omega}
+\newcommand{\Om}{\Omega}
+
+%Abkürzungen für subseteq und supseteq:
+\newcommand{\sbeq}{\subseteq}
+\newcommand{\speq}{\supseteq}
+
+% Nicht-Inklusions-Zeichen. Diese sind in Latex nicht definiert bzw. in Arev nicht enthalten:
+\newcommand{\nsbeq}{\enskip \not \mspace{-2.0mu} \subseteq \enskip}
+\newcommand{\nspeq}{\enskip \not \mspace{-2.0mu} \supseteq \enskip}
+\newcommand{\nsubset}{\enskip \not \mspace{-2.0mu} \subset \enskip}
+\newcommand{\nsupset}{\enskip \not \mspace{-2.0mu} \supset \enskip}
+
+%Weitere Abkürzungen:
+\newcommand{\bl}{\backslash}
+\newcommand{\parl}{\parallel}
+
+% Prescript:
+\newcommand{\ps}[2]{\prescript{}{#1}{#2}}
+
+% Principal value integral:
+\newcommand{\pint}[2]{\mc{P} \mspace{-19.0mu} \int_{#1}^{#2}}
+
+% Multiple reference to the same footnote: use \footnotemark at the first reference, \addtocounter{footnote}{-1}\footnotemark at any further reference, and \addtocounter{footnote}{-1}\footnotemark \footnotetext{text} at the last reference. Bsp: Gruppentheorie2, direktes Produkt.
+
+% Arbitrary text over relational operator or other symbol. Footnotes can be used with \footnotemark, see example in Satz MV20e, MultiVar_DiffR_Anw, and stack exchange:
+
+% Overop: mathcal läßt sich nicht mit overop verwenden. Hier hilft aber \overset, s. Maßtheorie:
+% Short overop:
+\newcommand{\overops}[2]{\enskip \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #2}}}{#1}} \enskip}
+\newcommand{\overop}[2]{\quad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #2}}}{#1}} \quad}
+\newcommand{\overopp}[2]{\qquad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #2}}}{#1}} \qquad}
+% Arbitrary text over and under relational operator or other symbol:
+\newcommand{\ovunop}[3]{\quad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #2}}}{\underset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #3}}}{#1}}} \quad}
+\newcommand{\ovunopp}[3]{\qquad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #2}}}{\underset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #3}}}{#1}}} \qquad}
+
+% Simple equation reference over relational operator:
+\newcommand{\isby}[2]{\quad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#2}}}}{#1}} \quad}
+% Double equation reference over/under relational operator:
+\newcommand{\isbyy}[3]{\quad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#2}}}}{\underset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#3}}}}{#1}}} \quad}
+% Triple equation reference over/under relational operator:
+\newcommand{\isbyyy}[4]{\qquad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#2},\eqref{#3}}}}{\underset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#4}}}}{#1}}} \qquad}
+% Quadruple equation reference over/under relational operator:
+\newcommand{\isbyyyy}[5]{\qquad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#2},\eqref{#3}}}}{\underset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#4},\eqref{#5}}}}{#1}}} \qquad}
+
+% Kombination aus isby und overop:
+% Text oben, eqref unten:
+\newcommand{\ovisby}[3]{\quad \mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #2}}}{\underset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#3}}}}{#1}}} \quad}
+% eqref oben, Text unten:
+\newcommand{\unisby}[3]{\quad \mathrel{\underset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily #3}}}{\overset{\makebox[0pt]{\mbox{\normalfont\scriptsize\sffamily \eqref{#2}}}}{#1}}} \quad}
+
+% Hypertarget, hyperlink Abkürzungen:
+\newcommand{\hyt}[2]{\hypertarget{#1}{#2}}
+\newcommand{\hyl}[2]{\hyperlink{#1}{#2}}
+% \hyperref läßt sich nicht abkürzen.
+
+% xr-hyper has to be placed before hyperref:
+\usepackage{xr-hyper}
+% This package has to be placed last in the preamble, otherwise it does not point correctly to eqlabels in subequations environment:
+\usepackage{hyperref}
+
+% externaldocument creates error "undefined control sequence", if there are macros used in the external document, which are not defined also in this one:
+\externaldocument[M-]{../Mathematik/Mathematik_für_Physiker}[../Mathematik/Mathematik_für_Physiker.pdf]
+\externaldocument[P-]{../Theoretische_Physik/Theoretische_Physik}[../Theoretische_Physik/Theoretische_Physik.pdf]
+\externaldocument[C-]{../Mathematica_Workbook/Mathematica_Workbook}[../Mathematica_Woorkbook/Mathematica_Workbook.pdf]
+
+% Opening:
+\title{CAS Maxima Workbook}
+
+\author{Roland Salz}
+\date{\  \\ April 23, 2022 \\ \  \\ Vers. 1.0.0} 
+
+\begin{document}
+
+\frontmatter
+\maketitle
+
+% License, Copyright
+\chapter*{}
+\section*{\begin{center}\end{center}}
+\begin{center}
+	This work is published under the terms of the \\
+	
+	\lz GNU GPL-3.0 License.
+	
+	\lzzz The source code is provided at GitHub \\
+	
+	\lz RolandSalz / Maxima-Workbook.
+		
+	\lzzz Copyright © Roland Salz 2018-2022
+	
+	\lzzz No warranty whatsoever is given for the correctness or completeness of the information provided.
+	
+	\lzzz Maple, Mathematica, Windows, and YouTube are registered trademarks. 
+	
+	\lzzz This project is work in progress. \\
+	Comments and suggestions for improvement are welcome.
+\end{center}
+
+\lzzz \lzzz \lzzz \lzzz \lzzz \lzzz \lzzz \lzzz Roland Salz \\
+Braunsberger Str. 26 \\
+D-44809 Bochum \\
+mail@roland-salz.de
+
+% Motto (mail 8.12.2019):
+\chapter*{}
+\begin{center}
+	\emph{In some cases the objective is clear $ - $ and the results are surprising.}
+\end{center}
+
+\begin{flushright}
+	Richard J. Fateman
+\end{flushright}
+
+% Vorwort:
+\chapter*{}
+\addcontentsline{toc}{chapter}{Preface}
+\section*{\begin{center}Preface\end{center}}
+
+Maxima was developed from 1968-1982 at MIT (Massachusetts Institute of Technology) as the first comprehensive computer algebra system (CAS). Allowing not only for numerical, but also symbolical computation it was used by the leading US universities, by US Government institutions like the DOE, by the US Navy, or NASA. Having been enhanced and improved ever since, now Maxima is free (GPL) software and counts about 150.000 users worldwide. It is employed in education and research by mathematicians, physicists, engineers, and economists, coping with the major commercial CAS' of today. Since 2000 the software is maintained by an energetic group of volunteers called the \emph{Maxima team}. The author wishes to thank its kind and helpful members, in particular Dr. Robert Dodier, who is in charge of the project, Gunter Königsmann, in charge of the frontend wxMaxima, as well as Prof. Richard J. Fateman and Dr. Stavros Macrakis, who participated in the original MIT project and have been contributing to Maxima ever since, for almost half a century now.
+
+\lz The intention of the \emph{Maxima Workbook} is to provide a new documentation of the CAS Maxima. It is aimed at both users and developers. As a users’ manual it contains a description of the Maxima language, here abbreviated MaximaL. User functions written by the author are added wherever he felt that Maxima’s standard functionality is lacking them. As a developers’ manual it describes a possible software development environment. Maxima is written in Common Lisp, so the interrelation between MaximaL and Lisp is highlighted. We are convinced that there is no clear distinction between a Maxima user and a developer. Any sophisticated user tends to become a developer, too, and he can do so either on his own or by joining the Maxima team.
+
+\newpage
+\tableofcontents
+
+\mainmatter
+% Attention: The directory names here are case sensitive!
+
+% Part I: Historical evolution, documentation
+
+% Historical evolution:
+\subfile{subfiles/History}
+
+% Existing documentation:
+% Manuals and internal documentation (read.me):
+% Papers:
+% Tutorials and books:
+\subfile{subfiles/Documentation}
+
+% Comparison with Reduce, Axiom, Maple, Mathematica and specialized (e.g. numerical computation) programs:
+
+% Part II: Basic operation
+
+% Basics, REPL:
+\subfile{subfiles/Basics}
+% Input and output:
+\subfile{subfiles/Input_output}
+% Plotting:
+\subfile{subfiles/Plotting}
+% Batch processing:
+\subfile{subfiles/Batch_processing}
+% File input and output:
+
+% Part III: Concepts of symbolic computation
+
+% Datentypes:
+\subfile{subfiles/Datatypes}
+%  List, matrix and structure:
+\subfile{subfiles/List_matrix_structure}
+% Expressions and operators:
+\subfile{subfiles/Expression}
+\subfile{subfiles/Operator}
+% Evaluation:
+\subfile{subfiles/Evaluation}
+% Simplification:
+\subfile{subfiles/Simplification}
+% Declarations and properties:
+\subfile{subfiles/Knowledge_database}
+% Rules and patterns:
+\subfile{subfiles/Rules_patterns}
+
+% Part IV: Basic mathematical computation
+
+% Basic mathematical functions:
+\subfile{subfiles/Mathematical_functions}
+% Potenz-, Wurzel-, Exponentialfunktion, Logarithmus:
+\subfile{subfiles/Exponentiation_logarithm}
+
+% Polynomials:
+\subfile{subfiles/Polynomials}
+% Solving equations:
+\subfile{subfiles/Solving_equations}
+% Linear algebra:
+\subfile{subfiles/Linear_algebra}
+
+%Limits:
+\subfile{subfiles/Limits}
+% Sums, products and series:
+\subfile{subfiles/Sums_products_series}
+
+% Differentiation:
+\subfile{subfiles/Differentiation}
+% Integration:
+\subfile{subfiles/Integration}
+% Differential equations:
+\subfile{subfiles/Differential_equations}
+
+% Part V: Special applications
+
+\subfile{subfiles/Analytic_geometry}
+\subfile{subfiles/Coordinate_systems}
+
+% Special functions:
+
+% Part VI: Advanced mathematical computation
+
+% Integral transformation:
+\subfile{subfiles/Integral_transform}
+
+% Tensors:
+\subfile{subfiles/Tensors}
+
+% Numerical computation:
+\subfile{subfiles/Numerical_computation}
+
+% Part VII: MaximaL programming:
+
+% Variable types:
+% String processing:
+\subfile{subfiles/String_processing}
+% Functions:
+\subfile{subfiles/Functions}
+% Program flow:
+\subfile{subfiles/Program_flow}
+
+% Part VIII: User interfaces, share packages, external package manager:
+
+% User interfaces:
+% External program interfaces:
+% Gnuplot interface:
+% Java interface:
+% Sage interface:
+\subfile{subfiles/User_interfaces}
+
+% Share packages, external user packages, external package manager:
+\subfile{subfiles/Package_libraries}
+
+% Part IX: Maxima development:
+
+% MaximaL development
+% Lexical and dynamic scope in MaximaL:
+% Develloping environment and debugging in MaximaL:
+\subfile{subfiles/MaximaL_development}
+
+% MaximaL and Lisp interaction:
+% Lisp programming:
+% Supported Common Lisps:
+% Lisp-based program structure in Maxima:
+% MacLisp and Common Lisp:
+% Matiching MaximaL data types to Lisp:
+% Interpreting and compiling:
+% Lexical and dynamic scope in Lisp:
+\subfile{subfiles/Lisp_development}
+
+% Part X: Developer's environment
+
+% Emacs-based Maxima Lisp developer's environment:
+\subfile{subfiles/Emacs_environment}
+
+% Repository management:
+\subfile{subfiles/Repository_management}
+
+% Building Maxima on Windows:
+\subfile{subfiles/Build_Windows}
+
+% Part XI: Repository file structure, Maxima's build system
+% Repository, tarball and installer file structure:
+% Maxima's build system in general (asdf, system definition):
+\subfile{subfiles/Repo_file_structure}
+
+% Part XII:
+% Overall program structure (model), control and data flow:
+% Supported Lisps:
+% Description of components:
+% Parser:
+% MaximaL interpreter:
+% Simplifier:
+% Evaluator:
+% Solver:
+\subfile{subfiles/Lisp_program_structure}
+
+% Annexes:
+% A. Glossary
+\subfile{subfiles/Glossary}
+% B. SBCL init file .sbclrc
+% C. Emacs init file .emacs
+% D. Git configuration file .gitconfig
+\subfile{subfiles/Annexes}
+% Vorlagen:
+\subfile{subfiles/Templates}
+
+\backmatter
+\printbibliography[heading=bibintoc]
+
+% Fügt den fehlenden toc Eintrag des Index hinzu. addcontentsline muß vor printindex stehen! Die falsche Seitenzahl und der falsche hyperlink im toc ist nicht zu vermeiden.
+\addcontentsline{toc}{chapter}{Index}
+\printindex
+
+\end{document}

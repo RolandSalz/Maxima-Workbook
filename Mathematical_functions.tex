@@ -1,0 +1,73 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\part{Basic Mathematical Computation}
+
+\chapter{Basic mathematical functions}
+
+\section{Algebraic functions}
+
+\subsection{Division with remainder, modulo}
+
+\lz \hyt{mod}{\tcr{\emph{mod (a, b)}}} \hfill \tcr{[function]}\index{mod}
+
+\lz Returns \citem{MaxiManE}{}the remainder r of the division  of integers a, b. This division is not defined in the same way as Satz M-\ref{M-Z39} for negative arguments, because it can return a negative remainder. \emph{mod} can also be used for non-integers.
+
+\lz \hyl{divide}{\emph{divide}}, when used for division with remainder of integers, does't either deliver the results defined in Satz M-\ref{M-Z39} when a or b or both are negative, nor does it deliver the same result for the remainder as \emph{mod}. 
+
+\section{Combinatorial functions}
+
+\subsection{Factorials}
+
+\subsubsection{Functions and operators}
+
+\lz \hyt{factorial}{\tcr{\emph{factorial(expr)}}} \hfill \tcr{[function]}\index{factorial} \\
+\tcr{\emph{expr !}} \hfill \tcr{[operator]}
+
+\lz Represents the factorial function. Maxima treats \emph{x!} the same as \emph{factorial(x)}.
+
+\lz For a complex number x, except for negative integers, x! is defined as $ \Gamma (x+1) $, where $ \Gamma $ is the gamma function.
+
+\lz For an integer x, x! simplifies to the product of the integers from 1 to x inclusive. 0! simplifies to 1. For a real or complex number x in float or bigfloat precision, x! simplifies to the value of $ \Gamma (x+1) $. For x equal to n/2 where n is an odd integer, x! simplifies to a rational factor times $ \sqrt{\pi} $, since $ \Gamma(\frac{1}{2}) $ is equal to $ \sqrt{\pi} $.
+
+\lz The factorial of an integer is simplified to an exact number unless the operand is greater than factlim. The factorial for real and complex numbers is evaluated in float or bigfloat precision.
+
+\lzz \hyt{double\_factorial}{\tcr{\emph{double\_factorial(expr)}}} \hfill \tcr{[function]}\index{double\_factorial} \\
+\tcr{\emph{expr !!}} \hfill \tcr{[operator]}
+
+\lz Represents the double factorial function, generally defined for an argument z as
+\begin{equation*}
+	\left( \frac{2}{\pi} \right)^{\frac{1}{4} (1-\cos (z \pi))} 2^{\frac{z}{2}} \Gam \left(\frac{z}{2} + 1 \right).
+\end{equation*}
+\emph{double\_factorial} computes the double factorial, if its argument is a non-negative or an odd negative integer, a float, a bigfloat, or a complex float. The double factorial is not defined for even negative integers. For rationals, \emph{double\_factorial} returns a noun form. Maxima knows the derivative of the double factorial.
+
+\lz The operator \emph{x!!} is only defined for non-negative integers. For an even (or odd) non-negative integer n, the double factorial evaluates to the product of all the consecutive even (or odd) integers from 2 (or 1) through n inclusive. 0!! simplifies to 1. For all other arguments, !! returns a noun form in terms of function \hyl{genfact}{\emph{genfact}} or an error. 
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   double_factorial(x);
+<@\tcr{(\%o1)}@		       double_factorial(x)
+<@\tcr{(\%i1)}@   diff(double_factorial(x),x,1);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{\operatorname{double\_ factorial}(x) \left( \frac{\ensuremath{\pi}  \log{\left( \frac{2}{\ensuremath{\pi} }\right) } \sin{\left( \ensuremath{\pi}  x\right) }}{2}+{{\Psi}_0}\left( \frac{x}{2}+1\right) +\log{(2)}\right) }{2} \]
+\color{black} \reqn
+\end{small}
+
+\lzz \hyt{genfact}{\tcr{\emph{genfact(x,y,z)}}} \hfill \tcr{[function]}\index{genfact}
+
+\lz Returns the generalized factorial, defined as $ x (x-z) (x - 2 z) ... (x - (y - 1) z) $. Thus, when x is an integer, \emph{genfact} $ (x, x, 1) \equiv x! $ and \emph{genfact} $ (x, x/2, 2) \equiv x!! $.
+
+\subsubsection{Simplification}
+
+\subsection{Binomials}
+
+\lz \hyt{binomial}{\tcr{\emph{binomial(x,y)}}} \hfill \tcr{[function]}\index{binomial}
+
+\lz The binomial coefficient is defined as
+\begin{equation*}
+	\binom{x}{y} = \frac{x!}{(x-y)! y!}.
+\end{equation*}
+It can be used for numerical or symbolic computation. If x and y are integers, then the numerical value of the binomial coefficient is simplified to an integer. If x and y are real or complex float numbers, the binomial coefficient is computed according to the generalized factorial. If x is a symbol and y an integer, the binomial coefficient is expressed as a polynomial.
+\end{document}

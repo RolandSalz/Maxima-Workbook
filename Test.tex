@@ -1,0 +1,48 @@
+\documentclass[../Maxima_Book.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Grundlagen}
+
+Maxima rechnet mit Gleitkommazahlen in doppelter Genauigkeit. Weiterhin kann Maxima
+mit großen Gleitkommazahlen rechnen, die prinzipiell eine beliebige Genauigkeit haben.
+Gleitkommazahlen werden mit einem Dezimalpunkt eingegeben. Der Exponent kann mit
+"f", "e" oder "d" angegeben werden. Intern rechnet Maxima ausschließlich mit Gleitkommazahlen
+in doppelter Genauigkeit, die immer mit "e" f¨ur den Exponenten angezeigt
+werden. Große Gleitkommazahlen werden mit dem Exponenten "b" bezeichnet. Groß- und
+Kleinschreibung werden bei der Schreibweise des Exponenten nicht unterschieden.
+
+Ist mindestens eine Zahl in einer Rechnung eine Gleitkommazahl, werden die Argumente
+in Gleitkommazahlen umgewandelt und eine Gleitkommazahl als Ergebnis zur¨uckgegeben.
+Dies wird auch f¨ur große Gleitkommazahlen ausgef¨uhrt.
+
+Mit den Funktionen float und bfloat werden Zahlen in Gleitkommazahlen und große
+Gleitkommazahlen umgewandelt.
+
+\subsubsection{Option variables}
+
+\emph{numer} \qquad Default: \emph{false} \hfill [Option variable]\index{numer}
+
+\lz If set, non-integer rational numbers are transformed to floating point. Mathematical functions (trigonometric functions, roots, exponentiation, etc.) with numerical arguments of any kind (including integer) evaluate to floating point, as they would do for floating point arguments.
+
+... It causes variables in expr which have been given numerals to be replaced by their values. It also sets the float switch on. ...
+
+
+
+
+	
+\section{Sonstiges: Tests}
+
+\begin{lstlisting}
+(%i14) 	'integrate(x^2/(5+(x/y)),x,0,1);
+\end{lstlisting}
+\vspace{-4mm} \[\tag{\%o14} 
+\int_{0}^{1}{\frac{{{x}^{2}}}{\frac{x}{y}+5}dx} \]
+
+\vspace{-4mm} \begin{lstlisting}
+(%i4) 	'integrate((x^2+3*x)/(2+4*x),x,1,2);
+\end{lstlisting}
+\vspace{-4mm} \[ \tag{\%o4} 
+\int_{1}^{2}{\frac{3 x+{{x}^{2}}}{2+4x}dx} \]
+
+\end{document}

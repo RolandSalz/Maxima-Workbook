@@ -1,0 +1,132 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Integral transformation}
+
+\section{Laplace transformation}
+
+For historical reasons Maxima has two functions which can compute the Laplace transform, \emph{laplace} and \emph{specint}. While Laplace knows more of the general rules for Laplace transforms and can handle equations, \emph{specint} recognizes some special functions which Laplace doesn't. \emph{laplace} automatically calls \emph{specint}, though, if it cannot compute the Laplace transform, and therefore the user should preferably employ \emph{laplace}.
+
+\lzz \hyt{laplace}{\tcr{\emph{laplace (expr, t, s)}}} \hfill \tcr{[function]}\index{laplace}
+
+\lz Computes the Laplace transform of \emph{expr} with respect to the integration variable \emph{t} and the transform parameter \emph{s}. For instance, \emph{laplace(f(t),t,s)} is equivalent to
+\begin{equation}\label{IT2}
+	\mc{L}f(s) = \int_{0}^{\infty} f(t) \, e^{-st} \, dt.
+\end{equation}
+Note that if \emph{expr} is a function, it has to be expressed in terms of the integration variable t, in the way it appears under the integral sign. However, \emph{expr} can also be an equation, e.g. a differential or integral equation. In this case \emph{laplace} computes the Laplace transform of both sides separately and returns an equation.
+
+\lz Like in desolve and unlike in ode2, functional dependencies must be explicitly specified in \emph{expr}; implicit relations, established by \emph{depends}, are not recognized. For example, if f depends on x and y, f must be written as f(x,y) in \emph{expr}.
+
+\lz \emph{laplace} recognizes the functions \emph{delta, exp, log, sin, cos, sinh, cosh}, and \emph{erf}, as well as $ diff, integrate, sum $, and $ ilt $. If \emph{laplace} fails to find a transform, it calls function \hyl{specint}{\emph{specint}}. \emph{specint} can find the laplace transform for expressions with special functions like the bessel functions $ bessel_j, bessel_i,\dots $ and can handle the unit\_step function. If \emph{specint} cannot find a solution either, a noun laplace is returned.
+
+\lz \emph{expr} may also be a linear, constant coefficient differential equation. Initial (IVP) or boundary (BVP) values of the dependent variable can be specified with \emph{atvalue} prior to calling laplace. Note that initial conditions for the Laplace transform have to be specified at t=0, with t being the independent variable. If one has initial or boundary conditions imposed elsewhere, one can impose these on the \emph{general} solution returned by \emph{laplace} and eliminate the constants by solving the general solution and possibly its derivative for them and substituting their values back.
+
+\lz \emph{laplace} recognizes convolution integrals of the form
+\begin{equation*}
+	\int_{0}^{t} f(t-\tau) \, g(\tau) \, d\tau.
+\end{equation*}
+Other kinds of convolutions are not recognized.
+
+\lz In the following we give a number of small examples.  Worked out examples for solving differential or convolution integral equations are given in sect. \ref{IT1}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   %e^(2*t+a)*sin(t)*t;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} t\, {{\% e}^{2 t+a}} \sin{(t)} \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   laplace(%,t,s);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{{{\% e}^{a}}\, \left( 2 s-4\right) }{{{\left( {{s}^{2}}-4 s+5\right) }^{2}}} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   laplace('diff(f(t),t),t,s);
+<@\tcr{(\%o3)}@		     s*laplace(f(t),t,s)-f(0)
+<@\tcr{(\%i4)}@   assume(n>0)$
+<@\tcr{(\%i5)}@   laplace(t^n,t,s);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \frac{\Gamma(n+1)}{s^{n+1}} \]
+\color{black} \reqn
+\end{small}
+\vspace{-2mm} 
+
+\lzz \hyt{specint}{\tcr{\emph{specint ($ f(t)*exp(-s*t), t $)}}} \hfill \tcr{[function]}\index{specint}
+
+\lz Compute the Laplace transform of function \emph{f(t)} with respect to the variable t. Note that the factor $ e^{-st} $ has to be explicitely specified as part of the first argument. The integrand \emph{f(t)} may contain special functions. The following special functions are recognized by \emph{specint}: \emph{incomplete gamma function, error functions} (but not the error function \emph{erfi}; it is easy to transform \emph{erfi} e.g. to the error function \emph{erf}), \emph{exponential integrals, bessel functions} (including products of bessel functions), \emph{hankel functions}, \emph{hermite} and \emph{laguerre polynomials}. Furthermore, \emph{specint} can handle the \emph{hypergeometric function} \%f[p,q]([],[],z), the \emph{whittaker function} of the first kind \%m[u,k](z) and of the second kind \%w[u,k](z). The value returned may be in terms of special functions and can include unsimplified hypergeometric functions.
+
+\lz demo(hypgeo) displays several examples of Laplace transforms computed by specint.
+
+\subsection{Inverse Laplace transform}
+
+\lz \hyt{ilt}{\tcr{\emph{ilt (f(s), s, t)}}} \hfill \tcr{[function]}\index{ilt}
+
+\lz Computes the inverse Laplace transform of function f with respect to variable s and parameter t. t will be the independent variable of the function returned. If f(s) is a rational function, its denominator may only have linear and quadratic factors. 
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   laplace(b(t),t,s);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \underbrace{laplace(b(t),t,s)}_{\tcr{\mc{L}b(s)}} \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   ilt(%,s,t);
+<@\tcr{(\%o2)}@			       b(t)
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+\vspace{-2mm} 
+
+\subsection{Solving differential or convolution integral equations}\label{IT1}
+
+The method of Laplace transformation is a powerful tool in science and engineering. By using \emph{laplace} and the inverse transformation with function \emph{ilt} together with \emph{solve} or \emph{linsolve}, Maxima can solve a single or a system of linear, constant coefficient differential or of convolution integral equation(s). We demonstrate the procedure with the second order linear ODE we already solved with \emph{ode2/ic2} and \emph{desolve/atvalue}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   assume(g>0,l>0)$
+<@\tcr{(\%i2)}@   eq: 'diff(<@$\vap$@(t),t,2)+g/l*<@$\vap$@(t)$	   \end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{{{d}^{2}}}{d {{t}^{2}}} \operatorname{\vap }(t)+\frac{g \operatorname{\vap }(t)}{l} \]
+\vspace{-5mm} \begin{lstlisting}    
+<@\tcr{(\%i3)}@   laplace(eq,t,s);	        
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} -\left. \frac{d}{d t} \operatorname{\vap }(t)\right|_{t=0}+{{s}^{2}} \operatorname{laplace}\left( \operatorname{\vap }(t),t,s\right) +\frac{g \operatorname{laplace}\left( \operatorname{\vap }(t),t,s\right) }{l}-\operatorname{\phi }(0) s \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   first(linsolve([%],[laplace(<@$\vap$@(t),t,s)]));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \operatorname{laplace}\left( \operatorname{\vap }(t),t,s\right) =\frac{l\, \left( \left. \frac{d}{d t} \operatorname{\vap }(t)\right|_{t=0}\right) +\operatorname{\vap }(0) l s}{l\, {{s}^{2}}+g} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   <@$\vap$@(t)=ilt(rhs(Leq1),s,t)$
+<@\tcr{(\%i6)}@   expand(%),rootscontract;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \operatorname{\vap }(t)=\sqrt{\frac{l}{g}} \sin{\left( \sqrt{\frac{g}{l}} t\right) } \left( \left. \frac{d}{d t} \operatorname{\vap }(t)\right|_{t=0}\right) +\operatorname{\vap }(0) \cos{\left( \sqrt{\frac{g}{l}} t\right) } \]
+\color{black} \reqn
+\end{small} \vspace{-2mm}
+
+\lz Here we have achieved exactly the result from \emph{desolve},\footnote{Note that \emph{desolve} in fact uses \emph{laplace}, so it does exactly what we have just done.} the general solution from \begin{small}\tcr{(\%o3)}\end{small} of sect. \ref{DE2}. For an IVP with initial values at zero or at a point other than zero we proceed exactly as we did there. Next we show, how a single convolution integral equation can be solved with \emph{laplace}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   'integrate(sinh(a*x)*f(t-x),x,0,t)+b*f(t) = t**2;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \int_{0}^{t}{\left. \operatorname{f}\left( t-x\right)  \underbrace{\operatorname{sinh}\left( a x\right)}_{\tcr{g(x)}} dx\right.}+b \operatorname{f}(t)={{t}^{2}} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   laplace(%,t,s);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{a \, \operatorname{laplace}\left( \operatorname{f}(t),t,s\right) }{{{s}^{2}}-{{a}^{2}}}+b \operatorname{laplace}\left( \operatorname{f}(t),t,s\right) =\frac{2}{{{s}^{3}}} \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   linsolve([%],['laplace(f(t),t,s)]);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} [\underbrace{\operatorname{laplace}\left( \operatorname{f}(t),t,s\right)}_{\tcr{\mc{L}f(s)}} =\frac{2 {{s}^{2}}-2 {{a}^{2}}}{b\, {{s}^{5}}+\left( a-{{a}^{2}} b\right) \, {{s}^{3}}}] \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   f(t)=ilt(rhs(first(%)),s,t);
+	<@\tcr{Is a*b*(a*b-1) positive, negative or zero?}@ pos;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} f(t)= -\frac{2 \cosh{\left( \frac{\sqrt{a b\, \left( a b-1\right) } t}{b}\right) }}{{{a}^{3}}\, {{b}^{2}}-2 {{a}^{2}} b+a}+\frac{a\, {{t}^{2}}}{a b-1}+\frac{2}{{{a}^{3}}\, {{b}^{2}}-2 {{a}^{2}} b+a} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\section{Fourier transformation}
+
+\end{document}

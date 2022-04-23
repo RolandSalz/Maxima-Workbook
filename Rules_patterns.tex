@@ -1,0 +1,378 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Patterns and rules}
+
+\section{Introduction}
+
+This chapter describes \emph{pattern matching} and \emph{user-defined simplification rules}. Maxima's pattern matcher was written by Richard J. Fateman. His dissertation from 1971, \citem{FatemThe}{23-81}entitled \emph{Algebraic Simplification}, describes it together with other components of Macsyma which he had implemented. We recommend reading chapter 2, "The User-Level Semantic Matching Capability In MACSYMA", of this thesis, because it motivates why we want to use pattern matching in a CAS, and on what theoretical background Maxima's pattern matcher was designed. Repeatedly, when related question arose on maxima-discuss in the past, Richard took the time to explain the principles of Maxima's pattern matcher. So the archives of maxima-discuss constitute another valuable source of information in this respect.
+
+\lz The very concise chapter on rules and patterns of the Maxima manual was written by Robert Dodier. Michel Talon \citem{TalonRP}{}recently contributed an introductory tutorial which focuses on special issues and potential problems in application and includes references to how the pattern matcher works on the Lisp level.
+
+\lz There are two groups of functions which implement different pattern matching schemes. The first group comprises \hyl{defmatch}{\emph{defmatch}}, \hyl{defrule}{\emph{defrule}}, \hyl{tellsimp}{\emph{tellsimp}}, \hyl{tellsimpafter}{\emph{tellsimpafter}}, \emph{apply1, applyb1}, and \emph{apply2}. To the second group belong \emph{let} and \emph{letsimp}. Both schemes define patterns in terms of \emph{pattern variables} declared by \hyl{matchdeclare}{\emph{matchdeclare}}. Pattern-matching rules defined by \emph{tellsimp} and \emph{tellsimpafter} are applied automatically by the Maxima simplifier, while rules defined by \emph{defmatch}, \emph{defrule}, and \emph{let} are applied by an explicit function call.
+
+\lz There are additional mechanisms for rules applied to polynomials by \emph{tellrat}, and for commutative and noncommutative algebra in the \emph{affine} package.
+
+\subsection{What pattern matching is and how it works in Maxima}\label{RP1}
+
+\emph{Pattern matching} \index{pattern matching}means taking an arbitrary expression as input and comparing it (as a whole or in parts) with a \emph{pattern} \index{pattern}previously defined. Some pattern matching functions (e.g. \emph{defmatch}) just inform the user about whether a given expression or subexpression \emph{matches} the pattern or not, and in case of a positive match, how the \emph{pattern variables} used to define the pattern are matched by parts of the given expression. Other pattern matching functions (e.g. \emph{defrule}, \emph{tellsimp}, \emph{tellsimpafter}) will, in case of a positive match, also replace the matching expression or subexpression with some \emph{replacement} \index{replacement}expression, that is, they will modify the original expression. 
+
+\lz In combination with functions which can decompose a given expression into all of its subexpressions (\emph{apply1, applyb1, apply2}), pattern matching functions can compare a defined pattern with all subexpressions on all levels of a given expression. The replacement can then be done to all subexpressions which match the pattern. This constitutes a very powerful mechanism which allows to modify or simplify the given expression according to certain \emph{rules}. \index{rule}Such rules are nothing more than a combination of a pattern and a corresponding replacement. 
+
+\lz Pattern matching is done in several steps. First we have to define a pattern. This is done with the help of \emph{pattern variables}. So actually, defining the pattern variables is the very first step. This is done with \hyl{matchdeclare}{\emph{matchdeclare}}. The definition of the actual pattern is done in the next step, when we create a function which can test a given expression for whether it matches the pattern (and how) or not. Creating this function and defining the pattern is done with \hyl{defmatch}{\emph{defmatch}}. \emph{defmatch} not only uses pattern variables, but also \emph{pattern parameters} to define the pattern. Alternatively, we can define a function which substitutes an expression matching the pattern with a \emph{replacement} expression. This is done with \hyl{defrule}{\emph{defrule}}. Thus, \emph{defrule} not only defines a pattern, but a complete \emph{rule} consisting of a pattern and the corresponding replacement to be carried out in case of a positive match.
+
+\lz Both \emph{defmatch} and \emph{defrule} create a \emph{match function} which can be called explicitely by the user. Calling this function with an \emph{actual expression} (an expression to be tested for whether it matches the pattern or not) as an argument forms the third step in pattern matching. If we want to apply our match function to all subexpressions of the actual expression, we have to wrap it in \emph{apply1, applyb1}, or \emph{apply2} before calling it. However, it is also possible to make the simplifier use our newly defined rule automatically for any expression (and any of its subexpressions) which is being simplified by the system. Depending on whether our new rule is to be used before or after the system simplification rules, its definition is done with \emph{tellsimp} or \emph{tellsimpafter}.
+
+\subsubsection{Pattern, pattern variable, pattern parameter, match}
+
+A \emph{pattern} is a kind of \emph{template expression} comprising both fixed elements, which have to match exactly with the corresponding parts of an actual expression (although, if they are symbols introduced by the user, they might be evaluated), and variable elements, which can be \emph{pattern variables}, \index{pattern variable}\index{variable!pattern}each having a specific variability determined by a condition associated with it, the so-called \emph{match predicate}, or \emph{pattern parameters}. An atom or subexpression of the actual expression \emph{matches} a pattern variable, if it satisfies its respective match predicate. It matches a pattern parameter, if it is identical with the corresponding pattern argument.
+
+\lz Pattern variables, also called \emph{match variables}, \index{match variable}\index{variable!match}are the most important element used for the definition of patterns. Each pattern variable is associated with a condition which allows to determine whether a subexpression (an atom is also a subexpression) of the actual expression is able to match this variable or not. This condition is defined in the form of a \emph{predicate}, a Boolean function returning either \emph{true} or \emph{false}. More than one pattern variable can occur in a pattern, and a pattern variable can occor more than once. 
+
+\lz A pattern is an expression in which pattern variables occur together with pattern parameters, other symbols introduced by the user, numbers, operators, or function calls. If a pattern is to match an actual expression, all pattern variables occuring in the pattern and all of their occurrences have to match a subexpression of the actual expression; all pattern parameters, if any, have to match a symbol identical with the pattern argument; and all other elements of the pattern have to literally match a counterpart of the actual expression (with the exception of a possible evaluation of any symbol introduced by the user). Only if all of this is fulfilled and nothing of the actual expression is left over, the pattern matches as a whole. In this case, every pattern variable will be bound (i.e. assigned as its value) to the corresponding subexpression of the actual expression.
+
+\subsubsection{No backtracking}
+
+Maxima's pattern matcher works \emph{without backtracking}. This seemingly harmless little statement has to be considered with the utmost care in order to be able to successfully use pattern matching with Maxima.
+
+\lz To put it another way, Maxima's pattern matcher does not work according to the principle of \emph{trial and error}. It does not try one way, and if it doesn't get to the end, try another way, and so on. If, during an attempted match, it does not succeed with matching a particular pattern variable, it won't go back and try it again under different considerations, by shuffling around matching variables and potential corresponding subexpressions of the actual expression. This means, Maxima's pattern matcher has a certain strategy and order in which to proceed with trying to match each element of the pattern, one after the other, each pattern variable and each of its possibly multiple occurrences, and the other elements of the pattern, and if this fails for any element of the pattern, this was it. So the user has to have some precise knowledge about this strategy and order when he wants to set up his pattern in a way so that it matches exactly with what it is supposed to match, nothing more and nothing less.
+
+\lz There are other CAS systems whose pattern matcher in fact do work according to the principle of backtracking. Such a pattern matcher runs through a large number of potential combinations of partial matches, trying again and again to achieve the global match. So it might preliminarily assign a subexpression to the first pattern variable, and then see whether the second pattern variable finds something adequate from what is left of the actual expression. If not, it will undo the assignment to the first pattern variable and try it with a different subexpression, hoping that under this new condition the second pattern variable will also find what it needs, and so on. While such a pattern matching scheme is probably easier for the user to handle, it can lead to exponential time cost. Maxima's pattern matcher, on the contrary, was designed to be efficient. But successfully working with it is much more challenging for the user. Nevertheless, we will show how it can be elegantly employed in solving problems. 
+
+\subsubsection{The matching strategy in detail}
+
+Maxima's pattern matcher is more than just a literal matcher. It considers algebraic properties of expressions, for instance the commutativity of addition and multiplication. 
+
+\lz The usual strategy of the matcher is to compare a given pattern variable, according to its match predicate, with all subexpressions of the actual expression, one after the other. The first subexpression it finds which satisfies the match predicate, it will \emph{take}. Then the matcher goes to the next pattern variable and repeats the process with what is left from the actual expression. If at any point a pattern variable cannot find a matching counterpart, the global match fails. This implies that the order in which the pattern variables are compared against the subexpressions is important. Pattern variables are tested against subexpressions in the inverse order in which they appear in the pattern. If a subexpression of the actual expression satisfies the match predicate of more than one pattern variable, it will be assigned to the first pattern variable which \emph{finds} it. If a pattern variable occurs more than once in a pattern, then of course what it takes must be identical for all occurrences (this is an extra condition in addition to the match predicate).
+
+\paragraph{Peculiarities of addition and multiplication} \mbox{}
+
+\lz Addition and multiplication are treated differently from other operands. In case of the subexpression actually under consideration being a sum or a product, a pattern variable may not only take one term or factor which fits, but it may take multiple terms or factors fitting. In fact, if all terms or all factors agree with its match predicate, a pattern variable will take the whole sum or product. This means, from a sum or a product a match variable will always take as much as it can, it is said to be \emph{greedy} with respect to addition and multiplication.
+
+\lz This immediately leads to another important point. A pattern variable is also allowed to take "0" in case of a sum, or "1" in case of a product, if "0" resp. "1" agree with its specific match predicate. Together with what we said in the previous paragraph, this means:
+
+\lz If, for example, we have $ a*b $ being part of a pattern, with pattern variables a and b, and this part of the pattern is compared with a subexpression $ x*y $ of the actual expression, x and y being symbols, it does not necessarily mean that a will take x and b will take y, or vice versa. If both x and y fulfill the match predicates of both a and b, the first pattern variable to be compared against this subexpression, say it is b, will take $ x*y $ and the second one, say it is a, will be left with "1". If the user wants a to take x and b to take y, he has to specify the corresponding match predicates in a way that x matches a, but not b, and y to match b, but not a. Only with such a specification he will be on the save side that the matcher will do what he wants. We see here already that match predicates always should be as specific as possible. An intended match will most probably not work correctly, if all match predicates are \emph{true} or \emph{all} (see \hyl{matchdeclare}{\emph{matchdeclare})}.
+
+\paragraph{The anchor principle} \mbox{}
+
+\lz If a (part of a) pattern of the form $ a*b+c*d $ with pattern variables $ a,b,c,d $, that is a sum of subexpression being products, is to be compared with a subexpression $ x*y+u*w $ of the actual expression, $ x,y,u,w $ possibly themselves being subexpressions, and we expect say $ a $ to match with $ x $, we will most likely not be able to set up a correct matching scheme unless we employ the \emph{anchor principle}. 
+
+\lz In the above pattern, Maxima's pattern matcher can correctly determine whether $ a $ matches $ x $ only, if b and y are identical, or if at least the matcher can determine what y is, possibly with the help of some pattern parameter. The matcher needs to have an \emph{anchor} for being able to match $ a $ with $ x $, and this anchor is y. In fact, what the matcher simply does in this case, is to use \emph{ratcoeff(x*y+u*w,y)}. This way it can determine the coefficient of y, which is x. x might well be a complicated expression consisting of multiple factors. But if the matcher does not know what y is, if y is unknown in the same way that x is unknown, it cannot apply \emph{ratcoeff}, because it does not know what coefficient (the coefficient of what) to look for. In this case most likely the matcher (e.g. function \emph{defmatch}) will issue a warning, saying that it cannot safely match the pattern specified by the user under the given conditions, i.e. the specifiactions of the pattern variables it contains. 
+
+\lz We will give an example of the anchor principle in sect. \ref{RP2}, when we discuss \hyl{defmatch}{\emph{defmatch}} and \hyl{defrule}{\emph{defrule}}.
+
+\section{Matchdeclare}
+
+\hyt{matchdeclare}{\tcr{\emph{matchdeclare ($ \gpal var_1 \gbar [var_{1_1},\dots,var_{1_{k_1}}] \gpar, pred_1, . . . , var_n, pred_n $)}}} \hfill \tcr{[function]}\index{mathchdeclare}
+
+\lz The arguments of \emph{matchdeclare} are pairs $ i=1,\dots,n $ consisting of a \emph{pattern variable} $ var_i $ or a list $ [var_{i_1},\dots,var_{i_{k_i}}] $ of pattern variables, and a \emph{match predicate} $ pred_i $. \emph{matchdeclare} associates $ var_i $ or the corresponding list of pattern variables $ i $ with $ pred_i $. See the introduction for the meaning of \emph{pattern variable} and \emph{match predicate}. 
+
+\lz The functions \emph{defmatch, defrule, tellsimp, tellsimpafter}, and \emph{let} use pattern variables to construct patterns.
+
+\lz A \emph{match} \hyl{predicate}{\emph{predicate}} is an unfinished function call or lambda call, in the sense that it lacks its last argument, or has no argument at all, if the function or lambda expression requires only one. In the first case, the list of arguments given in parentheses to the function call or lambda call lacks the last element. In the latter case, only the name of the function or only the lambda expression itself is given, with no argument (and no empty parentheses). A match predicate, however, can also be \emph{true} or \emph{all}. Here are some examples of valid match predicates.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   matchdeclare (a, integerp)$
+<@\tcr{(\%i2)}@   matchdeclare (b, lambda ([x], x > 0))$
+<@\tcr{(\%i3)}@   matchdeclare (c, freeof (%e, %pi, %i))$
+<@\tcr{(\%i4)}@   matchdeclare (d, lambda ([x, y], gcd (x, y) = 1) (1728))$
+<@\tcr{(\%i5)}@   matchdeclare (e, true)$
+<@\tcr{(\%i6)}@   matchdeclare (f, all)$
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lz The missing argument will be supplied later, when the match predicate is evaluated. This will not be done before the \emph{match function}, which will be defined by e.g. \emph{defmatch} or \emph{defrule}, is called to test an actual expression against the defined pattern containing the pattern variables we have just defined.
+
+\lz When a pattern containing a pattern variable is tested against an actual expression, the matcher will compare subexpressions of the actual expression with the predicate of the pattern variable, in order to find out whether this subexpression \emph{matches} the pattern variable or not. If the predicate returns anything other than \emph{false}, this particular subexpression is said to match the pattern variable and will be assigned to it as its value. If a replacement expression (e.g. in \emph{defrule}) contains this pattern variable, it will be evaluated to this subexpression bound to it. See the introduction for how multiple pattern variables are matched and at what point the pattern matches as a whole.
+
+\lz When a pattern containing a pattern variable is tested against an actual expression, the subexpression to be tested against the particular pattern variable is appended to the list of arguments of the function call or lambda call of its match predicate, or, if it has no arguments yet, it is supplied as its sole argument. In any case, the tested subexpression completes the required number of arguments of the match predicate. 
+
+\lz At this point it should be clear that a match predicate cannot simply be a relational or Boolean expression. Instead, it has to be wrapped in a function or lambda expression waiting for the particular subexpression to be its (last) argument. It is not necessary to call \emph{is} to evaluate relational expressions within the match predicate. This will be done automatically when the match is attempted.
+
+\lz Any subexpression matches a match predicates which is defined as \emph{true} or \emph{all}. If the match predicate is a function, it need not be defined yet when \emph{matchdeclare} is called, since the predicate is not evaluated until a match is attempted. \emph{matchdeclare} quotes its arguments and always returns \emph{done}.
+
+\lz If an subexpression satisfies a match predicate, the match variable is assigned this subexpression and nothing more. However, addition and multiplication are treated differently; other \emph{nary} operators (both built-in and user-defined) are treated like ordinary functions. In the case of addition and multiplication, the match variable may be assigned a single expression which satisfies the match predicate, or a sum or product (respectively) of such expressions. Such multiple-term matching is \emph{greedy}, which means: predicates are evaluated in the order in which their associated variables appear in the pattern, and a term which satisfies more than one predicate is taken by the first predicate which it satisfies. A pattern variable's predicate is tested against all operands of the sum or product before the next pattern variable's predicate is evaluated. Furthermore, if "0" or "1" (respectively) satisfy a match predicate and there are no other terms which satisfy the predicate, "o" or "1" is assigned to the match variable associated with the predicate. 
+
+\lz The algorithm for processing addition and multiplication patterns makes some match results (for example, a pattern in which a "match anything" variable appears) dependent on the ordering of terms in the match pattern and in the expression to be matched. However, if all match predicates are mutually exclusive, the match result is insensitive to ordering, as one match predicate cannot accept terms matched by another. See the introduction for more explications.
+
+\lz Calling \emph{matchdeclare} with a variable \emph{var} as an argument changes the \emph{matchdeclare property} of \emph{var}, if one was already declared; only the most recent matchdeclare is in effect when a rule for \emph{var} is defined. Later changes to the matchdeclare property of \emph{var} (via matchdeclare or remove) do not affect already existing rules.
+
+\lz \emph{propvars (matchdeclare)} returns the list of all variables for which there is a \emph{matchdeclare} property. \emph{printprops (var, matchdeclare)} returns the predicate for variable var. \emph{printprops (all, matchdeclare)} returns the list of predicates for all match variables. \emph{remove (var, matchdeclare)} removes the \emph{matchdeclare} property from \emph{var}.
+
+\section{Defmatch and defrule}
+
+\hyt{defmatch}{\tcr{\emph{defmatch (matchfunc, pattern$ \glangle, x_1,\dots,x_n \grangle $)}}} \hfill \tcr{[function]}\index{defmatch}
+
+\lz Defines a \emph{match function} named \emph{matchfunc($expr, x_1, ..., x_n$)} which tests expr to see if it matches \emph{pattern} while providing arguments $ x_1,\dots, x_n $ for the respective pattern parameters defined in \emph{defmatch}. \emph{pattern} is an expression containing the \emph{pattern parameters} $ x_1,\dots, x_n $ (if any) and also pattern variables (if any), having been declared with \emph{matchdeclare}. Any other symbol neither declared as a pattern variable in \emph{matchdeclare} nor as a pattern parameter in \emph{defmatch} only matches itself. However, it it is a symbol introduced by the user, it will be evaluated at the time the match is attempted.
+
+\lz The first argument to the created function \emph{matchfunc} is an expression to be matched against the pattern. The other arguments of matchfunc are assigned to the pattern parameters of defmatch, which occur in \emph{pattern}. Maxima evaluates and simplifies the argument of \emph{matchfunc}. 
+
+\lz If \emph{matchfunc} is applied to an expression \emph{expr} and the match is successful, \emph{matchfunc} returns a list of equations whose left hand sides are the pattern parameters and pattern variables, and whose right hand sides are the subexpressions of \emph{expr} which matched the pattern parameters and pattern variables. The pattern variables, but not the pattern parameters, are assigned the subexpressions they match. If the match fails, \emph{matchfunc} returns \emph{false}. A match function with a \emph{literal pattern} (that is, a pattern which contains neither pattern parameters nor pattern variables) returns \emph{true} if the match succeeds.
+
+\lz \emph{defmatch} returns its first argument, which is the name of the newly defined match function.
+
+\lz In the following example we define a match function \emph{linearp(expr)} which tests \emph{expr} to see if it is of the form \emph{a*x + b}, such that a and b do not contain x, and a is nonzero. Thus, this function matches expressions linear in x.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   matchdeclare (a, lambda ([k], k#0 and freeof(x, k)), b, freeof(x))$ 
+<@\tcr{(\%i2)}@   defmatch (linearp, a*x + b)$
+<@\tcr{(\%i3)}@   linearp (3*x + (y + 1)*x + y^2);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o3)}} [b = y^2 , a = y + 4] \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   linearp (3*z + (y + 1)*z + y^2);
+<@\tcr{(\%o4)}@			      false
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz The first expression $ 3x + (y + 1)x + y^2 = (y+4)x + y^2 $ is linear in x. The second one is linear in z, but not in x, so the match does not succeed. Note that \emph{k\#0} means $ k \neq 0 $, and that \emph{freeof} is a function requiring two arguments; see \hyl{matchdeclare}{\emph{matchdeclare}} for how the last and missing parameter is appended to a function call being a predicate. If we want to see whether an expression is linear in any variable, we have to introduce a pattern parameter in \emph{defmatch}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i5)}@   defmatch (linearp, a*x + b, x)$
+<@\tcr{(\%i6)}@   linearp (3*z + (y + 1)*z + y^2, z);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o6)}} [b = y^2 , a = y + 4,x=z] \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   a;  b;  x;
+<@\tcr{(\%o7)}@			       y+4
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o8)}} y^2 \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%o9)}@				x
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz Note that both defmatch and linearp now have two arguments. We specifically ask \emph{linearp} for linearity in z. This is the case. The global pattern variables a and b have been assigned the matching subexpressions, while the pattern parameter x has not.
+
+\lzz \hyt{defrule}{\tcr{\emph{defrule (repfunc, pattern, replacement)}}} \hfill \tcr{[function]}\index{defrule}
+
+\lz Defines a \emph{replacement function} \emph{repfunc(expr)} which returns \emph{replacement}, if \emph{expr} matches \emph{pattern}. Otherwise, if the match fails, \emph{repfunc(expr)} returns \emph{false}.
+
+\lz While a match function defined by \emph{defmatch} only determines whether a given expression matches a pattern or not, and returns the values which have been assigned to the pattern variables, a replacement function, also called a \emph{replacement rule}, \emph{rule function} or simply a \emph{rule}, determines whether the expression matches \emph{pattern}, and in case of a match constructs the \emph{replacement} with the actual values of the pattern variables. When all pattern variables occuring in the replacement have been assigned their actual values, the resulting expression is simplified.
+
+\lz \emph{defrule} does not, in addition to pattern variables, support pattern parameters, as does \emph{defmatch}. 
+
+\lz If \emph{repfunc} is applied to an expression by \hyl{apply1}{\emph{apply1}}, \hyl{applyb1}{\emph{applyb1}}, or \hyl{apply2}{\emph{apply2}}, every subexpression matching the pattern will be replaced by \emph{replacement}. 
+
+\lz \emph{defrule} returns the names of its parameters in the following form: \\ \emph{repfunc}: \emph{pattern} -> \emph{replacement}.
+
+\subsection{Example: Rewriting an oscillation function}\label{RP2}
+
+In sect. \ref{DE3} and \ref{DE1} we solved a linear second order ODE representing a free harmonic oscillator without damp, Satz \ref{P-G43}. The result of the IVP was the time function in the general form
+\begin{equation}\label{RP4}
+	\vap(t)= C_1 \sin(\om t)+C_2 \cos(\om t)
+\end{equation}
+with the angular frequency $ \om $ depending on the particular ODE and the constants $ C_1, C_2 $ depending on the initial conditions. Note that the arguments of the sin and the cos are identical. Any expression like this, representing the superposition of two oscillations with the same frequency, but with different amplitudes and a phase shift between them, can be brought into the form of a single oscillation
+\begin{equation}\label{RP4a}
+	\vap = A \sin (\om t + \alp),
+\end{equation}
+with the amplitude A and the phase constant $ \alp $. The formulas are
+\begin{equation}\label{RP4b}
+	A = \sqrt{C_1^2+C_2^2} \teee{and} \alp = atan2 (C_1,C_2).	
+\end{equation}
+Thus, we need the constants $ C_1, C_2 $ in order to compute this representation. How can we isolate these factors from the solution of the IVP as returned by \emph{ic2}, if we take \begin{small}\tcr{(\%o5)}\end{small} from sect. \ref{DE1} as an example? Of course, for a specific example, we can extract them manually. But suppose we want to perform this in an automated way, for instance as part of a bigger program dealing with a large number of such equations and IVPs. We can do this with Maxima's pattern matching. In demonstrating how, we will deliberately start with what is a rather intuitive approach, but turning out not to work properly.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   matchdeclare([a,b,c],all)$
+<@\tcr{(\%i2)}@   defmatch(m1,a*sin(c)+b*cos(c));
+defmatch: a*sin(c) will be matched uniquely since sub-parts would otherwise be ambigious.
+defmatch: cos(c)*b will be matched uniquely since sub-parts would otherwise be ambigious.
+<@\tcr{(\%o2)}@			        m1
+<@\tcr{(\%i3)}@   m1(sin(sqrt(g/l)*t)*sin(x)*cos(y)*s+cos(sqrt(g/l)*t)*cos(x));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} [b=\cos{\left( \sqrt{\frac{g}{l}} t\right) },a=s \sin{\left( \sqrt{\frac{g}{l}} t\right) } \cos{(y)},c=x] \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz We got warnings from \emph{defmatch}, which we ignored, because we did not understand them yet. We chose to test our match function \emph{m1} with an expression, which contains other sines and cosines as part of the factors we want to extract. But \emph{m1} messed it up: instead of selecting the sin and cos with the argument $ \sqrt{g/l} \, t $ as the anchors, m1 took the sin and cos whose arguments are x. We want to improve our match predicates, knowing that our anchors must both contain in their arguments the factor t, and that no other sin or cos occuring in the expression can contain t.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   matchdeclare([a,b],all,c,lambda([i],not(freeof(t,i))))$
+<@\tcr{(\%i2)}@   defmatch(m1,a*sin(c)+b*cos(c));
+defmatch: a*sin(c) will be matched uniquely since sub-parts would otherwise be ambigious.
+defmatch: cos(c)*b will be matched uniquely since sub-parts would otherwise be ambigious.
+<@\tcr{(\%o2)}@			        m1
+<@\tcr{(\%i2)}@   m1(sin(sqrt(g/l)*t)*cos(x)*s+cos(sqrt(g/l)*t)*sin(x));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} [b=\sin{(x)},a=s \, \cos{(x)},c=\sqrt{\frac{g}{l}} \, t] \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   m1(sin(sqrt(g/l)*t)*sin(x)*cos(y)*s+cos(sqrt(g/l)*t)*cos(x));
+<@\tcr{(\%o2)}@			      false
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz The warnings are still there. But the first try of \emph{m1} with a slightly less complicated expression than before looks promising: \emph{m1} has computed the factors properly. However, the second try fails: \emph{m1} does not find any match with the expression from above.
+
+\lz What went wrong? We have to read the introduction carefully again, in particular the section about the \emph{anchor principle}. Then we realize, that what we are trying to do cannot succeed. It is impossible to match all three pattern variables in this one step, because for a and b we have no unambiguous anchor available: sin(c) and cos(c) cannot be identified in the actual expression by the matcher, because c also is unknown. And vice versa: the matcher cannot identify the anchor for finding c either, because a and b are unknown. In this situation the result from the matcher is unpredictable: it might by coincidence return a correct match in one situation, and it may just as well return an incorrect match in another one, but most likely it will not find any match, returning \emph{false}. We just shouldn't have ignored the warnings.
+
+\lz So we have to start all over again and use an approach in two steps. First we need to find the anchor, and then with its help we determine the factors. We give the first step an intuitive try with a little function called \emph{anchor}, which makes use of function \emph{gatherargs} of the \emph{opsubst} package. We collect and test all arguments from sin function calls appearing in the expression. If we do not find any one containing t, we do the same with the cos function calls. \emph{anchor} will return the complete argument to what will be our sin and cos anchor, or 0 in case we did not find any, meaning that our oszillation function is the zero function.
+
+\lz \begin{small}
+\color{blue}
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   load("opsubst")$
+<@\tcr{(\%i2)}@   anchor(expr):=block([erg,g:0], local(expr,erg,g),
+	  erg: gatherargs(expr,sin),
+	  for i:1 thru length(erg) do
+	    if not(freeof(t,erg[i][1])) then g:erg[i][1],
+	  if g=0 then (
+	    erg: gatherargs(expr,cos),
+	    for i:1 thru length(erg) do
+	      if not(freeof(t,erg[i][1])) then g:erg[i][1]
+	  ),
+	  g
+	)$
+\end{lstlisting}
+\color{black}
+\end{small}
+
+\lz With the value returned from \emph{anchor} we now go into the second step. Instead of declaring the argument of sin and cos as a match variable, we make it a match parameter. This way, defmatch issues no warning any more, and our match function properly isolates the factors a and b, even for complicated expressions.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   matchdeclare([a,b],all)$
+<@\tcr{(\%i4)}@   defmatch(m1,a*sin(anc)+b*cos(anc),anc);
+<@\tcr{(\%o4)}@			       m1 
+<@\tcr{(\%i5)}@   expr:sqrt(l/g)*sin(sqrt(g/l)*t)+cos(sqrt(g/l)*t);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \sqrt{\frac{l}{g}} \sin{\left( \sqrt{\frac{g}{l}} t\right) }+\cos{\left( \sqrt{\frac{g}{l}} t\right) } \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   an:anchor(%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \sqrt{\frac{g}{l}} t \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   if an#0 then m1(expr,an) else (a:b:0,['a=0,'b=0]);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o7)}} [b=1,a=\sqrt{\frac{l}{g}},\mathit{anc}=\sqrt{\frac{g}{l}} t] \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+Although we have solved the problem, we are not quite happy yet with the solution of step 1. There is a vage feeling that our Pascal-like loops are not the most elegant way of doing things in the Lisp world. Fortunately, Robert Dodier shows us how we can program it in a Lisp-like fashion employing pattern matching once more, this time with \emph{defrule}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   matchdeclare(a,lambda([i],i=t),f,lambda([i],freeof(t,i)))$
+<@\tcr{(\%i2)}@   defrule(r1,sin(a*f),(anc:a*f,sin(a*f)))$
+<@\tcr{(\%i3)}@   defrule(r2,cos(a*f),(anc:a*f,cos(a*f)))$
+<@\tcr{(\%i4)}@   anchor(expr):= block([anc:0],local(a,c,expr))),
+	  apply1(expr,r1,r2),
+	  anc
+	)$
+<@\tcr{(\%i5)}@   expr:sqrt(l/g)*sin(sqrt(g/l)*t)+cos(sqrt(g/l)*t);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \sqrt{\frac{l}{g}} \sin{\left( \sqrt{\frac{g}{l}} t\right) }+\cos{\left( \sqrt{\frac{g}{l}} t\right) } \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   an:anchor(%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \sqrt{\frac{g}{l}} t \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz We do not really change anything when applying the rules r1, r2 to every subexpression of \emph{expr} with \hyl{apply1}{\emph{apply1}}. We simply use a side-effect to make an assignment to \emph{anc} when we have found the right subexpression. It does not matter, which one of the two rules does the assignment, it will be the first one (or the only one) finding the argument containing t. If \emph{expr} contains both terms, the second rule, when having found the argument containing t, too, will overwrite \emph{anc}; but this does not matter, since the arguments are always identical for both sin and cos. Note, that in the way we do the assignment ot \emph{anc} we use \emph{dynamic scoping}, not \emph{lexical scoping}.
+
+\section{Tellsimp and tellsimpafter}
+
+\hyt{tellsimp}{\tcr{\emph{tellsimp (pattern, replacement)}}} \hfill \tcr{[function]}\index{tellsimp} \\
+\hyt{tellsimpafter}{\tcr{\emph{tellsimpafter (pattern, replacement)}}} \hfill \tcr{[function]}\index{tellsimpafter}
+
+\lz \emph{tellsimp} establishes a user-defined simplification rule that will automatically be applied by the simplifier to any expression \emph{before} applying the built-in simplification rules. \emph{tellsimpafter} establishes a user-defined simplification rule that will automatically be applied by the simplifier to any expression \emph{after} having applied the built-in simplification rules.
+
+\lz \emph{pattern} is an expression comprising \emph{pattern variables}, declared by \hyl{matchdeclare}{\emph{matchdeclare}}, as well as other atoms and operators, considered literals for the purpose of pattern matching. \emph{replacement} is substituted for an actual expression which matches \emph{pattern}. Pattern variables in \emph{replacement} are assigned the values matched in the actual expression.
+
+\lz \emph{pattern} may be any nonatomic expression in which the main operator is not a pattern variable nor "+" nor "*". The newly defined simplification rule is associated with \emph{pattern}'s  main operator, as it is done for the built-in simplification rules.
+
+\lz \emph{tellsimp/tellsimpafter} does not evaluate its arguments, and it returns the list of all simplification rules for the main operator of \emph{pattern}, including the newly established rule. Thus, this function can also be used to see what are the built-in simplification rules for a given main operator.
+
+\lz The names of functions (with one exception, described below), lists, and arrays may appear in pattern as the main operator only as literals, but not pattern variables.  This excludes expressions like a(x) or b[y] as patterns, if a and b are pattern variables. Names of functions, lists, and arrays which are pattern variables may appear as operators other than the main operator in pattern. There is one exception to the above rule concerning names of functions. The name of a subscripted function in an expression such as a[x](y) may be a pattern variable, because the main operator is not a, but rather the Lisp atom \emph{mqapply}. This is a consequence of the representation of expressions involving subscripted functions.
+
+\lz The rule constructed by\emph{ tellsimp/tellsimpafter} is named after \emph{pattern}'s main operator. Rules for built-in operators and user-defined operators defined by \emph{infix}, \emph{prefix}, \emph{postfix}, \emph{matchfix} and \emph{nofix} have names which are Lisp identifiers. Rules for other functions have names which are MaximaL identifiers.
+
+\lz Rules defined with \emph{tellsimp/tellsimpafter} are applied after evaluation of an expression (if not suppressed through quotation or the flag \emph{noeval}). They are applied in the order they were defined, and before/after any built-in rules. Rules are applied bottom-up, that is, applied first to subexpressions before applied to the whole expression. It may be necessary to repeatedly simplify a result, e.g. via the quote-quote operator '\ ' or the flag \emph{infeval}, to ensure that all rules are applied.
+
+\lz Pattern variables are treated as local variables in simplification rules. Once a rule is defined, the value of a pattern variable does not affect the rule, and is not affected by the rule. An assignment to a pattern variable which results from a successful rule match does not affect the current assignment (or lack of it) of the pattern variable. However, as with all atoms in Maxima, the properties of pattern variables (as declared by \emph{put} and related functions) are global.
+
+\lz The treatment of noun and verb forms is slightly confused. If a rule is defined for a noun (or verb) form and a rule for the corresponding verb (or noun) form already exists, the newly-defined rule applies to both forms (noun and verb). If a rule for the corresponding verb (or noun) form does not exist, the newly-defined rule applies only to the noun (or verb) form.
+
+\lz The rule constructed by tellsimpafter is an ordinary Lisp function. If the name of the rule is \emph{\$foorule1}, the construct $ :lisp (trace \en \$foorule1) $ traces the function, and $ :lisp (symbol-function \en '\$foorule1) $ displays its definition.
+
+\lzz \hyt{remrule}{\tcr{\emph{remrule (op, rulename$ \, \gbar \, $all)}}} \hfill \tcr{[function]}\index{remrule}
+
+\lz Removes rules defined by tellsimp or tellsimpafter. \emph{remrule (op, rulename)} removes the rule \emph{rulename} from the operator \emph{op}. When \emph{op} is a built-in or user-defined operator (as defined by \emph{infix}, \emph{prefix}, etc.), \emph{op} and \emph{rulename} must be enclosed in double quotes. \emph{remrule (op, all)} removes all rules from the operator \emph{op}.
+
+\section{Apply1, applyb1, apply2}
+
+\hyt{apply1}{\tcr{\emph{apply1 (expr, $ rule_1,\dots,rule_n $)}}} \hfill \tcr{[function]}\index{apply1}
+
+\lz Repeatedly applies $ rule_1 $ to expr until it fails, then repeatedly applies the same rule to all subexpressions of expr, left to right, until $ rule_1 $ has failed on all subexpressions. Call the result of transforming expr in this manner $ expr_2 $. Then $ rule_2 $ is applied in the same fashion starting at the top of $ expr_2 $. When rule n fails on the final subexpression, the result is returned.
+
+\lzz \hyt{applyb1}{\tcr{\emph{applyb1 (expr, $ rule_1,\dots,rule_n $)}}} \hfill \tcr{[function]}\index{applyb1}
+
+\lz This function is similar to \emph{apply1} but works from the bottom up instead of from the top down. \emph{applyb1} repeatedly applies $ rule_1 $ to the deepest subexpression of expr until it fails, then repeatedly applies the same rule one level higher (i.e., larger subexpressions), until $ rule_1 $ has failed on the top-level expression. Then $ rule_2 $ is applied in the same fashion to the result of $ rule_1 $. After $ rule_n $ has been applied to the top-level expression, the result is returned.
+
+\lzz \hyt{apply2}{\tcr{\emph{apply2 (expr, $ rule_1,\dots,rule_n $)}}} \hfill \tcr{[function]}\index{apply2}
+
+\lz If $ rule_1 $ fails on a given subexpression, then $ rule_2 $ is repeatedly applied, etc. Only if all rules fail on a given subexpression is the whole set of rules repeatedly applied to the next subexpression. If one of the rules succeeds, then the same subexpression is reprocessed, starting with $ rule_1 $.
+
+\subsection{Example: substituting in an expression}\label{RP3}
+
+The following example presents an alternative to \hyl{subst}{\emph{subst}}, the substitution of a pattern whereever it occurs in an expression, which works strictly on the basis of the GIR representation of the expression. We will see that it is more powerful than using \emph{subst}.
+
+\lz We want to substitute $ sqrt(x) $, which is $ x^{1/2} $, by b in expressions containing subexpressions of type $ sqrt(x)^n $, which is $ x^{n/2} $, where n is an integer. This cannot easily be accomplished with \emph{subst}, because the UVR of this subexpression depends on whether we have a simple square root, being represented as such, or a power of a square root, being represented in exponential notation. In GIR, however, the representation is always exponential, and therefore the substitution can be done in a uniform way. Only for the subexpression being x we need an additional, particular rule, because x is not represented in exponential form internally, but simply as x.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   halfintegerp(r):=is(integerp(2*r))$
+<@\tcr{(\%i2)}@   matchdeclare(half,halfintegerp)$
+<@\tcr{(\%i3)}@   defrule(r1,x^half,b^(2*half))$
+<@\tcr{(\%i4)}@   defrule(r2,x,b^2)$
+<@\tcr{(\%i5)}@   apply1(sqrt(x)^3+x+sqrt(x)+1/sqrt(x)+1/x+x^(-3/2),r1,r2);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o5)}} {{b}^{3}}+{{b}^{2}}+b+\frac{1}{b}+\frac{1}{{{b}^{2}}}+\frac{1}{{{b}^{3}}} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz See, however, that the above example could have easily been done with \hyl{ratsubst}{\emph{ratsubst}}, too.
+
+\section{Rules, disprule, printprops, propvars}
+
+\hyt{rules}{\tcr{\emph{rules}}} \hfill \tcr{[system variable]}\index{rules}
+
+\lz The system variable \emph{rules} is the list of all match and replacement functions or rules defined by \emph{defmatch, defrule, tellsimp}, and \emph{tellsimpafter}. This list can be displayed by \hyl{disprule}{\emph{disprule(all)}}.
+
+\lzz \hyt{disprule}{\tcr{\emph{disprule ($ func_1,\dots,func_n \, \gbar \, all$)}}} \hfill \tcr{[function]}\index{disprule}
+
+\lz Displays the match and replacement functions or rules with the names $ func_1,\dots,func_n $ as declared by \emph{defmatch}, \emph{defrule}, \emph{tellsimp}, or \emph{tellsimpafter}. Each function is displayed with an intermediate expression label (\%t<n>). \emph{disprule (all)} displays all rules and patterns as contained in the system variable \hyl{rules}{\emph{rules}}. \emph{disprule} quotes its arguments and returns the list of intermediate expression labels corresponding to the displayed functions.
+
+\section{Killing and removing rules}
+
+\hyt{remrule}{\tcr{\emph{remrule (op, rulename$ \, \gbar \, $all)}}} \hfill \tcr{[function]}\index{remrule}
+
+\lz Removes rules defined by tellsimp or tellsimpafter. \emph{remrule (op, rulename)} removes the rule \emph{rulename} from the operator \emph{op}. When \emph{op} is a built-in or user-defined operator (as defined by \emph{infix}, \emph{prefix}, etc.), \emph{op} and \emph{rulename} must be enclosed in double quotes. \emph{remrule (op, all)} removes all rules from the operator \emph{op}.
+
+\lzz \hyt{kill rules}{\tcr{\emph{kill (rules)}}} \hfill \tcr{[function]}\index{kill rules}
+
+\lz Removes all rules.
+
+\lzz \hyt{clear\_rules}{\tcr{\emph{clear\_rules()}}} \hfill \tcr{[function]}\index{clear\_rules}
+
+\lz Calls \emph{kill (rules)} and then resets the next rule number to 1 for addition +, multiplication *, and exponentiation \textasciicircum.
+
+\end{document}

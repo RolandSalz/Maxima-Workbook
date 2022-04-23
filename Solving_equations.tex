@@ -1,0 +1,178 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Solving Equations}
+
+\section{The different solvers}
+
+\subsection{Linsolve}
+
+\lz \hyt{linsolve}{\tcr{\emph{linsolve ([$ eq_1,\dots,eq_n $], [$ x_1,\dots,x_k $])}}} \hfill \tcr{[function]}\index{linsolve}
+
+\lz Solves the system of linear equations for the list of variables. Both sides of the equations (if present) must be polynomials in the variables.
+
+\lz When \emph{globalsolve} is \emph{true}, each solved-for variable is bound to its value in the solution of the equations. When \emph{backsubst} is \emph{false}, \emph{linsolve} does not carry out back substitution after the equations have been triangularized. This may be necessary in very big problems where back substitution would cause the generation of extremely large expressions. 
+
+\lz When \emph{linsolve\_params} is \emph{true}, \emph{linsolve} also generates \emph{\%r} symbols used to represent arbitrary parameters as described under \emph{algsys}. Otherwise, \emph{linsolve} solves an under-determined system of equations with some variables expressed in terms of others.
+
+\subsection{Algsys}
+
+Solves a system of polynomial equations. \index{algsys}
+
+\subsection{Solve}
+
+Maxima's primary solver \emph{solve} was written by Richard J. Fateman. It calls \emph{algsys}. It was written before the knowledge database was introduced, so \emph{solve} does not consider assumptions declared with \emph{assume}.
+
+\lz fractional exponents should be eliminated from any equation befor using it with \emph{solve}. See the thread \emph{Pandora's box}, Jan. 28, 2021.
+
+
+\subsection{To\_poly\_solve, \%solve}
+
+This solver, written by Barton Willis, is an alternative to using \emph{solve} and is sometimes more powerful, for example with respect to trigonometric equations. But like \emph{solve}, it does not recognize assumptions specified with \emph{assume} or \emph{declare}.
+
+\lz Like \emph{solve}, \emph{to\_poly\_solve} uses \emph{algsys}. Unlike \emph{solve}, fractional exponents are eliminated from equation automatically by \emph{to\_poly\_solve}. Sometimes this is not successful, though, and it is better to do this manually as for \emph{solve}.
+
+\begin{small}
+\lzz \hyt{to-poly-solve}{\tcr{\emph{to\_poly\_solve ($ \gpal eq \gbar [ eq_1,\dots,eq_n ] \gbar \{ eq_1,\dots,eq_n \} \gpar , \gpal x \gbar [x_1,\dots,x_k ] \gbar \{ x_1,\dots,x_k \} \gpar \glangle, [options] \grangle $)}}}
+
+\hfill \tcr{[function of \emph{to\_poly\_solve}]}\index{to\_poly\_solve} \\
+\hyt{\%solve}{\tcr{\%solve($ \dots $)}}\hfill \tcr{[alias of \emph{to\_poly\_solve}]}\index{\%solve}
+\end{small}
+
+\lzz Tries to solve the equation or list of equations given in the first argument for the variable or list of variables given in the second argument, possibly followed by options. When \emph{to\_poly\_solve} is able to determine the solution set, each element of the solution set is a list of one element in a \emph{\%union} object.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   load(to_poly_solve)$
+<@\tcr{(\%i2)}@   to_poly_solve(x*(x-1), x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \%union([x = 0], [x = 1]) \]
+\color{black} \reqn
+\end{small}
+\vspace{-4mm} 
+
+When to\_poly\_solve is unable to determine the solution set, a \emph{\%solve} nounform is returned. In this case, a warning is printed which tries to point to the specific cause of the failure.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   to_poly_solve(x^k + 2* x + 1, x);
+
+Nonalgebraic argument given to 'to_poly'
+unable to solve
+
+\end{lstlisting}
+\vspace{-5.5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \%solve([x^k + 2x + 1 = 0], [x]) \]
+\color{black}
+\end{small} \reqn
+\vspace{-4mm} 
+
+Especially for trigonometric equations, the solver sometimes needs to introduce one or more variables which can take an arbitrary integer value. These variables have the form \emph{\%zXXX}, where \emph{XXX} is an index.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   to_poly_solve(sin(x) = 0, x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \%union([x = 2 \, \%pi \; \%z33 + \%pi], [x = 2 \, \%pi \; \%z35]) \]
+\color{black} \reqn
+\end{small}
+\vspace{-4mm} 
+
+To re-index these variables starting from zero, use \emph{nicedummies}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i5)}@   nicedummies(%);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \%union([x = 2 \, \%pi \; \%z0 + \%pi], [x = 2 \, \%pi \; \%z1]) \]
+\color{black} \reqn
+\end{small}
+\vspace{-4mm} 
+
+\section{Special tasks and techniques}
+
+\subsection{Eliminate variables from a system of equations}
+
+\lz \hyt{eliminate}{\tcr{\emph{eliminate ([$ eq_1,\dots,eq_n $], [$ x_1,\dots,x_k $])}}} \hfill \tcr{[function]}\index{eliminate}
+
+\lz Eliminates variables from equations (or expressions assumed equal to zero) by taking
+successive resultants. This returns a list of $ n - k $ equations with the k variables $ x_1,\dots,x_k $ eliminated. First $ x_1 $ is eliminated yielding $ n-1 $ equations, then $ x_2 $ is eliminated, etc. If $ k = n $, a single expression in a list is returned free of the variables $ x_1,\dots,x_k $. In this case \emph{solve} is called to solve the last resultant for the last variable.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   eq1: 2*x^2 +y*x +z;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} z +x y +2 x^2 \]
+\vspace{-10mm} 
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   eq2: 3*x +5*y -z -1;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} -z +5y +3x -1 \]
+\vspace{-10mm} 
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   eq3: z^2 +x -y^2 +5;
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o3)}} z^2 - y^2 + x + 5 \]
+\vspace{-10mm} 
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   eliminate([eq1, eq2, eq3], [y,z]);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} [x^2 (45 x^4 + 3 x^3 + 11 x^2 + 81 x + 124)] \]
+\color{black} \reqn
+\end{small}
+\vspace{-4mm} 
+
+The \hyl{to\_poly\_solve}{\emph{to\_poly\_solve}} package contains equivalent functions \emph{elim} \index{elim}and \emph{elim\_allbut}. \index{elim\_allbut}See sect. \ref{SE1} for an application of both \emph{eliminate} and \emph{elim\_allbut}.
+
+\subsection{Solving trigonometric or hyperbolic expressions}\label{SE1}
+
+Equations containing trigonometric or hyperbolic expressions often cannot be solved directly, neither with \emph{solve} nor with \emph{to\_poly\_solve}. Such equations, however, can often be solved by either \hyl{exponentialize}{\emph{exponentializing}} them before employing \emph{solve}, or by \emph{polynomializing} them befor using \emph{to\_poly\_solve}. 
+
+\lz We will use an example to demonstrate both methods. Suppose that we want to obtain a functional expression for the coordinate lines of polar coordinates. For this we assume $ r=const. $ and $ r \neq 0 $, and we eliminate $ \vap $ from the two equations
+\begin{equation*}
+	x=r \, cos(\vap) \teee{and} y=r \, sin(\vap).
+\end{equation*}
+
+\subsubsection{Exponentialize and solve or eliminate}
+
+\begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   e1: x= r*cos(%phi)$ 
+<@\tcr{(\%i2)}@   e2: y= r*sin(%phi)$ 
+<@\tcr{(\%i3)}@   e3: exponentialize([e1,e2]);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} [x=\frac{r \, \left( {{\% e}^{\% i \, \vap }}+{{\% e}^{-\% i \, \vap }}\right) }{2},y=-\frac{\% i \, r \, \left( {{\% e}^{\% i \, \vap }}-{{\% e}^{-\% i \, \vap }}\right) }{2}] \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   eliminate(e3,[exp(%i*%phi)]);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} [4 {r^{2}}\, \left( -{r^{2}}+{{y}^{2}}+{{x}^{2}}\right) ] \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+With $ r \neq 0 $ we find the solution $ y^2=r^2-x^2 $.
+\lzzz
+
+\subsubsection{To\_poly and to\_poly\_solve or elim(\_allbut)}
+
+\begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i3)}@   load(to_poly_solve)$
+<@\tcr{(\%i4)}@   e3: to_poly([e1,e2],[%phi]); 
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} [[\% i \, \left( {{\% g25}^{2}}-1\right)  r +2 \, \% g25 y, \, \left( -{{\% g25}^{2}}-1\right)  r +2 \, \% g25 x], \]
+\vspace{-8mm} \[ [2 \, \% g25 \neq 0, \, 2 \, \% g25 \neq 0], \, [\% g25 ={{\% e}^{\% i \vap }}]] \]
+\vspace{-6mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   elim_allbut(first(e3),[x,y,r]);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o5)}} [[r \, \left( {{r }^{2}}-{{y}^{2}}-{{x}^{2}}\right) ], \, [{{\% g25}^{2}} r + r -2 \, \% g25 x]] \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\end{document}

@@ -1,0 +1,37 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Polynomials}\index{polynomial}
+
+\section{Polynomial division}\index{division!polynomial}
+
+\lz \hyt{divide}{\tcr{\emph{divide ($ p,q \glangle, \gpal x \, \gbar \, x_1,\dots,x_n \gpar \grangle $)}}} \hfill \tcr{[function]}\index{divide}
+
+\lz In its simple form, \emph{divide} computes the quotient and remainder of the polynomial p divided by the polynomial q, in the main polynomial variable x (which does not have to be specified as the third argument, if the first two arguments contain only one variable). \emph{divide} returns a list of two elements, the first of which is the quotient and second the remainder. 
+
+\lz If more than one polynomial variable is specified, the last one ($ x_n $) is the main variable, if it is present. All variables specified are declared as potential main variables of the rational expression. If $ x_n $ is not present, $ x_{n-1} $ is the main variable, and so on; see \emph{ratvars}.
+
+\lzz \hyt{quotient}{\tcr{\emph{quotient ($ p,q \glangle, \gpal x \, \gbar \, x_1,\dots,x_n \gpar \grangle $)}}} \hfill \tcr{[function]}\index{quotient}
+
+\lz This function does the same as \emph{divide}, but only the quotient is returned.
+
+\lzz \hyt{remainder}{\tcr{\emph{remainder ($ p,q \glangle, \gpal x \, \gbar \, x_1,\dots,x_n \gpar \grangle $)}}} \hfill \tcr{[function]}\index{remainder}
+
+\lz This function does the same as \emph{divide}, but only the remainder is returned.
+
+\section{Partial fraction decomposition}\index{decomposition!partial fraction}
+
+\lz \hyt{partfrac}{\tcr{\emph{partfrac (r, x)}}} \hfill \tcr{[function]}\index{partfrac}
+
+\lz Does a complete partial fraction decomposition of the rational function \emph{r}, which is of the form
+\begin{equation*}
+	r(x)=\frac{p(x)}{q(x)}
+\end{equation*}
+with polynomials p, q, with respect to the main variable x. This means, \emph{partfrac} expands \emph{r} into a sum of terms comprising zero or more monomials and zero or more partial fractions, each having a simpler denominator than \emph{r}.
+
+\lz The first step of what \emph{partfrac} does is a polynomial division $ p/q $ as accomplished by \hyl{divide}{\emph{divide}}. The quotient polynomial of this division constitutes the first part (zero or more terms) of the sum returned by \emph{partfrac}. In the second step, the rational function $ rem/q $, with rem being the remainder polynomial of the division, is decomposed into partial fractions. The resulting terms constitute the second part (zero or more terms) of the sum returned by \emph{partfrac}.
+
+\lz The importance of partial fraction decomposition primarily lies in the fact that the resulting terms are much easier to integrate than the original rational function (method of \emph{integration by partial fractions}).
+
+\end{document}

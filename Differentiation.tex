@@ -1,0 +1,500 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Differentiation}
+
+\section{Differentiation operator \emph{diff}}
+
+\lz \hyt{diff}{\tcr{\emph{diff (f, $ x \; \glangle, p \grangle $) \gbar}}} \\
+\tcr{\emph{diff (f, $ x_1, p_1, \dots, x_n, p_n $)}} \hfill \tcr{[function]}\index{diff}
+
+\lz This is the general form of function \emph{diff}, the differentiation operator. We will explain the single-variable and the multi-variable forms separately.
+
+\lz As can be done with many other Maxima functions, \emph{diff} can be applied collectively to a list, vector or matrix. If f is a list, vector or matrix, differentiation will be carried out for every individual component and the return value is a structure equivalent to the structure of f.
+
+\subsection{Single-variable form}
+
+\lz \tcr{\emph{diff (f, x $ \glangle, p \grangle $)}}
+
+\lz When applied to a function f \footnote{Here we use the term \emph{function} in the mathematical sense, not in the sense of MaximaL. In MaximaL this would be called an \emph{expression}.} in one variabe, this form returns $ D^pf $, the p-th derivative of f with respect to the variable x.\footnote{See sect. \ref{D2} for using a derivative noun form for x.} If p is omitted, the first derivative is returned. 
+
+\lz When f is a multi-variable function, this form returns $ D_x^pf $, the p-th partial derivative of f with respect to the variable x. See section \ref{D1}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   diff(3*x^4*sin(x),x);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o1)}} 12x^3 \, \sin(x) + 3x^4 \, \cos(x) \]
+\color{black} \reqn
+\end{small} \vspace{-7mm} 
+
+\subsubsection{Evaluating $ D^pf $ at a point}
+
+So far we have only computed $ D^pf $. We might want to evaluate it at a point x, i.e. compute the continuous linear map $ D^pf(x) $, which in case of a single-variable function is a number, to be multiplied with a given number v: $ D^pf(x)v $.
+
+\lz Continuing the above example we obtain with function \hyl{at}{\emph{at}}:
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i2)}@   at(%,x=%pi/2);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \frac{3 \pi^3}{2} \]
+\color{black} \reqn
+\end{small} \vspace{-7mm} 
+
+\subsection{Multi-variable form}
+
+\subsubsection{Partial derivatives}\label{D1}
+
+\lz \tcr{\emph{diff (f, $ x_1, p_1, \dots, x_n, p_n $)}}
+
+\lz This form returns the mixed partial derivative of function f according to the formula
+\begin{equation*}
+	\frac{\del^{p_1+\dots+p_n } \, f}{\del x_1^{p_1} \dots \del x_n^{p_n}}
+\end{equation*}
+where differention is carried out from right to left with respect to the variables listed in the denominator, starting with variable $ x_n $ to the order of $ p_n $. Thus, the above form is equivalent to the nested form \emph{diff ($ \dots $(diff($ f,x_n,p_n $)$, \dots $), $ x_1,p_1 $)}.
+
+\lz Note, however, that according to Schwarz's theorem the order of taking multiple partial derivatives does not matter, if all partial derivatives of f up to the desired degree are continuous. This regularity of f can be assumed in most cases.
+
+\paragraph{Hessian} \mbox{}
+
+\lz \hyt{hessian}{\tcr{\emph{hessian (f, $ [x_1,\dots,x_n] $)}}} \hfill \tcr{[function]}\index{hessian}
+
+\lz Function \emph{hessian} can be used to compute the (symmetric) Hessian matrix of the second partial derivatives of function f with respect to the list of variables $ [x_1,\dots,x_n] $ according to the scheme
+\begin{equation*}
+	H_{f} = \begin{pmatrix}
+	\del_1 \del_1 f & \cdots & \del_1 \del_n f \\ \vdots & \ddots & \vdots \\ \del_n \del_1 f & \cdots & \del_n \del_n f \end{pmatrix}.
+\end{equation*}
+We give a rather abstract example using function \hyl{depends}{\emph{depends}} to define dependencies of the \emph{undeclared function} f with respect to variables $ x_1, x_2, x_3 $.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   depends (f,[x_1,x_2,x_3]);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} [f(x_1,x_2,x_3)] \]
+\vspace{-10mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   hessian(f,[x_1,x_2,x_3]);
+\end{lstlisting}
+\vspace{-6mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \begin{pmatrix} \frac{d^2}{d {{{x_1}}^{2}}} f & \frac{d^2}{d {x_1} d {x_2}} f & \frac{d^2}{d {x_1} d {x_3}} f\\
+\frac{d^2}{d {x_1} d {x_2}} f & \frac{d^2}{d {{{x_2}}^{2}}} f & \frac{d^2}{d {x_2} d {x_3}} f\\
+\frac{d^2}{d {x_1} d {x_3}} f & \frac{d^2}{d {x_2} d {x_3}} f & \frac{d^2}{d {{{x_3}}^{2}}} f \end{pmatrix} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm} 
+
+\subsubsection{Total derivative}
+
+Function \emph{diff} cannot be used to compute total derivatives of multi-variable functions. However, Maxima can compute the gradient and the Jacobian matrix with other functions. Taylor expansions can be computed, even in the multi-variable case, with function \hyl{taylor}{\emph{taylor}}.
+
+\paragraph{Gradient} \mbox{}
+
+\lz 
+
+\paragraph{Jacobian} \mbox{}
+
+\lzz \lz \hyt{jacobian}{\tcr{\emph{jacobian ($ [func_1,\dots,func_n],[var_1,\dots,var_m] $)}}} \hfill \tcr{[function]}\index{jacobian}
+
+\lz Returns the jacobian (Funktionalmatrix) of the list of functions with respect to the list of variables. Dependencies of undeclared functions can be declared with \hyl{declare}{declare}.
+
+\lz Application example in \emph{ArensGM s.936-937 Bsp. zur Transformationsformel.wxm}.
+
+\section{Evaluate expr at a point x with \emph{at}}
+
+\lz \hyt{at}{\tcr{\emph{at ($ \gpal expr \, \gbar \, [expr_1,\dots,expr_n] \gpar, \gpal x=a \, \gbar \, [x_1=a_1,\dots,x_n=a_n] \gpar $)}}} \hfill \tcr{[function]}\index{at}
+
+\lz \emph{expr} or the expressions in the list are evaluated with its variables assuming the values as specified in \emph{eqn} or the list of equations. \emph{eqn} has the form variable=value. \emph{at} carries out multiple substitutions in parallel. If \hyl{atvalue}{\emph{atvalues}} have been defined previously, they are recognized. For an example see sect. \ref{DE1}.
+
+\section{Define value c of expr at a point x with \emph{atvalue}}
+
+\lz \hyt{atvalue}{\tcr{\emph{atvalue ($ expr, \gpal \, x=a \, \gbar \, [x_1=a_1,\dots,x_n=a_n] \gpar, \, c $)}}} \hfill \tcr{[function]}\index{atvalue}
+
+\lz In the single-variable case, \emph{atvalue} assigns the value c to \emph{expr} at the point x = a. In the multi-variable case, the value c is assigned to \emph{expr} at the point specified by the corresponding list of equations. \emph{expr} is a function evaluation, $ f(x_1, ..., x_m) $, or a derivative given in the form \hyl{diff}{\emph{diff}}$ (f(x_1, ...,
+x_m), x_1, p_1, ..., x_n, p_m) $, where the function arguments explicitly appear.
+$ p_i $ is the order of differentiation with respect to variable $ x_i $. \emph{atvalue} evaluates its arguments. \emph{atvalue} returns c, which is called the \emph{atvalue}.
+
+\lz The symbols $ @1, \dots,@n $ represent the variables $ x_1,\dots,x_n $ when atvalues are displayed.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   atvalue(f(x,y),[x=0,y=1],a^2);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} {{a}^{2}} \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   atvalue('diff(f(x,y),x),x=0,1+y);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} \mathit{@ 2}+1 \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   at('diff(f(x,y),x)=a,[x=0,y=1]);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} 2=a \]
+\vspace{-8mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   at('diff(f(x,y),x)=a,[x=1,y=1]);
+\end{lstlisting}
+\vspace{-3mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \left. \frac{d}{d x} \operatorname{f}\left( x,1\right) \right|_{x=1}=a \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz Typically, initial values (IVP) or boundary values (BVP) for solving differential equations are established by this mechanism. For an example see sect. \ref{DE2}.
+
+\lzz \hyt{printprops-atvalue}{\tcr{\emph{printprops ($ \gpal f \, \gbar \, [f_1,\dots,f_n] \, \gbar \, all \, \gpar, \, atvalue $)}}} \hfill \tcr{[function]}\index{printprops!atvalue}
+
+\lz This function displays the atvalues of either function f, the functions defined in the list, or all functions which have atvalues defined by function \emph{atvalue}. 
+
+\section{Evaluation flag \emph{diff}}
+
+\lz \hyt{diff-flag}{\tcr{\emph{diff}}} \hfill \tcr{[option variable]}\index{diff!evaluation flag}
+
+\lz When \emph{diff} is present as an evflag in a call to \emph{ev}, all differentiations indicated in the expression are carried out. For an example see sect. \ref{DE1}.
+
+\section{Noun form differentiation and calculus}
+
+We call differentiation of variables or MaximaL functions, for which only functional dependencies are known, \emph{noun form differentiation}. Normal symbolic differentiation and noun form differentiation can be combined in the same function call of \emph{diff}. 
+
+\lz If MaximaL functions are used to represent mathematical functions, see below, noun form integration can be accomplished, too. We then generally speak of \emph{noun form calculus}.
+
+\subsection{Two ways to represent mathematical functions}
+
+In Maxima, mathematical functions and functional dependencies can be represented in two fundamentally different ways. As an example comparing both methods see \emph{"Auf Schiene beweglich schwingende Hantel.wxm"}.
+
+\subsubsection{Variables and \emph{depends}}
+
+In the first way, MaximaL \emph{variables}, which may be either \emph{unbound} or \emph{bound} (with the \emph{:} operator) to a specific expression being the \emph{value} of this variable, are used to represent  mathematical functions, and their dependencies on other variables (which themselves can have dependencies, therefore representing mathematical functions) are explicitly declared with \hyl{depends}{\emph{depends}}. When using these variables, their functional dependencies are not immediately visible to the user, since they are not following the variable name in parentheses like they do in the other way described below, when MaximaL functions are used instead. Declared dependencies of variables can only be made visible by using system variable \hyl{dependencies}{\emph{dependencies}}.
+
+\lz This way to implement mathematical functional dependencies in MaximaL is often easier, mathematical expressions are visually shorter and clearer. However, dependencies established with \emph{depends} are recognized only by \hyl{diff}{\emph{diff}}, not by \hyl{integrate}{\emph{integrate}} or other MaximaL functions. 
+
+\subsubsection{MaximaL functions}
+
+In the second way, MaximaL \emph{functions} are used to represent mathematical functions. These MaximaL functions can be either \emph{undeclared} or \emph{declared} (with the \emph{:=} operator) to be a specific expression (here we don't speak of the \emph{value} of a function, but of its \emph{definition}). Dependencies of the functions are now established implicitly by their arguments, which have to be provided both in the \emph{function definition} and in the \emph{function call}. 
+
+\lz Note that one and the same symbol can be used in parallel both as a variable and a function; it can have a double life. This is possible because MaximaL functions are implemented as properties, not as values. The user's possibility to make deliberate use of this double life certainly is one of Maxima's highlights.
+
+\lz This way to represent mathematical functions and functional dependencies is generally preferable. It enables the user to easily use noun form differentiation \emph{and} noun form (indefinite or definite) integration, thus freely employing the fundamental theorem of calculus. 
+
+\lz The drawback of this method is its more complicated handling. For instance, if (part of) the return value of some computation is to become the function block of a new function, this has to be done according to the following example
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   solve(x(t)^2+y(t)^2=a^2,x(t));
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} [x(t)=-\sqrt{{{a}^{2}}-{{y(t)}^{2}}},x(t)=\sqrt{{{a}^{2}}-{{y(t)}^{2}}}] \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   rhs(%[2])$     /* An extra line is necessary here. */
+<@\tcr{(\%i3)}@   x(t):=''%;     /* Quote-quote operator needed for evaluation. */
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o3)}} x(t):=\sqrt{{{a}^{2}}-{y(t)}^{2}} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz Furthermore, careful attention has to be paid for symbols that need to be quoted in the function block, e.g. the second parameter in functions \emph{diff} or \emph{integrate}.
+
+\subsection{Functional dependency with \emph{depends}}
+
+\lz \hyt{depends}{\tcr{\emph{depends ($ \gpal y_1 \gbar [y_{1a},\dots,y_{1k}] \gpar, \gpal x_1 \gbar [x_{1a},\dots,x_{1m}] \gpar, \dots, y_n,x_n $)}}} $ \en \gbar $ \hfill \tcr{[function]}\index{depends} \\
+\hyt{dependencies-argument}{\tcr{\emph{dependencies ($ y_1(x_{1a},\dots,x_{1k}),\dots,y_n(x_n) $)}}} \hfill \tcr{[function]}\index{dependencies}
+
+\lz System function \emph{depends} declares functional dependencies among variables for the purpose of computing derivatives. A variable y can be declared to depend on variable x. Although this functional dependency is returned by \emph{depends} as $ y(x) $, y is not an \hyl{undeclared function}{\emph{undeclared function}}, but remains a variable. If a function y(x) has been defined (or even if it is an undeclared function), \emph{depends} does not refer to the function y(x), but the variable y (variable and function of the same name can coexist).
+
+\lz In the absence of a dependency declared with \emph{depends}, \emph{diff (y, x)} yields zero. If \emph{depends (y, x)} has been performed, \emph{diff (y, x)} yields a symbolic derivative, that is, a noun form.
+
+\lz The arguments to function \emph{depends} are pairs consisting of a variable y and a variable x on which y shall depend. Any of these elements can be a list (of functions or variables respectively). \emph{depends (y, x)} declares f to depend on x. When using a list for the arguments, either several functions can be declared to depend on a common variable, or a function can be declared to depend on multiple variables, or these features are even combined.
+
+\lz \emph{dependencies ($ y_1(x_1,\dots,x_k) ,y_2(z)$))} is equivalent to \emph{depends ($ y_1,[x_1,\dots,x_k],y_2,z $)}.
+
+\lz \emph{depends} evaluates its arguments and returns a list of the dependencies established. The dependencies are appended to the global variable \hyl{dependencies}{\emph{dependencies}}.
+
+\lz \emph{depends (y, x)} returns an error, if y is bound. However, y can be bound after \emph{depends (y, x)} has been executed. Alternatively, a bound variable y can be declared to depend on x by using a noun form of y: \emph{depends ('y,x)}.
+
+\lz \hyl{diff}{\emph{diff}} is the only MaximaL system function which recognizes functional dependencies established with \emph{depends}; \emph{integrate} or other functions don't recognize dependencies established for variables. \emph{diff} uses the chain rule when it encounters indirect functional dependencies. Note that in the last line the differentiation is not carried out, because here x is not regarded as a variable, although it has been evaluated as such, but as an \emph{undeclared function}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   depends([x,y,r,<@$\theta$@],t);
+<@\tcr{(\%o1)}@		      [x(t),y(t),r(t),<@$\theta$@(t)]
+<@\tcr{(\%i2)}@   x:r*cos(<@$\theta$@)$  
+<@\tcr{(\%i3)}@   y:r*sin(<@$\theta$@)$
+<@\tcr{(\%i4)}@   diff(x,t);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \left( \frac{d}{d t} r\right)  \cos{\left( \theta \right) }-r \sin{\left( \theta \right) } \left( \frac{d}{d t} \theta \right) \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   diff(y,t);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o5)}} r \cos{\left( \theta \right) } \left( \frac{d}{d t} \theta \right) +\left( \frac{d}{d t} r\right)  \sin{\left( \theta \right) } \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i6)}@   diff(x(t),t);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \frac{d}{d t} \left( r \cos{\left( \theta \right) }\right) (t) \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lzz \hyt{dependencies}{\tcr{\emph{dependencies}}} \hfill \tcr{[system variable]}\index{dependencies!system variable}
+
+\lz The system variable \emph{dependencies} contains the list of symbols which have functional dependencies assigned by depends, the function \emph{dependencies}, or \emph{gradef}. The \emph{dependencies} list is cumulative: each call to \emph{depends}, function \emph{dependencies}, or \emph{gradef} (of a variable) appends additional items. The default value of \emph{dependencies} is [].
+
+\lz \lzz \hyt{remove-dependency}{\tcr{\emph{remove (f, dependency)}}} \hfill \tcr{[function]}\index{remove!dependeny}
+
+\lz Removes all dependencies declared for f.
+
+\lz \emph{Kill}ing a symbol removes it and its dependencies.
+
+\subsection{Using MaximaL functions}
+
+\subsubsection{Distinction between function and variable}\label{D4a}
+
+A variable f which has been declared a functional dependency with \emph{depends} remains, although this dependency is returned by Maxima as \emph{f(x)}, a variable and is not an \emph{undeclared function} \emph{f(x)}. A MaximaL function is denoted as a symbol followed by its arguments in parentheses, both in the function definition and in the function call. Whether declared or not, a function is treated in a completely different way by Maxima than a variable. In fact, a symbol f can mean a variable f and a function f(x) at the same time, the variable being bound or not, and the function being defined or undefined.
+
+\subsubsection{Declared function}
+
+A \emph{function definition} alone, section \ref{F1}, like \emph{f(x):=3*x} does not yet create a mathematical functional dependency \emph{f(x)}. In the function definition, x is just a formal parameter, which could be replaced by any other. The actual functional dependency is only established by the \emph{function call} \emph{f(x)}. For instance, \emph{diff (f(x), x)} returns 3, because f(x) evaluates to 3*x. \emph{diff (f(y), y)} also returns 3, because f(y) evaluates to 3*y. But \emph{diff (f(y), x)} returns zero. \emph{diff (f, x)} also returns zero, because f refers to the variable f (which here we assume unbound), not the defined function f(x). 
+
+\subsubsection{Undeclared function}
+
+An \hyl{undeclared function}{\emph{undeclared function}}, as the name implies, is not defined. The \emph{call} \emph{f(x)} of an undeclared function, however, establishes a functional dependency which is recognized by \emph{diff} and any other MaximaL function, e.g. \emph{integrate}. In this case, \emph{diff} always returns a noun form; the Leibniz quotient is never evaluated. However, it may be simplified.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   diff(f(t),t);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{d}{d t} \operatorname{f}(t) \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i1)}@   diff(a*f(t),t,2)$ Pr()$
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{{{d}^{2}}}{d {{t}^{2}}} \left( a \operatorname{f}(t)\right)   =  a\, \left( \frac{{{d}^{2}}}{d {{t}^{2}}} \operatorname{f}(t)\right) \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz Undeclared functions can be used in an expression assigned to a variable or used in a function definition. If this variable or function is differentiated, \emph{diff} recognizes the indirect functional dependencies and uses the chain rule, see example in the following section.
+
+\subsubsection{Function call as the independent variable in \emph{diff}}\label{D3}
+
+In a call of \emph{diff} we can even use a function call as the variable with respect to which is to be differentiated.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   g(x):=f(x)^2$
+<@\tcr{(\%i2)}@   diff(g(x),x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} 2 \operatorname{f}(x) \left( \frac{d}{d x} \operatorname{f}(x)\right) \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   diff(g(x),f(x));
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} 2 \operatorname{f}(x) \]
+\color{black} \reqn
+\end{small} \vspace{-5mm}
+
+If this function has been declared, it has to be quoted in case it shall not be evaluated immediately. For quoting function calls see sect. \ref{F7}. The following example illustrates the chain rule.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i4)}@   f(x):=3*x$
+<@\tcr{(\%i5)}@   g(x):=x^2$
+<@\tcr{(\%i6)}@   diff(g(f(x)),x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o6)}} 18 x \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   diff(g('f(x)),'f(x)) * diff(f(x),x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o7)}} 6 \operatorname{f}(x) \]
+\vspace{-9mm} \begin{lstlisting}
+<@\tcr{(\%i8)}@   ev(%, nouns);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o8)}} 18 x \]
+\color{black} \reqn
+\end{small} \vspace{-7mm}
+
+\subsection{Using derivative noun forms in \emph{diff}}
+
+Derivative noun forms can be used in \hyl{diff}{\emph{diff}} both in the expression to be differentiated and as the variable with respect to which is to be differentiated. 
+
+\subsubsection{Differentiating derivative noun forms}
+
+Derivative noun forms can themselves be differentiated, that is, they can appear in the expression to be differentiated. Both the derivative noun form used in the expression and the outer function call of \emph{diff} have to be quoted, unless its respective dependencies have been declared with \emph{depends}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   'diff('diff(r,t),s);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{{{d}^{2}}}{d s d t} r \]
+\color{black} \reqn
+\end{small} \vspace{-6mm}
+
+\subsubsection{Differentiation with respect to derivative noun form}\label{D2}
+
+We can use \emph{diff} to differentiate an expression with respect to a derivative noun form. The derivative noun form has to be quoted, unless its respective dependency has been declared with \emph{depends}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   T:  (m*r^2*('diff(<@$\theta$@,t,1))^2+m*('diff(r,t,1))^2)/2
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{m\, {{r}^{2}}\, {{\left( \frac{d}{d t} \theta \right) }^{2}}+m\, {{\left( \frac{d}{d t} r\right) }^{2}}}{2} \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   diff(T,'diff(r,t));
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o2)}} m\, \left( \frac{d}{d t} r\right)  \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\subsection{Quoting and evaluating noun calculus forms}
+
+In general, when using noun calculus forms, special attention has to be paid to whether these noun forms or their arguments, e.g. the second parameter in functions \emph{diff} or \emph{integrate}, are quoted or not, or whether they need to be quoted or not. 
+
+\lz Noun calculus forms returned by Maxima are always quoted. If they are to be evaluated or simplified, \emph{nouns} has to be added as an argument to \emph{ev}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   eq1:l*(diff(q(t),t,2))+g*q(t)+(diff(x_1(t),t,2))=0;
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} l\, \left( \frac{{{d}^{2}}}{d {{t}^{2}}} q(t)\right) +\frac{{{d}^{2}}}{d {{t}^{2}}} {x_1}(t)+g q(t)=0\]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   x_1(t):=-(l*m_2*q(t))/(m_2+m_1);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o2)}} {x_1}(t):=\frac{-l\, {m_2} q(t)}{{m_2}+{m_1}} \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i3)}@   ev(eq1);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{{{d}^{2}}}{d {{t}^{2}}} \left( -\frac{l\, {m_2} q(t)}{{m_2}+{m_1}}\right) +l\, \left( \frac{{{d}^{2}}}{d {{t}^{2}}} q(t)\right) +g q(t)=0 \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   ev(eq1,nouns);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o4)}} -\frac{l\, {m_2} \left( \frac{{{d}^{2}}}{d {{t}^{2}}} q(t)\right) }{{m_2}+{m_1}}+l\, \left( \frac{{{d}^{2}}}{d {{t}^{2}}} q(t)\right) +g q(t)=0 \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\section{Defining (partial) derivatives with gradef}
+
+\lz \hyt{gradef}{\tcr{\emph{gradef ($ f(x_1,\dots,x_n),g_1,\dots,g_n) $) \gbar}}} \\
+\tcr{\emph{gradef ($ v,x,g $)}} \hfill \tcr{[function]}\index{gradef}
+
+\lz Defines the partial derivatives (i.e., the components of the gradient) of function f or variable v. Such definitions are needed when a function is not known explicitly but its first derivatives are and, for example, we want to have Maxima apply the chain rule or obtain higher order derivatives.
+
+\lz The first form defines $ df/dx_i $ as $ g_i $, where $ g_i $ is an expression; $ g_i $ may be a function call, but not the name of a function (this means: the function has to be given with arguments). The number of partial derivatives m may be less than the number of arguments n, in which case derivatives are defined with respect to $ x_1 $ through $ x_m $ only. 
+
+\lz Partial derivatives cannot be defined for a function already defined, and the definition of a function for which a derivative is already defined with \emph{gradef} overwrites this definition of the derivative. However, partial derivatives can be defined for the noun form of a function already defined, see example. A derivative can be defined for a variable which is bound, see example. Trying to define a derivative of the noun form of a variable (whether bound or not) causes an error.
+
+\lz The second form defines the derivative of variable v with respect to variable x as expr. This also establishes the dependency of v on x as \hyl{depends}{\emph{depends}}\emph{(v, x)}. The variable may already be bound.
+
+\lz The first argument $ f(x_1,\dots,x_n) $ or v is quoted, but the remaining arguments $ g_1,\dots,g_m $ or $ x,g $ are evaluated. \emph{gradef} returns the function or variable for which the partial derivatives are defined.
+
+\lz \emph{gradef} can define gradients for only one function or one variable at a time.
+
+\lz \emph{gradef} can redefine the derivatives of Maxima’s built-in functions. 
+
+\lz \emph{gradef} cannot define partial derivatives for a subscripted function.
+
+\lz In the following example we use \emph{gradef} to make Maxima apply the chain rule when differentiating the undeclared function g(x,y) with respect to x.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   diff(g(3*x-2*y),x);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \frac{d}{d x} \operatorname{g}\left( 3 x-2 y\right)  \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   gradef(g(z),G(z));
+<@\tcr{(\%o2)}@			        g(z)
+<@\tcr{(\%i3)}@   diff(g(3*x-2*y),x);	
+<@\tcr{(\%o1)}@			   3*G(3*x-2*y)
+\end{lstlisting}
+\color{black} \reqn
+\end{small}
+
+\lz \emph{gradef} cannot define partial derivatives for a function already defined. (Defining the derivatives before defining the function does not help, because the latter overwrites the derivatives defined by \emph{gradef}.) However, partial derivatives can be defind for a noun form of a function already defined. In this case, the defined function and its noun form will behave differently under \emph{diff}, the noun form not resulting in the usual symbolic Leibniz notation, but in the expression defined by \emph{gradef}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   f(x):=x^2;
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o1)}} \operatorname{f}(x):={{x}^{2}} \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i2)}@   diff(f(x),x);
+<@\tcr{(\%o2)}@			        2x
+<@\tcr{(\%i3)}@   diff(f(log(x)),x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o3)}} \frac{2 \log{(x)}}{x} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i4)}@   gradef(f(x),y(x));  /* This returns no error but has no effect. */
+<@\tcr{(\%o4)}@			       f(x)
+<@\tcr{(\%i5)}@   diff(f(x),x);
+<@\tcr{(\%o5)}@			        2x
+<@\tcr{(\%i6)}@   diff('f(x),x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o6)}} \frac{d}{d x} \operatorname{f}(x) \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i7)}@   gradef('f(x),y(x));
+<@\tcr{(\%o7)}@			       f(x)
+<@\tcr{(\%i8)}@   diff('f(x),x);  /* The result differs from (%o2) and (%o6). */
+<@\tcr{(\%o8)}@			       y(x)
+<@\tcr{(\%i9)}@   diff('f(log(x)),x);
+\end{lstlisting}
+\vspace{-5mm} \[\tag*{\tcr{\ttfamily (\%o9)}} \frac{\operatorname{y}\left( \log{(x)}\right) }{x} \]
+\vspace{-7mm} \begin{lstlisting}
+<@\tcr{(\%i10)}@  ev(diff('f(log(x)),x),f);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o10)}} \frac{2 \log{(x)}}{x} \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i11)}@  ev(diff('f(log(x)),x),nouns);
+\end{lstlisting}
+\vspace{-3mm} \[\tag*{\tcr{\ttfamily (\%o11)}} \frac{2 \log{(x)}}{x} \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\lz In case of a variable, however, \emph{gradef} \underline{can} be defined for a bound variable. Then, again, the bound variable and its noun form will behave differently under \emph{diff}.
+
+\lz \begin{small}
+\color{blue} \leqn
+\begin{lstlisting}
+<@\tcr{(\%i1)}@   depends ([r,v,e_r,e_v],t)$
+<@\tcr{(\%i2)}@   r_: r*e_r$
+<@\tcr{(\%i3)}@   gradef(r_,t,e_v*r*(diff(v,t,1))+e_r*(diff(r,t,1)))$
+<@\tcr{(\%i4)}@   diff(r_,t);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o4)}} \mathit{e\_ r} \left( \frac{d}{d t} r\right) +\left( \frac{d}{d t} \mathit{e\_ r}\right)  r \]
+\vspace{-5mm} \begin{lstlisting}
+<@\tcr{(\%i5)}@   diff('r_,t);
+\end{lstlisting}
+\vspace{-4mm} \[\tag*{\tcr{\ttfamily (\%o5)}} \mathit{e\_ v} \; r\, \left( \frac{d}{d t} v\right) +\mathit{e\_ r} \left( \frac{d}{d t} r\right) \]
+\color{black} \reqn
+\end{small} \vspace{-4mm}
+
+\subsection{Show existing definitions}
+
+\lz \hyt{printprops-gradef}{\tcr{\emph{printprops ([$ f_1,\dots,f_n $], ,gradef)} \gbar}}\index{printprops!gradef}\index{gradef!printprops} \\
+\tcr{\emph{printprops ([$ v_1,\dots,v_n $], atomgrad)}} \hfill \tcr{[function]}\index{printprops!atomgrad}\index{atomgrad!printprops}
+
+\lz The first form displays the partial derivatives of the functions $ f_1,\dots,f_n $  as defined by gradef. The second form displays the partial derivatives of the
+variables $ v_1,\dots,v_n $ as defined by gradef.
+
+\lzz \hyt{gradefs}{\tcr{\emph{gradefs}}} \hfill \tcr{[system variable]}\index{gradefs}
+
+\lz \emph{gradefs} is the list of the \emph{functions} for which partial derivatives have been defined with \emph{gradef}. This list does not include any \emph{variables} for which partial derivatives have been defined with \emph{gradef}.
+
+\subsection{Remove definitions}
+
+\lz \hyt{remove-gradef}{\tcr{\emph{remove (f, [dependency,gradef])} \gbar}}\index{atomgrad!remove}\index{remove!atomgrad} \\
+\tcr{\emph{remove (v, [dependency,atomgrad])}} \hfill \tcr{[function]}\index{gradef!remove}\index{remove!gradef}
+
+\lz The first form removes the definition of function f, the second one removes the definition of variable v.
+
+\lzz \hyt{kill-gradefs}{\tcr{\emph{kill (gradefs)}}} \hfill \tcr{[function]}\index{gradefs!kill}\index{kill!gradefs}
+
+\lz Removes all entries from the list of the system variable \emph{gradefs}, i.e. removes all \emph{gradef} definitions present.
+
+\section{Gradient}
+
+\lz \hyt{Grad}{\tcr{\emph{Grad (f, n ,$ \, \gpal [v_1,\dots,v_n] \, \gbar \, x \gpar \, $)}}} \hfill \tcr{[function of cartesian\_coordinates]}\index{Grad}
+
+\lz Computes the gradient of the n-dim. scalar field f. The last parameter gives a list of the variable names or a singe variable name, if the variables of f are elements of an undeclared array of that name. \emph{Grad} returns an n-dim column vector.
+
+\end{document}

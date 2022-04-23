@@ -1,0 +1,212 @@
+\documentclass[../Maxima_Workbook.tex]{subfiles}
+
+\begin{document}
+	
+\chapter{Repository management: Git and GitHub}\label{RM1}
+
+\section{Introduction}
+
+This chapter follows up on the discussion of section \ref{LD1}.
+
+\subsection{General intention}
+
+Let us briefly preview why we use Git and GitHub and what we want to do with them. We will create a local Maxima repository on our computer in order to be able to look at the Maxima source code files and to modify or enhance them. But we will not only make our own changes, we will also continuously update our local mirror by downloading all modifications done to the Maxima code base at Sourceforge. It is only with the help of Git that we will be able to \emph{merge} (or, as we will see, \emph{rebase}) our code modifications with/onto the ones being done in parallel at Sourceforge. This will allow us to modify the Maxima code according to our needs without losing the bug fixes, modifications and enhancements done by the Maxima team at the same time. 
+
+\lz On GitHub we will create a mirror from Sourceforge once, too, but then we will not update it directly from Sourceforge, but instead from our local repository. So it will mirror both the branches from Sourceforge and our own ones. It will publish the changes that we have done to the code and which are, as we saw, always based on the latest updates done at Sourceforge.
+
+\lz The changes we make in our local repository can be incorporated in our own Maxima builds.
+
+\subsection{Git and our local repository}
+
+The repository on Sourceforge works under the version control system \emph{Git}. \index{Git}In order to create a local copy and to facilitate successive downloading of the latest snapshots, we need to install Git on our system, too.
+
+\lz If we have write access rights to the Sourceforge repository, we also use Git to send our commits.
+
+\lz A good introduction to Git is the book \emph{ProGit} \citem{ChProGit}{}by Scott Chacon which is available as PDF in the net for free. All the details you ever want to know can be found in the \citem{GitRef}{}\emph{Git Online Reference}. It should also be mentioned that almost any special question around Git has already been asked on Stackoverflow.
+
+\subsubsection{KDiff3}
+
+We will use \emph{KDiff3} \index{KDiff3}to help us resolve merge conflicts arising under Git when we rebase our own changes onto the original branches from the Sourceforge repository.
+
+\subsection{GitHub and our public repository}
+
+We can work with a local repository on our computer only. If in addition we want to make public our work or cooperate with others outside of Sourecforge, we can create a public copy of our local repository (which started from a copy of the Sourceforge repository). This can be done for instance on \emph{GitHub}. \index{GitHub}We will explain how a copy (it is called a \emph{mirror}) of the Maxima repository can be created on GitHub and how we can then synchronize it with our work coming from the local repository.
+
+\lz Eventually we can also use our GitHub repository to communicate with the Maxima external packet manager system, if we want to make our packages directly accessible to Maxima users.
+
+\section{Installation and Setup}
+
+\subsection{Git}
+
+\subsubsection{Installing Git}
+
+Download the latest Windows installer from \emph{git-scm.com}. Install it as administrator in the default directory \emph{C:/Program Files/Git} with the default settings. But for the default editor select Notepad++. In particular, we want to be sure to use the recommended option to check out files in Windows style (with CR/LF ending) and commit files in Unix style (with LF ending). Also, as the default says, install the TTY console.
+
+\lz Create shortcuts on the desktop from the program menu. We can use the \emph{CMD interface} which resembles the Windows console. But we prefer \emph{Git bash} which has the advantage of always displaying the branch we are on. In order to set our start directory to \emph{D:/Maxima/Repos} do the following. Rightclick on the desktop shortcutof CMD or Git bash. Select properties. Change \emph{Execute in} to the above path. In \emph{Destination} delete the option \emph{-cd-to-home}. It might be necessary to restart the computer for the changes to take effect. \footnote{RS only: When CMD is started, rightclick on the upper margin of the window and in properties set font size to 20. For Git bash, rightclick on the upper margin of the window and set options/text/font to Courier new, size 14.}
+
+\subsubsection{Installing KDiff3}
+
+Install the 64bit version of KDiff3 with the defaults in the default location.
+
+\subsubsection{Configuring Git}\label{EE3}
+
+Git allows configuration at various levels: system, user, project. Configuration files are therefore created in various locations. In C:/Users/<username>/ we place the file \emph{.gitconfig} given in Annex \ref{AA3}, after having done our personal adjustments to it.
+
+\lz Most important is to substitute your name and email. We have also specified the text editor to be used for commit messages and the merge tool. The autocrlf command allows for the correct transformation of line endings from Unix to Windows and vice versa. The whitespace command causes git-diff to ignore "exponentialize-M" characters. In addition we have defined some shortcuts for the most frequent commands (st, ch, br, logol). With
+
+\begin{lstlisting}[style=smallblue]
+git config --global --edit
+\end{lstlisting}
+
+from the Git prompt (note the blank and the double dashes before each option) Notepad++ should open and display the file \emph{.gitconfig}.
+
+\lz There is a known problem with Git not handling UTF-8 characters correctly, for instance when displaying committ messages which contain German umlauts in the name of the committer, see \href{https://stackoverflow.com/questions/41139067/git-log-output-encoding-issues-on-windows-10-command-prompt}{stackoverflow}. We want to apply the proposed solution and create a Windows environment variable \emph{LC\_ALL} which we assign the value \emph{C.UTF-8}. Don't define it under "`Admin"', but under "`System variables"'. This definition will solve the problem permanently for both Git CMD and Git bash.
+
+\subsubsection{Using Git}
+
+Under Git bash, directory paths are written like e.g. \emph{/d/maxima/repos}. Changing the current directory is done with e.g. \emph{cd /c/users/<username>}.
+
+\subsection{GitHub}
+
+\subsubsection{Creating a GitHub account}
+
+On GitHub, presently (Dec. 2017), it is free of charge to open a personal account and create public repositories within it. \emph{Public} here means that we cannot hide the source code of our repositories. Everyone else can see it and clone it. This is independent of whether we use the repository alone or together with others. In the latter case we can give explicit permission to individual other GitHub users to have write access to our repository.
+
+\lz So the first step is to sign up in GitHub. We create a personal account by assigning a user name and password and providing an email address for communication. All other settings we can do later. It is always possible to change any settings at any time. Even the user name can be changed, but it is not advisable to do so, because this change can never be done to 100 percent. It is easily possible to delete the account, too.
+
+\lz On the next screen we select the option \emph{Unlimited public repositories for free}. On the following screen, let us \emph{Skip this step}. Next, instead of \emph{Read the guide} or \emph{Start a project}, we move directly to our profile and use it as a starting point for creating our Maxima repository. So in the upper right corner we click on the little triangle to the right of the avatar symbol and select \emph{Your profile}. We create a browser favorite which leads us to this page, because everything else will start from here. Just to give you a glimpse at how we will continue: click on the little triangle to the right of the "+" sign in the upper right corner and you will see the options \emph{New repository} and \emph{Import repository} which we will soon make use of.
+
+\lz We will use only plain command line Git to communicate with our GitHub repositories. There are special programs from GitHub to do so, too, e.g. the GitHub desktop, but in our opinion it is a waste of time and effort to learn them. Git is the underlying software in any case and in order to have full control of what we want to do, we better stay at this ground level. Every other program on top of it will hide information from us that at one point or another we will urgently need in order to make Git do exactly what we want. This can be complicated at times, we need to learn a number of Git commands, but there is no way around it.
+
+\section{Cloning the Maxima repository}
+
+\subsection{Creating a mirror on the local computer}
+
+This process is called \emph{cloning}. Let's assume we are in our directory D:/Maxima/Repos and want to place the copy of the repository in a subfolder named \emph{Maxima}. We look at the Maxima domain at Sourceforge \href{https://sourceforge.net/p/maxima/code/ci/master/tree/}{https://sourceforge.net/p/maxima/code/ci/master/tree/} to find out what the download URL of the git repository is. We select the \emph{https} access rather than the \emph{git://} access. Then we enter at our Git prompt
+
+\begin{lstlisting}[style=smallblue]
+git clone https://git.code.sf.net/p/maxima/code rMaxima
+\end{lstlisting}
+
+where \emph{rMaxima} ist our destination subfolder. And now we wait patiently until the latest snapshot (meaning: the actual status) of the Maxima repository from Sourceforge has been completely copied.
+
+\subsection{Creating a mirror on GitHub}
+
+We will clone the Maxima repository from Sourceforge to our account on GitHub in a similar way as we cloned it to our local computer. But once we have done that, we will update our GitHub repository only via our local repository. This includes all changes made to the Maxima repository on Sourceforge. We will download them periodically to the local repository and upload them from our local repository to the GitHub repository. So in effect, our GitHub repository is only going to be a direct mirror of Sourceforge in the beginning. After this initialization, the GitHub repository will rather be a mirror of the repository on our local computer. It will reflect the work that we have done on our local repository and at the same time incorporate the changes done at Sourceforge.
+
+\lz We click on the little triangle to the right of the "+" sign in the upper right corner of our GitHub user profile, then select \emph{Import repository}. We have to specify the URL of the source repository at Sourceforge (called the \emph{old repository} on the GitHub screen) which is still 
+
+\begin{lstlisting}[style=smallblue]
+https://git.code.sf.net/p/maxima/code
+\end{lstlisting}
+
+and then a name for the mirror on our GitHub account, let's say "rMaxima", too. Then we click on \emph{Begin import}. The import from Sourceforge to GitHub can take a couple of minutes.
+
+\lz Once we have receivd the email notification about our mirror having been successfully installed on GitHub, we go to our account profile again and \emph{Customize our pinned repositories} by selecting our new repository \emph{Maxima}. Now it will be visible on our account profile and we can always find it and move to it easily. On selecting our new repository, a short description of it can be given which will be displayed on the acount profile together with its name.
+
+\section{Updating our repository}
+
+\subsection{Setting up the synchronization}
+
+Soon there will be new commits submitted at the Sourceforge repository by members of the Maxima team, and we will want to download them. Together with the changes we make ourselves we will want to push them to our GitHub mirror. So what we want to do now is prepare for updating our local repository from Sourceforge and our GitHub repository from our local repository.
+
+\subsection{Pulling to the local computer from Sourceforge}
+
+Let's first look into our local repository. We start \emph{Git CMD} and \emph{cd} to \emph{D:/Maxima/Repos /rMaxima}. Then we enter
+
+\begin{lstlisting}[style=smallblue]
+git remote show origin
+\end{lstlisting}
+
+In Git, \emph{origin} is the shortname of our source repository, which is Maxima at Sourceforge. The above command gives us an overview of what branches exactly we've just cloned from there. 
+
+\lz The most interesting of the remote branches we see is \emph{master}. It is the official, the decisive, the relevant branch with the actual status of the Maxima repository at Sourceforge. Our local branch \emph{master} corresponds to it. Our local \emph{master} shall always be a true copy of the present status at Sourceforge. So we never commit changes to it, we only use it for pulling from Sourceforge and for pushing the changes which come from Sourceforge to our \emph{Maxima} repository at GitHub. Our own work we will do on other branches which we create from our local branch \emph{master}.
+
+\lz Updating our local \emph{master} branch from Sourceforge is simply done by
+
+\begin{lstlisting}[style=smallblue]
+git ch master
+git pull
+\end{lstlisting}
+
+Note that we use the shortnames defined in \emph{.gitconfig}, see. Annex \ref{AA3}. With the option \emph{pull $ -- $all}, not only master, but all \emph{tracked} branches will be pulled (i.e. updated) from origin into their respective local branches. When using these commands for the first time or after a long time of not having used them, they can take a while, because Git does a lot of checking in the background, so be patient.
+
+\lz New branches on Sourceforge will be shown in the list by the \emph{remote show origin} command, marked as \emph{new}. On the next \emph{git pull} they will automatically be tracked. Branches deleted on Sourceforge will be marked in the list as \emph{stale}. They will not be deleted automatically by \emph{pull}, instead we have to remove them manually with
+
+\begin{lstlisting}[style=smallblue]
+git ch master
+git remote prune origin
+\end{lstlisting}
+
+\subsection{Pushing to the public repository at GitHub}
+
+First we create the shortname \emph{github} on our local machine for our \emph{rMaxima} repository at GitHub by associating it with the URL of our GitHub repository:
+
+\begin{lstlisting}[style=smallblue]
+git remote add github https://github.com/<username>/rMaxima.git
+\end{lstlisting}
+
+Then we take a look at our GitHub repository, as it is mirrored on our local machine, by entering
+
+\begin{lstlisting}[style=smallblue]
+git remote show github
+\end{lstlisting}
+
+\lz Just as our local \emph{master} shall always be a true copy of \emph{master} at Sourceforge, our \emph{master} at GitHub shall always be a true copy of our local \emph{master}. Updating \emph{master} on GitHub from our local \emph{master} is done by
+
+\begin{lstlisting}[style=smallblue]
+git ch master
+git push github
+\end{lstlisting}
+
+In this proces we might be asked to enter our GitHub username and password. With the option \emph{push github $ -- $all}, all local branches configured for push (see list \emph{remote show github}) will be pushed to GitHub. In order to configure a branch for push to GitHub or to forward a new (e.g. release) branch from Sourceforge to GitHub, we have to track the branch first in our local repository, done with the checkout command, and then push it to GitHub:
+
+\begin{lstlisting}[style=smallblue]
+git ch <name of new branch>
+git push github <name of new branch>
+\end{lstlisting}
+
+In the \emph{push} command the name of the branch is not necessary, if we are on this branch already. If we want to delete a branch from GitHub, for instance because it has been deleted from Sourceforge, we do
+
+\begin{lstlisting}[style=smallblue]
+git push github -d <name of branch to be deleted> 
+\end{lstlisting}
+
+To update the repository completely with all branches from Sourceforge after a year or more, it is easiest to delete the GitHub repository, clone it newly and push all my own branches again.
+
+\section{Working with the Repository}
+
+\subsection{Preamble}
+
+Git is a very intelligent program. It is most important for the user to know that under Git what we see in the Windows directories is not what is physically there, but what Git virtually shows us. The contents of what we see of the repository in Windows explorer depends on what \emph{Git branch} we are currently in. Branches do not correspond to Windows explorer directories! What branch we are in, can only be seen in Git itself, not in the explorer. Changes to files in one branch, even addition and deletion of files, will not be visible \emph{in the same Windows folder} any more, if we switch to another branch where these changes have not been incorporated. Be sure to have understood that very clearly before working with Git. This will prevent you from some severe headaches (you will probably get others with Git at some point or another anyways).
+
+\subsection{Basic operations}
+
+\lz We get a list of all our local branches with
+
+\begin{lstlisting}[style=smallblue]
+git br
+\end{lstlisting}
+
+\lz To see the status of the current branch, type
+
+\begin{lstlisting}[style=smallblue]
+git st
+\end{lstlisting}
+
+\lz We can create a new branch from an existing one and switch to it by doing
+
+\begin{lstlisting}[style=smallblue]
+git ch <name of the branch we want to branch from>
+git ch -b <name of the new branch> 
+\end{lstlisting}
+
+In order to obtain a compact log output of the last n commits we can type
+
+\begin{lstlisting}[style=smallblue]
+git logol -n
+\end{lstlisting}
+
+\subsection{Committing, merging and rebasing our changes}
+
+\end{document}
